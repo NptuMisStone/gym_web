@@ -1,0 +1,248 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>健身預約系統</title>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Gym-plus Responsive web template, Bootstrap Web Templates, Flat Web Templates, Android Compatible web template, 
+      Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyEricsson, Motorola web design" />
+    
+    <!--js working-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!--//js working-->
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        addEventListener("load", function () {
+            setTimeout(hideURLbar, 0);
+        }, false);
+
+        function hideURLbar() {
+            window.scrollTo(0, 1);
+        }
+    </script>
+    <!--//meta tags ends here-->
+    <!--booststrap-->
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all">
+    <!--//booststrap end-->
+    <!-- font-awesome icons -->
+    <link href="css/fontawesome-all.min.css" rel="stylesheet" type="text/css" media="all">
+    <!-- //font-awesome icons -->
+    <!--lightbox slider-->
+    <link rel="stylesheet" href="css/lightbox.css">
+    <!-- lightbox slider-->
+    <!--Animation-effects-css-->
+    <link href='css/aos.css' rel='stylesheet prefetch' type="text/css" media="all" />
+    <!--//Animation-effects-css-->
+    <!--stylesheets-->
+    <link href="css/style.css" rel='stylesheet' type='text/css' media="all">
+    <!--//stylesheets-->
+    <link href="//nptu.sharepoint.com///fonts.googleapis.com/css?family=Oswald:400,500,600" rel="stylesheet">
+    <link href="//nptu.sharepoint.com///fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+    <!--//stylesheets補加-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css" media="all">
+
+
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="header-outs" id="header">
+            <div class="header-w3layouts">
+                <div class="container-fluid">
+                    <!--//navigation section -->
+                    <nav class="navbar navbar-expand-lg navbar-light">
+                        <div class="hedder-up ">
+                            <h1><a href="/page/Home.aspx" class="navbar-brand" data-aos="fade-right">Gym</a></h1>
+                        </div>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent" data-aos="fade-left">
+                            <ul class="navbar-nav">
+                                <li id="HomeNavItem" runat="server" class="nav-item">
+                                    <a href="/page/Home.aspx" class="nav-link">首頁<span class="sr-only">(current)</span></a>
+                                </li>
+                                <li id="gymNavItem" runat="server" class="nav-item">
+                                    <a href="/page/gym.aspx" class="nav-link">健身房</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/page/coach.aspx" class="nav-link">健身教練</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/page/class.aspx" class="nav-link">運動項目</a>
+                                </li>
+                                <li id="contactNavItem" runat="server" class="nav-item">
+                                    <a href="/page/contact.aspx" class="nav-link">聯絡我們</a>
+                                </li>
+                                <asp:Panel ID="panel_login" runat="server">
+                                <li class="nav-item">
+                                    <a href="/User/User_login.aspx" class="nav-link" style="color: #f65a5b">登入</a>
+                                </li>
+                                </asp:Panel>
+                                <asp:Panel ID="panel_register" runat="server">
+                                <li class="nav-item">
+                                    <a href="/User/User_register.aspx" class="nav-link" style="color: #f65a5b">註冊</a>
+                                </li>
+                                </asp:Panel>
+                                <asp:Panel ID="panel_username" runat="server" Visible="False">
+                                    <li id="userNavItem" runat="server" class="nav-item">
+                                        <a href="/User/User_index.aspx" class="nav-link" style="color: #f65a5b">
+                                            <asp:Label ID="Label_username" runat="server" Text=""></asp:Label>
+                                        </a>
+                                    </li>
+                                </asp:Panel>
+                                <asp:Panel ID="panel_coachname" runat="server" Visible="False">
+                                    <li id="coachNavItem" runat="server" class="nav-item">
+                                        <a href="/Coach/Coach_index.aspx" class="nav-link" style="color: #f65a5b">
+                                            <asp:Label ID="Label_coachname" runat="server" Text=""></asp:Label>
+                                        </a>
+                                    </li>
+                                </asp:Panel>
+                                <asp:Panel ID="panel_logout" runat="server" Visible="False">
+                                    <li class="nav-item">
+                                        <asp:LinkButton ID="btn_logout" runat="server" OnClick="Btn_logout_Click" class="nav-link" Style="color: #f65a5b">登出</asp:LinkButton>
+                                    </li>
+                                </asp:Panel>
+                            </ul>
+
+                        </div>
+                    </nav>
+                    <!--//navigation section -->
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+
+        </div>
+        <!-- //banner -->
+        <div>
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+        <!-- footer -->
+        <footer class="py-lg-4 py-md-3 py-sm-3 py-3">
+            <div class="container py-lg-5 py-md-5 py-sm-4 py-3">
+                <div class="row ">
+                    <div class="dance-agile-info col-lg-4 col-md-3 col-sm-3">
+                        <h4 class="pb-md-4 pb-3">快速連結</h4>
+                        <nav class="border-line">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a href="Home.aspx" class="nav-link">首頁<span class="sr-only">(current)</span></a>
+                                </li>
+                                <li  class="nav-item">
+                                    <a href="gym.aspx" class="nav-link">健身房</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">健身教練</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">運動項目</a>
+                                </li>
+                                <li  class="nav-item"">
+                                    <a href="contact.aspx" class="nav-link">聯絡我們</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-lg-4 col-md-5 col-sm-4 dance-agile-info">
+                        <h4 class="pb-md-4 pb-3">Our Posts</h4>
+                        <div class="footer-post d-flex mb-2">
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class=" scroll">
+                                    <img src="images/f1.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class="scroll">
+                                    <img src="images/f2.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1">
+                                <a href="#about" class="scroll">
+                                    <img src="images/f3.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="footer-post d-flex mb-2">
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class="scroll">
+                                    <img src="images/f3.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class=" scroll">
+                                    <img src="images/f2.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1">
+                                <a href="#about" class=" scroll">
+                                    <img src="images/f1.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="footer-post d-flex">
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class="scroll">
+                                    <img src="images/f2.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1 mr-2">
+                                <a href="#about" class=" scroll">
+                                    <img src="images/f3.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="agileinfo_footer_grid1">
+                                <a href="#about" class=" scroll">
+                                    <img src="images/f1.jpg" alt=" " class="img-fluid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dance-agile-info col-lg-4 col-md-4 col-sm-5">
+                        <h4 class="pb-md-4 pb-3">Our Times</h4>
+                        <div class="wls-hours-list">
+                            <ul>
+                                <li class="d-flex">Monday-Friday<span class="time ml-auto"> 9:30-18:30</span></li>
+                                <li class="d-flex">Saturday <span class="time ml-auto">10:30-14:30</span></li>
+                                <li class="d-flex">Sunday   <span class="time ml-auto">closed</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="copy-agile-right text-center pt-lg-4 pt-3">
+                <p>
+                    © 2018 Gym-Plus. All Rights Reserved | Design by <a href="http://www.W3Layouts.com" target="_blank">W3Layouts</a>
+                </p>
+            </div>
+        </footer>
+        <!-- //footer -->
+        
+        <!--animation body -->
+        <script src="js/aos.js"></script>
+        <script>
+            AOS.init({
+                easing: 'ease-out-back',
+                duration: 1200
+            });
+        </script>
+        <!-- //animation body -->
+        <!--bootstrap working-->
+        <script src="js/bootstrap.min.js"></script>
+        <!-- //bootstrap working-->
+    </form>
+</body>
+</html>

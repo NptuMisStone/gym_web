@@ -1,0 +1,3 @@
+﻿sweetalert2：就是script跳出來的視窗
+https://blog.darkthread.net/blog/sweetalert2/
+
