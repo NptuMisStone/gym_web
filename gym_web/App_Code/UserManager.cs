@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -13,9 +14,18 @@ public class UserManager
     public int CoachId { get; set; }
     public bool UserLoginSuccess { get; set; }
     public bool CoachLoginSuccess { get; set; }
-
-    private string ConnectionString => System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-
+    private string _connectionString;
+    private string ConnectionString
+    {
+        get
+        {
+            if (_connectionString == null)
+            {
+                _connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
+            }
+            return _connectionString;
+        }
+    }
     public UserManager()
     {
         UserId = Convert.ToInt32(HttpContext.Current.Session["user_id"]);

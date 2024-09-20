@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -14,25 +13,27 @@ using System.Web.UI.WebControls;
 public partial class page_coach_detail : System.Web.UI.Page
 {
     public static int user_loginsuccess;
-    public static string User_id, Coach_id;
+    public static string User_id;
     protected void Page_Load(object sender, EventArgs e)
     {
         user_loginsuccess = Convert.ToInt32(Session["user_loginsuccess"]);
         if (!IsPostBack)
         {
-            Coach_id = Convert.ToString(Session["Coach_id"]);
-            LoadCoachDetails();
-            BindClass();
+            string coachId = Request.QueryString["no"];
+            if (!string.IsNullOrEmpty(coachId))
+            {
+                LoadCoachDetails(coachId);
+            }
         }
     }
-    private void LoadCoachDetails()
+    private void LoadCoachDetails(string coachId)
     {
         string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string query = "SELECT * FROM [健身教練審核合併] where [健身教練編號] = @Coach_id";
+            string query = "SELECT * FROM [健身教練合併] where [健身教練編號] = @CoachId";
             SqlCommand command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Coach_id", Coach_id);
+            command.Parameters.AddWithValue("@CoachId", coachId);
 
             connection.Open();
             SqlDataReader reader = command.ExecuteReader();
@@ -52,59 +53,13 @@ public partial class page_coach_detail : System.Web.UI.Page
                     }
                     else
                     {
-                        img_de.ImageUrl = "images/user.png";  // 替換為你的預設圖片路徑
+                        img_de.ImageUrl = "img/team-1.jpg";  // 替換為你的預設圖片路徑
                     }
                 }
             }
             reader.Close();
         }
     }
-    private void BindClass()
-    {
-        string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string query = "SELECT * FROM [健身教練課程-有排課的] WHERE 健身教練編號 = @Coach_id";
-            SqlCommand command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Coach_id", Coach_id);
-
-            connection.Open();
-            SqlDataAdapter adapter = new SqlDataAdapter(command);
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
-
-            if (dt.Rows.Count > 0)
-            {
-                lv_classes.DataSource = dt;
-                lv_classes.DataBind();
-                lb_noClasses.Visible = false;  // 隱藏 "尚未安排課程" 的訊息
-            }
-            else
-            {
-                lv_classes.DataSource = null;
-                lv_classes.DataBind();
-                lb_noClasses.Visible = true;  // 顯示 "尚未安排課程" 的訊息
-            }
-        }
-    }
-
-    protected void lv_classes_ItemCommand(object sender, ListViewCommandEventArgs e)
-    {
-        if (e.CommandName == "ViewDetails")
-        {
-            // 獲取點擊的課程編號
-            string classId = e.CommandArgument.ToString();
-
-            // 將課程編號儲存到 Session 中
-            Session["Class_id"] = classId;
-
-            // 重定向到 class_detail.aspx
-            Response.Redirect("class_detail.aspx");
-        }
-    }
-
-
-
     protected string GetImageUrl(object imageData, int quality)
     {
         if (imageData != null && imageData != DBNull.Value)
@@ -142,20 +97,19 @@ public partial class page_coach_detail : System.Web.UI.Page
         }
     }
 
-    protected string GetPeopleType(int num)
+    protected void btn_ap_Click(object sender, EventArgs e)
     {
-        if (num > 1)
+        if (user_loginsuccess == 1)
         {
-            return "團體課程";
-            
-        }
-        else if(num == 1)
-        {
-            return "一對一課程";
+            Session["ap_Coach_id"] = Request.QueryString["no"];
+            Session["User_id"] = User_id;
+            Debug.WriteLine(User_id);
+            Debug.WriteLine(Request.QueryString["no"]);
+            Response.Redirect("../User/User_appointment.aspx");
         }
         else
         {
-            return "無法辨識";
+            ScriptManager.RegisterStartupScript(this, GetType(), "alert", "alert('請登入後再預約!');", true);
         }
     }
 }

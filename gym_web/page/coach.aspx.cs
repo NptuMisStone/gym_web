@@ -26,7 +26,7 @@ public partial class page_coach : System.Web.UI.Page
             string conectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(conectionString))
             {
-                string sql = "select 健身教練圖片,健身教練姓名,服務地點名稱,健身教練編號 from 健身教練審核合併 where 審核狀態 = 1";
+                string sql = "select 健身教練圖片,健身教練姓名,服務地點名稱,健身教練編號 from 健身教練合併 where 審核狀態 = 1";
                 connection.Open();
                 SqlCommand command = new SqlCommand(sql, connection);
                 SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
@@ -44,8 +44,8 @@ public partial class page_coach : System.Web.UI.Page
     {
         if (e.CommandName == "coach_detail")
         {
-            Session["Coach_id"] = Convert.ToInt32(e.CommandArgument);
-            Response.Redirect("coach_detail.aspx");
+            string coachId = e.CommandArgument.ToString();
+            Response.Redirect("coach_detail.aspx?no=" + coachId);
         }
     }
 
@@ -82,7 +82,7 @@ public partial class page_coach : System.Web.UI.Page
         }
         else
         {
-            return "images/user.png"; // 替代圖片的路徑
+            return "img/team-1.jpg"; // 替代圖片的路徑
         }
     }
 }

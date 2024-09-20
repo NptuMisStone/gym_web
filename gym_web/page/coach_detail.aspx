@@ -9,7 +9,11 @@
             <td rowspan="5" style="width: 212px; text-align: center;">
                 <asp:Image ID="img_de" runat="server" Height="150px" Width="150px" CssClass="circular-image" Style="object-fit:cover;" />
                 <br />
+                <asp:Image ID="Image3" runat="server" Height="30px" Width="30px" ImageUrl="img/star_click.png" />
+                <asp:Label ID="lb_stars" runat="server" Text='<%# Eval("平均評分") %>' Font-Size="Large"></asp:Label>
                 <br />
+                <br />
+                <asp:Button ID="btn_ap" runat="server" class="button2222" Text="立即預約" Height="40px"  Width="120px" Font-Size="Large" OnClick="btn_ap_Click" />
             </td>
             <td style="height: 32px; text-align: left;">
                 <asp:Label ID="lb_dename" runat="server" Text='<%# Eval("姓名") %>' Font-Bold="True" Font-Size="X-Large"></asp:Label>
@@ -22,7 +26,7 @@
         </tr>
         <tr>
             <td style="height: 40px; text-align: left;">
-                <asp:Image ID="Image4" runat="server" Height="27px" Width="27px" ImageUrl="images/shop.png" />
+                <asp:Image ID="Image4" runat="server" Height="27px" Width="27px" ImageUrl="img/shop.png" />
                 <asp:Label ID="lb_shop" runat="server" Text='<%# Eval("服務店家") %>'></asp:Label>
                 &nbsp;&nbsp;
             <asp:Label ID="lb_address" runat="server" Text='<%# Eval("服務地址") %>'></asp:Label>
@@ -30,72 +34,46 @@
         </tr>
         <tr>
             <td style="height: 33px; text-align: left;">
-                <asp:Image ID="Image1" runat="server" Height="27px" Width="27px" ImageUrl="images/phone-call.png" />
-                <asp:Label ID="lb_phone" runat="server" Text='<%# Eval("聯絡電話") %>'></asp:Label>
+                <asp:Image ID="Image1" runat="server" Height="27px" Width="27px" ImageUrl="img/call.png" />
+                <asp:Label ID="lb_phone" runat="server" Text='<%# Eval("聯絡電話") %>'></asp:Label>&nbsp;<asp:Image ID="Image5" runat="server" Height="27px" Width="27px" ImageUrl="img/line.png" />
+                <asp:Label ID="lb_line" runat="server" Text='<%# Eval("lineid") %>'></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td style="height: 37px; text-align: left;">
+                <asp:Label ID="lb_services" runat="server" Text='<%# Eval("服務項目") %>'></asp:Label>
             </td>
         </tr>
     </table>
 
     <table style="width: 1000px; margin-top: 50px; margin-left: 100px;">
-    <tr>
-        <td style="height: 62px; text-align: left;">
-            <asp:Label ID="Label7" runat="server" Text="教練課程" Font-Bold="True" Font-Size="XX-Large"></asp:Label>
-        </td>
-    </tr>
-    <tr>
-        <td style="text-align: left">
+        <tr>
+            <td style="height: 62px; text-align: left;">
+                <asp:Label ID="Label7" runat="server" Text="作品集" Font-Bold="True" Font-Size="XX-Large"></asp:Label></td>
+        </tr>
+        <tr>
+            <td style="text-align: left">
+                <asp:ListView ID="lv_works" runat="server">
+                    <ItemTemplate>
+                        <asp:ImageButton ID="ImageButton1" runat="server" CssClass="circular-commend" Width="130px" Height="170px"  CommandName="work_de" CommandArgument='<%# Eval("作品編號") + "|" + Eval("設計師編號") %>' Style="margin-right: 15px; object-fit:cover;"/>
+                    </ItemTemplate>
+                </asp:ListView>
+                <br />
 
-            <asp:Label ID="lb_noClasses" runat="server" Text="教練尚未安排課程" ForeColor="Red" Font-Bold="True" Visible="False" Font-Size="Larger"></asp:Label>
-
-            <asp:ListView ID="lv_classes" runat="server" OnItemCommand="lv_classes_ItemCommand">
-                <ItemTemplate>
-                    <div style="display: inline-block; margin-right: 20px;">
-                        <!-- 課程圖片 -->
-                        <asp:ImageButton ID="ImageButton1" runat="server" CssClass="circular-commend" Width="130px" Height="170px" 
-                            ImageUrl='<%# GetImageUrl(Eval("課程圖片"),15) %>' 
-                            CommandName="ViewDetails" 
-                            CommandArgument='<%# Eval("課程編號") %>' 
-                            Style="object-fit: cover;" />
-
-                        <div style="margin-top: 10px;">
-                            <asp:Label ID="CourseNameLabel" runat="server" Text='<%# Eval("課程名稱") %>' Font-Bold="True" Font-Size="Large"></asp:Label>
-                        </div>
-
-                        <div>
-                            <asp:Label ID="CourseTimeLabel" runat="server" Text='<%# "$" + Eval("課程費用", "{0:N0}") %>'></asp:Label>
-                        </div>
-
-                        <div>
-                            <asp:Label ID="CourseMoneyLabel" runat="server" Text='<%# Eval("課程時間長度") + "分鐘" %>'></asp:Label>
-                        </div>
-
-                        <div>
-                            <asp:Label ID="CoursePeopleLabel" runat="server" Text='<%# GetPeopleType(Convert.ToInt32(Eval("上課人數"))) %>'></asp:Label>
-                        </div>
-
-
-                        <div>
-                            <asp:Button ID="btnDetails" runat="server" Text="查看詳細資料" CommandName="ViewDetails" CommandArgument='<%# Eval("課程編號") %>' />
-                        </div>
-                    </div>
-                </ItemTemplate>
-            </asp:ListView>
-            <br />
-        </td>
-    </tr>
-    <tr>
-        <td style="margin-left: 150px;">
-            <div style="margin-left: 400px;">
-                <asp:DataPager ID="DataPager1" runat="server" PagedControlID="lv_classes" PageSize="5">
-                    <Fields>
-                        <asp:NumericPagerField NumericButtonCssClass="datapagerStyle" />
-                    </Fields>
-                </asp:DataPager>
-            </div>
-        </td>
-    </tr>
-</table>
-
+            </td>
+        </tr>
+        <tr>
+            <td style="margin-left: 150px;">
+                <div style="margin-left: 400px;">
+                    <asp:DataPager ID="DataPager1" runat="server" PagedControlID="lv_works" PageSize="5">
+                        <Fields>
+                            <asp:NumericPagerField NumericButtonCssClass="datapagerStyle" />
+                        </Fields>
+                    </asp:DataPager>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <table style="width: 1000px; height: 222px; margin-top: 50px; margin-left: 100px;">
         <tr>
@@ -201,6 +179,126 @@
                     </Fields>
                 </asp:DataPager>
             </td>
+        </tr>
+    </table>
+
+
+    <table style="vertical-align: text-top; margin-top: 0px; width: 800px; text-align: left;">
+        <tr>
+            <td style="text-align: left; height: 62px;">&nbsp;</td>
+            <td style="text-align: left; height: 62px;" colspan="6">
+                <asp:Label ID="Label9" runat="server" Text="可預約時段" Font-Bold="True" Font-Size="XX-Large"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; height: 26px; padding-top: -5px;">
+                <asp:ImageButton ID="img_btn_left" runat="server" Height="25px" ImageUrl="~/userpage/img/arrow-left.png" Width="25px" Visible="False"/>
+            </td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList1" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="1"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList>
+            </td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList2" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="2"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList3" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="3"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList4" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="4"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList5" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="5"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList6" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="6"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
+                <asp:DataList ID="DataList7" runat="server">
+                    <HeaderTemplate>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
+                        <asp:Label ID="Label11" runat="server" Text="7"></asp:Label><br />
+                        <br />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:DataList></td>
+            <td style="width: 50PX; height: 26px; padding-top: -5px;">
+                <asp:ImageButton ID="img_btn_right" runat="server" Height="25px" ImageUrl="~/userpage/img/right-arrow.png" Width="25px" />
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
+            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
         </tr>
     </table>
 </center>

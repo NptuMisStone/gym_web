@@ -9,7 +9,6 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Configuration;
-using System.Activities.Statements;
 
 public partial class page_class : System.Web.UI.Page
 {
@@ -27,7 +26,7 @@ public partial class page_class : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "Select * From [健身教練課程-有排課的]";
+            string sql = "Select 課程圖片,課程名稱,健身教練姓名,上課人數,課程費用,日期,開始時間,結束時間,課表編號 From 健身教練課表課程合併";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
             SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
@@ -39,7 +38,7 @@ public partial class page_class : System.Web.UI.Page
     {
         if (e.CommandName == "see_detail")
         {
-            Session["Class_id"] = Convert.ToInt32(e.CommandArgument);
+            Session["Schedule_id"] = Convert.ToInt32(e.CommandArgument);
             Response.Redirect("class_detail.aspx");
         }
     }

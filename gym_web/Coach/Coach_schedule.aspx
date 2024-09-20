@@ -6,7 +6,7 @@
 <script type="text/javascript">
     $(function () {
         $('#startTimePicker').datetimepicker({
-            format: 'A hh:mm',
+            format: 'A h:mm',
             stepping: 10
         });
         $('#startTimePicker').on('show.datetimepicker', function () {
@@ -19,22 +19,6 @@
         $('#startTimePicker').datetimepicker('hide');
     });
     });
-    $(function () {
-        $('#detailstarttimePicker').datetimepicker({
-            format: 'A hh:mm',
-            stepping: 10
-        });
-        $('#detailstarttimePicker').on('show.datetimepicker', function () {
-            if ($('#datetimepicker-confirm-btn-detail').length === 0) {
-                $('.bootstrap-datetimepicker-widget').append('<button id="datetimepicker-confirm-btn-detail" type="button" class="btn btn-primary">確認</button>');
-            }
-        });
-        $(document).on('click', '#datetimepicker-confirm-btn-detail', function () {
-            __doPostBack('<%= detailstarttime.ClientID %>', '');
-        $('#detailstarttimePicker').datetimepicker('hide');
-    });
-    });
-
     window.onload = function () {
     var today = new Date();
     var yyyy = today.getFullYear();
@@ -50,8 +34,7 @@
     }
 
     today = yyyy + '-' + mm + '-' + dd;
-        document.getElementById('<%= txtDate.ClientID %>').setAttribute('min', today);
-        document.getElementById('<%= detaildate.ClientID %>').setAttribute('min', today);
+    document.getElementById('<%= txtDate.ClientID %>').setAttribute('min', today);
 }
 </script>
 <style>
@@ -87,18 +70,12 @@
     tbody td {
         vertical-align: top; 
     }
-    .course-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
 </style>       
     <asp:Gridview ID="gv_course" runat="server" AutoGenerateColumns="False" OnRowCreated="gv_course_RowCreated"  OnRowCommand="GetCourseInfo" >
         <Columns>
             <asp:BoundField DataField="課程編號" HeaderText="課程編號"  />
             <asp:BoundField DataField="課程名稱" HeaderText="課程名稱" />
-            <asp:BoundField DataField="分類編號" HeaderText="分類編號"/>
+            <asp:BoundField DataField="課程類型" HeaderText="課程類型"/>
             <asp:BoundField DataField="課程時間長度" HeaderText="課程時間長度"/>
             <asp:BoundField DataField="上課人數" HeaderText="上課人數" />
             <asp:BoundField DataField="上課地點" HeaderText="上課地點" />
@@ -160,100 +137,79 @@
         <tbody>
             <tr>
                 <td>
-                    <asp:Repeater ID="RepeaterMonday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterMonday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterTuesday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterTuesday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterWednesday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterWednesday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterThursday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterThursday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterFriday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterFriday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterSaturday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterSaturday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
                 <td>
-                    <asp:Repeater ID="RepeaterSunday" runat="server" OnItemCommand="RepeaterWeekInfo_ItemCommand">
+                    <asp:Repeater ID="RepeaterSunday" runat="server">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lnkCourse" runat="server" CommandName="ShowId" CommandArgument='<%# Eval("課表編號") %>' CssClass="course-link">
-                                <div class="course-box" >
-                                    <p style="display:none;"><%# Eval("課表編號") %></p>
-                                    <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
-                                    <h4><%# Eval("課程名稱") %></h4>
-                                    <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
-                                </div>
-                            </asp:LinkButton>
+                            <div class="course-box">
+                                <p><%# Eval("開始時間") %> ~ <%# Eval("結束時間") %></p>
+                                <h4><%# Eval("課程名稱") %></h4>
+                                <p><%# Eval("日期","{0:yyyy/MM/dd}") %></p>
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </td>
@@ -261,64 +217,5 @@
         </tbody>
     </table>
     <asp:Label ID="lblMessage" runat="server" Text="" Font-Bold="True" Font-Size="50px"></asp:Label>
-    <asp:Panel ID="SchedulePanel" runat="server" Visible="false" CssClass="modal" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="scheduleModalLabel">詳細資訊</h5>
-            </div>
-            <div class="modal-body">
-                <asp:Label runat="server">日期：</asp:Label>
-                <asp:Textbox ID="detaildate" runat="server"  TextMode="Date"  Text='<%#  Eval("日期") %>'></asp:Textbox>
-                <br/>
-                <div class="input-group date" id="detailstarttimePicker" data-target-input="nearest">
-                    <asp:Label runat="server">開始時間：</asp:Label>
-                    <asp:Textbox ID="detailstarttime" runat="server" CssClass="custom-time-input" AutoPostBack="true" OnTextChanged="detailstarttime_TextChanged" Text='<%#  Eval("開始時間") %>'></asp:Textbox>
-                    <div class="input-group-append" data-target="#detailstarttimePicker" data-toggle="datetimepicker">
-                        <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                    </div>
-                </div>
-                <asp:Label runat="server">結束時間：</asp:Label>
-                <asp:Textbox ID="detailendtime" runat="server"  Text='<%#  Eval("結束時間") %>'></asp:Textbox>
-                <br/>
-                <asp:Label runat="server">課程名稱：</asp:Label>
-                <asp:DropDownList ID="coursedata" runat="server"  AutoPostBack="True" OnSelectedIndexChanged="coursedata_SelectedIndexChanged">
-                </asp:DropDownList>
-                <br/>
-                <asp:Image ID="img_Course" runat="server" Height="250px" Width="300px"  ImageUrl='<%# GetImageUrl(Eval("課程圖片"),15) %>' />
-                <br/>
-                <asp:Label runat="server">課程類型：</asp:Label>
-                <asp:Label ID="detailcoursetype" runat="server"></asp:Label>
-                <br/>
-                <asp:Label runat="server">課程時間：</asp:Label>
-                <asp:Label ID="detailcoursetime" runat="server" Text='<%#  Eval("課程時間長度") %>'></asp:Label>
-                <span>分鐘</span>
-                <br/>
-                <asp:Label runat="server">上課人數：</asp:Label>
-                <asp:Label ID="detailcoursepeople" runat="server" Text='<%#  Eval("上課人數") %>'></asp:Label>
-                <span>人</span>
-                <br/>
-                <asp:Label runat="server">課程費用：</asp:Label>
-                <asp:Label ID="detailcoursemoney" runat="server" Text='<%#  Eval("課程費用") %>'></asp:Label>
-                <br/>
-                <asp:Label runat="server">所需設備：</asp:Label>
-                <asp:Label ID="detailcourseitem" runat="server" Text='<%#  Eval("所需設備") %>'></asp:Label>
-                <br/>
-                <asp:Label runat="server">上課地點：</asp:Label>
-                <asp:Label ID="detailcourseplace" runat="server" Text='<%#  Eval("上課地點") %>'></asp:Label>
-                <br/>
-                <asp:Label runat="server">課程介紹：</asp:Label>
-                <asp:Label ID="detailcourseintro" runat="server" Text='<%#  Eval("課程內容介紹") %>'></asp:Label>
-                <br/>
-        
-            <div class="modal-footer">
-                <asp:Button ID="Schedule_save" runat="server" Text="更新" OnClick="Schedule_save_Click" />
-                <asp:Button ID="Schedule_cancel" runat="server" Text="取消" OnClick="Schedule_cancel_Click" />
-                <asp:Button ID="Schedule_delete" runat="server" Text="刪除" OnClick="Schedule_delete_Click" />
-            </div>
-        </div>
-    </div>
-</div>
-</asp:Panel>
 </asp:Content>
 

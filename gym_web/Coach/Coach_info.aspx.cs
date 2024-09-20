@@ -136,7 +136,7 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
     private void BindCoachData()
     {
         string query = "SELECT * FROM [健身教練資料] where [健身教練編號] = @Coach_id";
-        string query2 = "SELECT * FROM [健身教練審核合併] where [健身教練編號] = @Coach_id AND [審核狀態] = 1";
+        string query2 = "SELECT * FROM [健身教練合併] where [健身教練編號] = @Coach_id AND [審核狀態] = 1";
 
         using (SqlConnection connection = new SqlConnection(connectionString))
         {

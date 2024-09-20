@@ -3,7 +3,7 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
-    <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False" OnRowCommand="GridView1_RowCommand">
+    <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False" DataKeyNames="課程編號" OnRowEditing="GridView1_RowEditing" OnRowCancelingEdit="GridView1_RowCancelingEdit" OnRowUpdating="GridView1_RowUpdating" OnRowDeleting="GridView1_RowDeleting">
         <columns>
             <asp:BoundField DataField="課程編號" HeaderText="課程編號" ReadOnly="True" InsertVisible="False" />
             <asp:BoundField DataField="課程名稱" HeaderText="課程名稱" />
@@ -13,7 +13,7 @@
                     <asp:Label ID="lblCourseType" runat="server" Text='<%# Eval("分類名稱") %>'></asp:Label>
                 </itemtemplate>
                 <edititemtemplate>
-                    <asp:DropDownList ID="ddlCourseTypeEdit" runat="server" SelectedValue='<%# Bind("分類編號") %>'>
+                    <asp:DropDownList ID="ddlCourseTypeEdit" runat="server" SelectedValue='<%# Bind("課程類型") %>'>
                     </asp:DropDownList>
                 </edititemtemplate>
             </asp:TemplateField>
@@ -33,11 +33,16 @@
                     <asp:FileUpload ID="fuCourseImage" runat="server" />
                 </edititemtemplate>
             </asp:TemplateField>
-           <asp:TemplateField>
-            <ItemTemplate>
-                <asp:Button ID="btnSelect" runat="server" CommandName="SelectClass" CommandArgument='<%# Eval("課程編號") %>' Text="選擇" CssClass="btn btn-primary" />
-            </ItemTemplate>
-        </asp:TemplateField>
+            <asp:TemplateField>
+                <edititemtemplate>
+                    <asp:Button ID="UpdateButton" runat="server" CommandName="Update" Text="更新" CausesValidation="false" />
+                    <asp:Button ID="CancelButton" runat="server" CommandName="Cancel" Text="取消" CausesValidation="false" />
+                </edititemtemplate>
+                <itemtemplate>
+                    <asp:Button ID="EditButton" runat="server" CommandName="Edit" Text="編輯" CausesValidation="false" />
+                    <asp:Button ID="DeleteButton" runat="server" CommandName="Delete" Text="刪除" CausesValidation="false" />
+                </itemtemplate>
+            </asp:TemplateField>
         </columns>
     </asp:GridView>
     <br />
@@ -47,23 +52,23 @@
         <br />
         <asp:Label ID="lblCourseName" runat="server" Text="課程名稱:"></asp:Label>
         <asp:TextBox ID="tbCourseName" runat="server"></asp:TextBox>
-        <asp:RequiredFieldValidator ID="rfvCourseName" runat="server" ControlToValidate="tbCourseName" ErrorMessage="課程名稱不得為空" ForeColor="Red" Display="Dynamic" ValidationGroup="vg1" />
+        <asp:RequiredFieldValidator ID="rfvCourseName" runat="server" ControlToValidate="tbCourseName" ErrorMessage="課程名稱不得為空" ForeColor="Red" Display="Dynamic" />
         <br />
         <br />
         <asp:Label ID="lblCourseType" runat="server" Text="課程類型:"></asp:Label>
         <asp:DropDownList ID="ddlCourseType" runat="server">
         </asp:DropDownList>
-        <asp:RequiredFieldValidator ID="rfvCourseType" runat="server" ControlToValidate="ddlCourseType" ErrorMessage="課程類型不得為空" ForeColor="Red" Display="Dynamic" InitialValue="" ValidationGroup="vg1" />
+        <asp:RequiredFieldValidator ID="rfvCourseType" runat="server" ControlToValidate="ddlCourseType" ErrorMessage="課程類型不得為空" ForeColor="Red" Display="Dynamic" InitialValue="" />
         <br />
         <br />
         <asp:Label ID="lblCourseDescription" runat="server" Text="課程內容介紹:"></asp:Label>
         <asp:TextBox ID="tbCourseDescription" runat="server" TextMode="MultiLine"></asp:TextBox>
-        <asp:RequiredFieldValidator ID="rfvCourseDescription" runat="server" ControlToValidate="tbCourseDescription" ErrorMessage="課程內容介紹不得為空" ForeColor="Red" Display="Dynamic" ValidationGroup="vg1" />
+        <asp:RequiredFieldValidator ID="rfvCourseDescription" runat="server" ControlToValidate="tbCourseDescription" ErrorMessage="課程內容介紹不得為空" ForeColor="Red" Display="Dynamic" />
         <br />
         <br />
         <asp:Label ID="lblCourseDuration" runat="server" Text="課程時間長度:"></asp:Label>
         <asp:TextBox ID="tbCourseDuration" runat="server"></asp:TextBox>
-        <asp:RequiredFieldValidator ID="rfvCourseDuration" runat="server" ControlToValidate="tbCourseDuration" ErrorMessage="課程時間長度不得為空" ForeColor="Red" Display="Dynamic" ValidationGroup="vg1" />
+        <asp:RequiredFieldValidator ID="rfvCourseDuration" runat="server" ControlToValidate="tbCourseDuration" ErrorMessage="課程時間長度不得為空" ForeColor="Red" Display="Dynamic" />
         <br />
         <br />
         <asp:Label ID="lblClassSize" runat="server" Text="上課人數:"></asp:Label>
@@ -75,7 +80,7 @@
 
         <asp:TextBox ID="tbClassSize" runat="server"></asp:TextBox>
         <asp:RequiredFieldValidator ID="rfvClassSize" runat="server" ControlToValidate="tbClassSize" ErrorMessage="上課人數不得為空" ForeColor="Red" Display="Dynamic" />
-        <asp:CustomValidator ID="cvClassSize" runat="server" ControlToValidate="tbClassSize" ErrorMessage="團體課程人數必須大於 1" OnServerValidate="cvClassSize_ServerValidate" ForeColor="Red" Display="Dynamic" ValidationGroup="vg1" />
+        <asp:CustomValidator ID="cvClassSize" runat="server" ControlToValidate="tbClassSize" ErrorMessage="團體課程人數必須大於 1" OnServerValidate="cvClassSize_ServerValidate" ForeColor="Red" Display="Dynamic"/>
 
         <br />
         <br />
@@ -92,7 +97,7 @@
         <br />
         <asp:Label ID="lblCourseFee" runat="server" Text="課程費用:"></asp:Label>
         <asp:TextBox ID="tbCourseFee" runat="server"></asp:TextBox>
-        <asp:RequiredFieldValidator ID="rfvCourseFee" runat="server" ControlToValidate="tbCourseFee" ErrorMessage="課程費用不得為空" ForeColor="Red" Display="Dynamic" ValidationGroup="vg1" />
+        <asp:RequiredFieldValidator ID="rfvCourseFee" runat="server" ControlToValidate="tbCourseFee" ErrorMessage="課程費用不得為空" ForeColor="Red" Display="Dynamic" />
         <br />
         <br />
         <asp:Label ID="lblRequiredEquipment" runat="server" Text="所需設備:"></asp:Label>
@@ -103,56 +108,6 @@
         <asp:FileUpload ID="fuCourseImage" runat="server" />
         <br />
         <br />
-        <asp:Button ID="btnAddCourse" runat="server" Text="新增課程" OnClick="btnAddCourse_Click" ValidationGroup="vg1" />
+        <asp:Button ID="btnAddCourse" runat="server" Text="新增課程" OnClick="btnAddCourse_Click" />
     </asp:Panel>
-
-        <asp:Panel ID="ClassPanel" runat="server" Visible="false" CssClass="modal" tabindex="-1" role="dialog" aria-labelledby="ClassModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ClassModalLabel">詳細資訊</h5>
-            </div>
-            <div class="modal-body">
-                <asp:Label runat="server">課程名稱：</asp:Label>
-                <asp:TextBox ID="detailName" runat="server"></asp:TextBox>
-                <br/>
-                <asp:Image ID="img_Course" runat="server" Height="250px" Width="300px" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),15) %>' />
-
-                <asp:FileUpload ID="FileUpload1" runat="server" />
-
-                <br/>
-                <asp:Label runat="server">課程類型：</asp:Label>
-                <asp:DropDownList ID="detailType" runat="server">
-                </asp:DropDownList>
-                <br/>
-                <asp:Label runat="server">課程時間：</asp:Label>
-                <asp:TextBox ID="detailTime" runat="server"></asp:TextBox>
-                <span>分鐘</span>
-                <br/>
-                <asp:Label runat="server">上課人數：</asp:Label>
-                <asp:TextBox ID="detailpeople" runat="server"></asp:TextBox>
-                <span>人</span>
-                <br/>
-                <asp:Label runat="server">課程費用：</asp:Label>
-                <asp:TextBox ID="detailmoney" runat="server"></asp:TextBox>
-                <br/>
-                <asp:Label runat="server">所需設備：</asp:Label>
-                <asp:TextBox ID="detailitem" runat="server"></asp:TextBox>
-                <br/>
-                <asp:Label runat="server">上課地點：</asp:Label>
-                <asp:TextBox ID="detailplace" runat="server"></asp:TextBox>
-                <br/>
-                <asp:Label runat="server">課程介紹：</asp:Label>
-                <asp:TextBox ID="detailintro" runat="server"></asp:TextBox>
-                <br/>
-        
-            <div class="modal-footer">
-                <asp:Button ID="Class_save" runat="server" Text="更新" OnClick="Class_save_Click" />
-                <asp:Button ID="Class_cancel" runat="server" Text="取消" OnClick="Class_cancel_Click" />
-                <asp:Button ID="Class_delete" runat="server" Text="刪除" OnClick="Class_delete_Click" />
-            </div>
-        </div>
-    </div>
-</div>
-</asp:Panel>
 </asp:Content>
