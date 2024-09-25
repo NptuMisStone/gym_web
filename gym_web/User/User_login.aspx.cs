@@ -22,14 +22,10 @@ public partial class User_User_login : System.Web.UI.Page
                 Swal.fire({
                 icon: ""error"",
                 title: ""登入失敗"",
-                text: '請輸入帳號密碼',
+                text: '帳號或密碼錯誤',
                 showConfirmButton: false,
                 timer: 1500
                 });
-
-                setTimeout(function () {
-                window.location.href = '../page/Home.aspx';
-                }, 1500);
                 </script>";
 
             Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);

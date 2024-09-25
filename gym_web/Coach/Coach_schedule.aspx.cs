@@ -12,13 +12,15 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Diagnostics;
 using System.Globalization;
+using System.Collections;
+using System.Web.UI.WebControls.WebParts;
 public partial class Coach_Coach_schedule : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
 
     public static string Coach_id;
-    public static int Course_time;
-    public static string Course_id, Course_starttime, Course_endtime, Course_week;
+    public static int Course_time,NewCourse_time;
+    public static string Course_id, Course_starttime, Course_endtime, Course_week, Schedule_id, NewStarttime, NewEndtime, NewCourse_id;
     public static DateTime Course_date;
     private const string SelectedDatesKey = "SelectedDates";
     public static string tbCourseWeek;
@@ -26,36 +28,18 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         Coach_id = Convert.ToString(Session["Coach_id"]);
-        if (Session["Coach_id"] == null)
+        //驗證教練是否登入的類別函數
+        CoachHelper.CheckLogin(this);
+
+        if (!IsPostBack)
         {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../Coach/Coach_login.aspx';
-                  }
-                });
-                </script>";
-
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+            BindCourse();
+            ClearCalendar();
+            UpdateSelectedDatesLabel();
+            txtDate.Text = DateTime.Today.ToString();
+            BindCourseData();
         }
-        else
-        {
-            if (!IsPostBack)
-            {
-                BindCourse();
-                ClearCalendar();
-                UpdateSelectedDatesLabel();
-                txtDate.Text = DateTime.Today.ToString();
-                BindCourseData();
-            }
-            Calendar1.DayRender += new DayRenderEventHandler(Calendar1_DayRender);
-
-
-        }
+        
     }
     private void BindCourse()
     {
@@ -63,7 +47,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string sql = "Select 課程編號,課程名稱,課程類型,課程時間長度,上課人數,上課地點,課程費用,課程圖片 From 健身教練課程 Where 健身教練編號=@CoachID ";
+                string sql = "Select * From 健身教練課程 Where 健身教練編號=@CoachID ";
                 connection.Open();
                 SqlCommand command = new SqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@CoachID", Coach_id);
@@ -71,6 +55,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                 SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
                 gv_course.DataSource = dataReader;
                 gv_course.DataBind();
+                connection.Close();
             }
         }
         catch { }
@@ -89,8 +74,6 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             int coursetime = int.Parse(row.Cells[3].Text);
             Course_time = coursetime;
             Course_id = row.Cells[0].Text;
-
-
         }
     }
 
@@ -127,10 +110,9 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         }
         else
         {
-            return "img/team-1.jpg"; // 替代圖片的路徑
+            return "img/null.png"; // 替代圖片的路徑
         }
     }
-
     protected void btnCancel_Click(object sender, EventArgs e)
     {
         tbCourseName.Text = string.Empty;
@@ -200,7 +182,6 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                 {
                     command.Connection = connection;
 
-                    // 遍历 selectedDates 列表
                     foreach (DateTime date in selectedDates)
                     {
                         Course_date = date;
@@ -209,8 +190,8 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                         tbCourseWeek = dayOfWeek;
                         Course_week = tbCourseWeek;
 
-                        string query = "insert into 健身教練課表 (課程編號, 日期, 開始時間, 結束時間, 星期幾)" +
-                                       "values (@course_id, @course_date, @course_starttime, @course_endtime, @course_week)";
+                        string query = "insert into 健身教練課表 (課程編號, 日期, 開始時間, 結束時間, 星期幾, 預約人數 )" +
+                                       "values (@course_id, @course_date, @course_starttime, @course_endtime, @course_week, @ap_people)";
                         command.CommandText = query;
                         command.Parameters.Clear();
                         command.Parameters.AddWithValue("@course_id", Course_id);
@@ -218,7 +199,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                         command.Parameters.AddWithValue("@course_starttime", Course_starttime);
                         command.Parameters.AddWithValue("@course_endtime", Course_endtime);
                         command.Parameters.AddWithValue("@course_week", Course_week);
-
+                        command.Parameters.AddWithValue("@ap_people", 0);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -231,6 +212,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             ClearCalendar();
             UpdateSelectedDatesLabel();
             arrange_date.Visible = false;
+            txtDate.Text = DateTime.Today.ToString();
             BindCourseData();
             string script = @"<script>
                             Swal.fire({
@@ -303,10 +285,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         // 清除所有已选择的日期样式
         Calendar1.SelectedDates.Clear();
     }
+
     private List<DateTime> GetSelectedDates()
     {
-        var dates = Session[SelectedDatesKey] as List<DateTime>;
-        if (dates != null)
+        if (Session[SelectedDatesKey] is List<DateTime> dates)
         {
             return dates;
         }
@@ -341,10 +323,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             }
         }
     }
+
     protected void tbCourseStartTime_TextChanged(object sender, EventArgs e)
     {
-        DateTime startDateTime;
-        if (DateTime.TryParse(tbCourseStartTime.Text, out startDateTime))
+        if (DateTime.TryParse(tbCourseStartTime.Text, out DateTime startDateTime))
         {
             TimeSpan courseDuration = TimeSpan.FromMinutes(Course_time);
 
@@ -352,7 +334,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
 
             Course_starttime = startDateTime.ToString("HH:mm").Trim();
             Course_endtime = endDateTime.ToString("HH:mm").Trim();
-            var cultureInfo = new CultureInfo("en-US");
+            var cultureInfo = new System.Globalization.CultureInfo("en-US");
             tbCourseEndTime.Text = endDateTime.ToString("tt hh:mm", cultureInfo);
         }
     }
@@ -366,8 +348,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         DateTime selectedDate;
         if (DateTime.TryParse(txtDate.Text, out selectedDate))
         {
-            DateTime startOfWeek = selectedDate.AddDays(-(int)selectedDate.DayOfWeek + 1);
-            DateTime endOfWeek = startOfWeek.AddDays(6);
+            DayOfWeek dayOfWeek = selectedDate.DayOfWeek;
+            int newday = dayOfWeek == DayOfWeek.Sunday ? -6 : -(int)dayOfWeek + 1;//如果是星期日設-6，不是的話依照星期幾+1(向前移動幾天得到星期一)
+            DateTime startOfWeek = selectedDate.AddDays(newday);  // 星期一開始
+            DateTime endOfWeek = startOfWeek.AddDays(6);  // 星期日结束
             lb1date.Text = startOfWeek.ToString("yyyy/MM/dd") + "~" + endOfWeek.ToString("yyyy/MM/dd");
             string query = @"SELECT * FROM [健身教練課表課程合併]
                          WHERE [日期] BETWEEN @StartOfWeek AND @EndOfWeek 
@@ -385,7 +369,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                         cmd.Parameters.AddWithValue("@Coach_id", Coach_id);
                         cmd.Parameters.AddWithValue("@StartOfWeek", startOfWeek);
                         cmd.Parameters.AddWithValue("@EndOfWeek", endOfWeek);
-                        cmd.Parameters.AddWithValue("week", week);
+                        cmd.Parameters.AddWithValue("@week", week);
                         conn.Open();
                         SqlDataReader reader = cmd.ExecuteReader();
                         switch (week)
@@ -433,6 +417,280 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             {
                 lblMessage.Text = "無課表";
             }
+        }
+    }
+
+    protected void RepeaterWeekInfo_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "ShowId")
+        {
+            // 取得課表編號
+            Schedule_id = e.CommandArgument.ToString();
+            showSchedule();
+        }
+    }
+    private void showSchedule()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + SchedulePanel.ClientID + "').modal('show');", true);
+        SchedulePanel.Visible = true;
+        string qry = @"SELECT * FROM [健身教練課表課程合併] WHERE [課表編號]=@Schedule_id ";
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand command = new SqlCommand(qry, conn))
+            {
+                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                conn.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    NewCourse_id = reader["課程編號"].ToString();
+                    var cultureInfo = new System.Globalization.CultureInfo("en-US");
+                    NewCourse_time =int.Parse(reader["課程時間長度"].ToString());
+                    detaildate.Text = Convert.ToDateTime(reader["日期"]).ToString("yyyy/MM/dd");
+                    detailstarttime.Text = Convert.ToDateTime(reader["開始時間"]).ToString("HH:mm");
+                    detailendtime.Text= Convert.ToDateTime(reader["結束時間"]).ToString("tt hh:mm", cultureInfo);
+                    BindDropDownList();
+                    BindDetailCourse();
+                }
+
+                conn.Close();
+            }
+        }
+    }
+
+    protected void Schedule_delete_Click(object sender, EventArgs e)
+    {
+        string qry = @"DELETE FROM 健身教練課表 WHERE 課表編號 =@Schedule_id ";
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand command = new SqlCommand(qry, conn))
+            {
+                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                conn.Open();
+                command.ExecuteReader();
+                conn.Close();
+                txtDate.Text = DateTime.Today.ToString();
+                BindCourseData();
+                SchedulePanel.Visible = false;
+                string script = @"<script>
+                            Swal.fire({
+                            icon: 'error',
+                            title: '刪除成功',
+                            text: '班表已刪除',
+                            showConfirmButton: false,
+                            timer: 1500
+                            });
+                          </script>";
+
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+
+            }
+        }
+        
+    }
+
+    protected void Schedule_cancel_Click(object sender, EventArgs e)
+    {
+        SchedulePanel.Visible = false;
+    }
+
+    protected void Schedule_save_Click(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(detaildate.Text))
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string queryCheck = @"
+                SELECT 開始時間, 結束時間 
+                FROM [健身教練課表課程-判斷課程衝突用] 
+                WHERE 日期 = @course_date
+                AND 健身教練編號 = @coach_id 
+                AND 課表編號 != @schedule_id";
+
+                using (SqlCommand checkCommand = new SqlCommand(queryCheck, conn))
+                {
+                    checkCommand.Parameters.AddWithValue("@course_date", detaildate.Text);
+                    checkCommand.Parameters.AddWithValue("@coach_id", Coach_id);
+                    checkCommand.Parameters.AddWithValue("@schedule_id", Schedule_id);
+                    using (SqlDataReader reader = checkCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            TimeSpan scheduledStartTime = TimeSpan.Parse(reader["開始時間"].ToString());
+                            TimeSpan scheduledEndTime = TimeSpan.Parse(reader["結束時間"].ToString());
+                            
+                            TimeSpan selectedStartTime = TimeSpan.Parse(NewStarttime);
+                            TimeSpan selectedEndTime = TimeSpan.Parse(NewEndtime);
+                            if ((selectedStartTime >= scheduledStartTime && selectedStartTime < scheduledEndTime) ||
+                                (selectedEndTime > scheduledStartTime && selectedEndTime <= scheduledEndTime) ||
+                                (selectedStartTime <= scheduledStartTime && selectedEndTime >= scheduledEndTime))
+                            {
+                                string script2 = @"<script>
+                                        Swal.fire({
+                                        icon: 'error',
+                                        title: '時間衝突',
+                                        text: '所選時間與現有時間重疊',
+                                        confirmButtonText: '確定'
+                                        });
+                                      </script>";
+
+                                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script2, false);
+                                return;
+                            }
+                            
+                        }
+                    }
+                }
+                string updateQuery = "UPDATE [健身教練課表] SET " +
+                                     " [日期] = @SchDate, [星期幾] = @SchWeek, " +
+                                     "[開始時間] = @SchSTime, [結束時間] = @SchETime, " +
+                                     "[課程編號] = @Course_id " +
+                                     "WHERE [課表編號] = @Schedule_id";
+                
+                using (SqlCommand command = new SqlCommand(updateQuery, conn))
+                {
+                    DateTime sdate;
+                    if (DateTime.TryParse(detaildate.Text, out sdate))
+                    {
+                        CultureInfo cultureInfo = new CultureInfo("zh-TW");
+                        string detailweek = sdate.ToString("dddd", cultureInfo);
+                        command.Parameters.AddWithValue("@SchDate", detaildate.Text);
+                        command.Parameters.AddWithValue("@SchWeek", detailweek);
+                        command.Parameters.AddWithValue("@SchSTime", NewStarttime);
+                        command.Parameters.AddWithValue("@SchETime", NewEndtime);
+                        command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                        command.Parameters.AddWithValue("@Course_id", coursedata.SelectedValue);
+                        command.ExecuteReader();
+                        conn.Close();
+                        txtDate.Text = DateTime.Today.ToString();
+                        BindCourseData();
+                        SchedulePanel.Visible = false;
+                        string script = @"<script>
+                        Swal.fire({
+                        icon: 'success',
+                        title: '更新成功',
+                        text: '班表已更新',
+                        showConfirmButton: false,
+                        timer: 1500
+                        });
+                        </script>";
+
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+
+                    }
+
+                }
+            }
+        }
+        else 
+        {
+            string script = @"<script>
+                            Swal.fire({
+                            icon: 'error',
+                            title: '請選擇日期',
+                            confirmButtonText: '確定'
+                            });
+                          </script>";
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+        }
+
+
+    }
+
+    protected void detailstarttime_TextChanged(object sender, EventArgs e)
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + SchedulePanel.ClientID + "').modal('show');", true);
+        changetime();
+    }
+    private void changetime()
+    {
+        if (DateTime.TryParse(detailstarttime.Text, out DateTime startTime))
+        {
+            TimeSpan courseDuration = TimeSpan.FromMinutes(NewCourse_time);
+
+            DateTime endTime = startTime.Add(courseDuration);
+
+            NewStarttime = startTime.ToString("HH:mm").Trim();
+            NewEndtime = endTime.ToString("HH:mm").Trim();
+            var cultureInfo = new System.Globalization.CultureInfo("en-US");
+            detailendtime.Text = endTime.ToString("tt hh:mm", cultureInfo);
+        }
+    }
+    private void BindDropDownList()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT 課程編號 , 課程名稱 FROM 健身教練課程 WHERE 健身教練編號=@Coach_id";
+            SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@Coach_id", Coach_id);
+            conn.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            
+            coursedata.DataSource = reader;
+            coursedata.DataTextField = "課程名稱";  // 要顯示文字
+            coursedata.DataValueField = "課程編號";  // 值
+            coursedata.DataBind();
+        }
+        coursedata.SelectedValue = NewCourse_id;
+    }
+    private void BindDetailCourse() 
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM 健身教練課程 WHERE 課程編號=@Course_id";
+            SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@Course_id", coursedata.SelectedValue);
+            conn.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                if (!reader.IsDBNull(reader.GetOrdinal("課程圖片")))
+                {
+                    // 將 VARBINARY 圖片資料轉換為 base64 編碼字串
+                    byte[] imageData = (byte[])reader["課程圖片"];
+                    string base64Image = Convert.ToBase64String(imageData);
+                    // 將 base64 編碼的圖片字串設定為 <asp:Image> 控制項的來源
+                    img_Course.ImageUrl = "data:image;base64," + base64Image;
+                }
+                else
+                {
+                    // 如果沒有圖片，使用預設圖片
+                    /*img_de.ImageUrl = "img/team-1.jpg";*/  // 替換為你的預設圖片路徑
+                }
+                Gettype();
+                detailcoursetime.Text = reader["課程時間長度"].ToString();
+                detailcoursepeople.Text = reader["上課人數"].ToString();
+                detailcoursemoney.Text = Convert.ToDouble(reader["課程費用"]).ToString("F0");
+                detailcourseitem.Text = reader["所需設備"].ToString();
+                detailcourseplace.Text = reader["地點名稱"].ToString();
+                detailcourseintro.Text = reader["課程內容介紹"].ToString();
+                NewCourse_time =int.Parse(reader["課程時間長度"].ToString().Trim());
+                changetime();
+            }
+            conn.Close();
+        }
+    }
+    protected void coursedata_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + SchedulePanel.ClientID + "').modal('show');", true);
+        BindDetailCourse();
+    }
+    private void Gettype()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM 健身教練課表課程合併 WHERE 課程編號=@Course_id";
+            SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@Course_id", coursedata.SelectedValue);
+            conn.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                detailcoursetype.Text = reader["分類名稱"].ToString();
+            } 
+            conn.Close ();
         }
     }
 }

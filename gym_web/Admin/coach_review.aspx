@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>設計師註冊核准</title>
+    <title>健身教練核准</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
     <style>

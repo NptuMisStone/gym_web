@@ -212,14 +212,16 @@ public partial class User_User_info : System.Web.UI.Page
         }
         else
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (IsValid)
             {
-                string updateQuery = "UPDATE 使用者資料 SET " +
-                                     "[使用者密碼]=@password " +
-                                     "WHERE [使用者編號] = @UserId";
-                if (!CheckOldPwd(editedPassword))
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string script = @"<script>
+                    string updateQuery = "UPDATE 使用者資料 SET " +
+                                         "[使用者密碼]=@password " +
+                                         "WHERE [使用者編號] = @UserId";
+                    if (!CheckOldPwd(editedPassword))
+                    {
+                        string script = @"<script>
                     Swal.fire({
                     icon: ""error"",
                     title: ""更新失敗"",
@@ -229,22 +231,22 @@ public partial class User_User_info : System.Web.UI.Page
                     });
                     </script>";
 
-                    Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
-                }
-                else
-                {
-                    using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                    }
+                    else
                     {
-                        command.Parameters.AddWithValue("@UserId", userId);
-                        command.Parameters.AddWithValue("@password", editednewPassword);
-
-                        connection.Open();
-                        int rowsAffected = command.ExecuteNonQuery();
-                        connection.Close();
-
-                        if (rowsAffected > 0)
+                        using (SqlCommand command = new SqlCommand(updateQuery, connection))
                         {
-                            string script = @"<script>
+                            command.Parameters.AddWithValue("@UserId", userId);
+                            command.Parameters.AddWithValue("@password", editednewPassword);
+
+                            connection.Open();
+                            int rowsAffected = command.ExecuteNonQuery();
+                            connection.Close();
+
+                            if (rowsAffected > 0)
+                            {
+                                string script = @"<script>
                             Swal.fire({
                             icon: ""success"",
                             title: ""更新成功"",
@@ -254,10 +256,25 @@ public partial class User_User_info : System.Web.UI.Page
                             });
                             </script>";
 
-                            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                string script = @"<script>
+                            Swal.fire({
+                            icon: ""error"",
+                            title: ""錯誤"",
+                            text: '密碼重設失敗',
+                            showConfirmButton: false,
+                            timer: 1500
+                            });
+                            </script>";
+
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
             }
         }
     }
@@ -338,5 +355,12 @@ public partial class User_User_info : System.Web.UI.Page
             }
         }
         DisplayUserImage();
+    }
+    protected void CustomValidator1_ServerValidate(object source, ServerValidateEventArgs args)
+    {
+        string password = Txtnewpassword.Text;
+        string account = lb_account.Text;
+
+        args.IsValid = password.Length >= 6 && password != account;
     }
 }

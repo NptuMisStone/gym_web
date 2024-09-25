@@ -1,307 +1,340 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage.master" AutoEventWireup="true" CodeFile="coach_detail.aspx.cs" Inherits="page_coach_detail" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="coach_detail.aspx.cs" Inherits="page_coach_detail" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-    <center>
-    <table style="width: 1000px; margin-top: 20px;">
-        <tr>
-            <td rowspan="5" style="width: 212px; text-align: center;">
-                <asp:Image ID="img_de" runat="server" Height="150px" Width="150px" CssClass="circular-image" Style="object-fit:cover;" />
-                <br />
-                <asp:Image ID="Image3" runat="server" Height="30px" Width="30px" ImageUrl="img/star_click.png" />
-                <asp:Label ID="lb_stars" runat="server" Text='<%# Eval("平均評分") %>' Font-Size="Large"></asp:Label>
-                <br />
-                <br />
-                <asp:Button ID="btn_ap" runat="server" class="button2222" Text="立即預約" Height="40px"  Width="120px" Font-Size="Large" OnClick="btn_ap_Click" />
-            </td>
-            <td style="height: 32px; text-align: left;">
-                <asp:Label ID="lb_dename" runat="server" Text='<%# Eval("姓名") %>' Font-Bold="True" Font-Size="X-Large"></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 40px; text-align: left;">
-                <asp:Label ID="lb_de_intr" runat="server" Text='<%# Eval("介紹") %>'></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 40px; text-align: left;">
-                <asp:Image ID="Image4" runat="server" Height="27px" Width="27px" ImageUrl="img/shop.png" />
-                <asp:Label ID="lb_shop" runat="server" Text='<%# Eval("服務店家") %>'></asp:Label>
-                &nbsp;&nbsp;
-            <asp:Label ID="lb_address" runat="server" Text='<%# Eval("服務地址") %>'></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 33px; text-align: left;">
-                <asp:Image ID="Image1" runat="server" Height="27px" Width="27px" ImageUrl="img/call.png" />
-                <asp:Label ID="lb_phone" runat="server" Text='<%# Eval("聯絡電話") %>'></asp:Label>&nbsp;<asp:Image ID="Image5" runat="server" Height="27px" Width="27px" ImageUrl="img/line.png" />
-                <asp:Label ID="lb_line" runat="server" Text='<%# Eval("lineid") %>'></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 37px; text-align: left;">
-                <asp:Label ID="lb_services" runat="server" Text='<%# Eval("服務項目") %>'></asp:Label>
-            </td>
-        </tr>
-    </table>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <script type="text/javascript">
+        function scrollToReviewSection() {
+            var reviewSection = document.getElementById('reviewSection'); // 確保 ID 匹配
+            if (reviewSection) {
+                reviewSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
 
-    <table style="width: 1000px; margin-top: 50px; margin-left: 100px;">
-        <tr>
-            <td style="height: 62px; text-align: left;">
-                <asp:Label ID="Label7" runat="server" Text="作品集" Font-Bold="True" Font-Size="XX-Large"></asp:Label></td>
-        </tr>
-        <tr>
-            <td style="text-align: left">
-                <asp:ListView ID="lv_works" runat="server">
-                    <ItemTemplate>
-                        <asp:ImageButton ID="ImageButton1" runat="server" CssClass="circular-commend" Width="130px" Height="170px"  CommandName="work_de" CommandArgument='<%# Eval("作品編號") + "|" + Eval("設計師編號") %>' Style="margin-right: 15px; object-fit:cover;"/>
-                    </ItemTemplate>
-                </asp:ListView>
-                <br />
 
-            </td>
-        </tr>
-        <tr>
-            <td style="margin-left: 150px;">
-                <div style="margin-left: 400px;">
-                    <asp:DataPager ID="DataPager1" runat="server" PagedControlID="lv_works" PageSize="5">
-                        <Fields>
-                            <asp:NumericPagerField NumericButtonCssClass="datapagerStyle" />
-                        </Fields>
-                    </asp:DataPager>
+    <style>
+        .progress-container div {
+            width: 0%;
+            height: 20px;
+            background-color: #ffcc00;
+            transition: width 0.5s;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .btn-edit {
+            background-color: pink;
+        }
+
+        .btn-editclick {
+            background-color: darkred;
+        }
+
+        .datapagerStyle {
+            color: gray;
+        }
+    </style>
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 130px">
+        </div>
+    </div>
+    <!-- Page Header End -->
+    <asp:Repeater ID="rp_coach" runat="server" OnItemDataBound="rp_coach_ItemDataBound">
+        <ItemTemplate>
+            <div class="container pt-5">
+                <div class="row">
+                    <div class="col-md-6 pb-5 d-flex flex-column align-items-center">
+                        <asp:Image ID="img_coach" runat="server" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>'
+                            CssClass="rounded-circle p-1"
+                            Style="width: 400px; height: 400px; border: 5px solid #000; object-fit: cover;"
+                            draggable="false" />
+                    </div>
+                    <div class="col-md-6 pb-5">
+                        <h2 class="display-4 font-weight-bold mb-4"><%# Eval("健身教練姓名") %> 教練</h2>
+                        <p><%# Eval("健身教練介紹") %></p>
+                        <!-- 健身教練性別 -->
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="img/gender-fluid.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                            <div style="display: flex; flex-direction: column; justify-content: center;">
+                                <h5 class="font-weight-bold mb-0" style="white-space: nowrap;"><%# GetGenderDescription(Eval("健身教練性別")) %></h5>
+                            </div>
+                        </div>
+
+                        <!-- 健身教練電話 -->
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="img/telephone.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                            <div style="display: flex; flex-direction: column; justify-content: center;">
+                                <h5 class="font-weight-bold mb-0" style="white-space: nowrap;"><%# Eval("健身教練電話") %></h5>
+                            </div>
+                        </div>
+
+                        <!-- 健身教練郵件 -->
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="img/email.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                            <div style="display: flex; flex-direction: column; justify-content: center;">
+                                <h5 class="font-weight-bold mb-0" style="white-space: nowrap;"><%# Eval("健身教練郵件") %></h5>
+                            </div>
+                        </div>
+
+                        <!-- 健身教練身份 -->
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="img/identification.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                            <div style="display: flex; flex-direction: column; justify-content: center;">
+                                <h5 class="font-weight-bold mb-0" style="white-space: nowrap;"><%# Eval("註冊類型") %></h5>
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="Panel_store" runat="server">
+                            <div class="row py-3">
+                                <!-- 服務地點名稱 -->
+                                <div class="col-sm-6 col-md-3 mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="img/home.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <h5 class="font-weight-bold mb-0" style="white-space: nowrap;">服務店家</h5>
+                                            <p class="mb-0"><%# Eval("服務地點名稱") %></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 服務地點地址 -->
+                                <div class="col-sm-6 col-md-3 mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="img/maps.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <h5 class="font-weight-bold mb-0" style="white-space: nowrap;">店家地址</h5>
+                                            <p class="mb-0"><%# Eval("服務地點地址") %></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 服務地點電話 -->
+                                <div class="col-sm-6 col-md-3 mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="img/telephone.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <h5 class="font-weight-bold mb-0" style="white-space: nowrap;">店家電話</h5>
+                                            <p class="mb-0" style="white-space: normal; word-wrap: break-word; word-break: break-all;">
+                                                <%# Eval("服務地點電話") %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 服務地點郵件 -->
+                                <div class="col-sm-6 col-md-3 mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="img/email.png" class="mr-2" style="height: 30px; flex-shrink: 0;" draggable="false">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <h5 class="font-weight-bold mb-0" style="white-space: nowrap;">店家郵件</h5>
+                                            <p class="mb-0" style="white-space: normal; word-wrap: break-word; word-break: break-all;">
+                                                <%# Eval("服務地點郵件") %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
                 </div>
-            </td>
-        </tr>
-    </table>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
 
-    <table style="width: 1000px; height: 222px; margin-top: 50px; margin-left: 100px;">
-        <tr>
-            <td style="text-align: left; height: 60px;" colspan="3">
-                <asp:Label ID="Label8" runat="server" Text="評分與評論" Font-Bold="True" Font-Size="XX-Large"></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right; width: 282px; padding-right: 20px;" rowspan="5">
-                <asp:Image ID="Image6" runat="server" Height="50px" Width="50px" ImageUrl="img/star_click.png" />
-                &nbsp;&nbsp;&nbsp;
+    <div class="col-md-12 bg-secondary d-flex align-items-center justify-content-center" style="min-height: 100px;">
+        <!-- 教練課程標題，直接居中對齊 -->
+        <h2 class="font-weight-bold mb-0" style="color: white; white-space: nowrap;">教練課程</h2>
+    </div>
+    <!-- 教練尚未安排課程訊息 -->
+    <div class="d-flex align-items-center justify-content-center py-3 w-100">
+        <asp:Label ID="lb_noClasses" runat="server" Text="教練尚未安排課程" ForeColor="Red" Font-Bold="True" Visible="False" Font-Size="36px"></asp:Label>
+    </div>
+    <!-- 課程列表 -->
+    <div class="container feature pt-5 w-100">
+        <div class="row">
+            <asp:ListView ID="lv_classes" runat="server" OnItemCommand="lv_classes_ItemCommand">
+                <LayoutTemplate>
+                    <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+                </LayoutTemplate>
+                <ItemTemplate>
+                    <!-- 使用col-md-6控制每個課程寬度為6格 (半行寬) -->
+                    <div class="col-md-6 mb-4" style="display: flex; justify-content: center;">
+                        <!-- 調整 linkbtn 的 style 確保不會影響內部元素 -->
+                        <div style="width: 100%; transition: background-color 0.3s ease; border: 2px solid black; border-radius: 8px; overflow: hidden;"
+                            onmouseover="this.style.backgroundColor='#f0f0f0'"
+                            onmouseout="this.style.backgroundColor=''">
+                            <!-- 將背景色過渡效果與懸停效果直接加在 style 和事件屬性中 -->
+                            <asp:LinkButton ID="lb_class" runat="server" CommandName="ViewDetails" CommandArgument='<%# Eval("課程編號") %>'
+                                CssClass="unstyled-link"
+                                Style="display: block; text-align: left; text-decoration: none; cursor: pointer;">
+                                <div class="row align-items-center" style="padding: 20px;">
+                                    <div class="col-sm-6" style="padding: 10px 15px;">
+                                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
+                                        <%# Convert.ToInt32(Eval("上課人數")) == 1 ? 
+                                                "<i style='font-size:20px; font-weight: bold;'>一對一</i>" : 
+                                                "<i style='font-size:20px; font-weight: bold;'>團體</i>" %>
+                                    </div>
+                                    <div class="col-sm-6" style="padding: 10px 15px;">
+                                        <h4 class="font-weight-bold"><%# Eval("課程名稱") %></h4>
+                                        <h4 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h4>
+                                        <p><%# Eval("課程內容介紹") %></p>
+                                        <p><%# "人數：" + Eval("上課人數") + "人"%></p>
+                                        <p><%# "時間：" + Eval("課程時間長度") + "分鐘"%></p>
+                                        <p><%# "地點：" + Eval("顯示地點名稱")%></p>
+                                        <p><%# "所需設備：" + Eval("所需設備")%></p>
+                                    </div>
+                                </div>
+                            </asp:LinkButton>
+                        </div>
+                    </div>
+                </ItemTemplate>
+            </asp:ListView>
+        </div>
+    </div>
+
+
+    <div id="reviewSection" class="col-md-12 bg-secondary d-flex align-items-center justify-content-center" style="min-height: 100px;">
+        <!--評分與評論標題，直接居中對齊 -->
+        <h2 class="font-weight-bold mb-0" style="color: white; white-space: nowrap;">評分與評論</h2>
+    </div>
+
+    <center>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; padding-top: 50px; max-width: 1000px; margin: 0 auto;">
+
+            <!-- 評分區塊 -->
+            <div style="display: flex; flex-direction: column; align-items: center; padding-right: 20px;">
+                <asp:Image ID="Image6" runat="server" Height="50px" Width="50px" ImageUrl="img/star_click.png" draggable="false" />
                 <br />
-                <asp:Label ID="lb_score" runat="server" Text='<%# Eval("平均評分") %>' Font-Size="X-Large" ForeColor="#FFC000" Font-Bold="True"></asp:Label><br />
+                <asp:Label ID="lb_score" runat="server" Text='<%# Eval("平均評分") %>' Font-Size="X-Large" ForeColor="#FFC000" Font-Bold="True"></asp:Label>
+                <br />
                 <asp:Label ID="lb_comment_count" runat="server" Font-Bold="True" Font-Size="Medium" Text='<%# Eval("評論數量") %>' ForeColor="#FFC000"></asp:Label>
-            </td>
-            <td style="text-align: left; width: 16px; height: 32px;">5</td>
-            <td style="text-align: left; height: 32px;">
-                
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: left; width: 16px; height: 32px;">4</td>
-            <td style="text-align: left; height: 32px;">
-                
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: left; width: 16px; height: 32px;">3</td>
-            <td style="text-align: left; height: 32px;">
-                
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: left; width: 16px; height: 32px;">2</td>
-            <td style="text-align: left; height: 32px;">
-                
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: left; width: 16px; height: 32px;">1</td>
-            <td style="text-align: left; height: 32px;">
-                
-            </td>
-        </tr>
-    </table>
+            </div>
 
-    <table style="width: 600px; margin-left: 480px; margin-right: 800px; margin-top: 10px;">
-        <tr>
+            <!-- 星級評分區塊 -->
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+                <!-- 每個評分條目 -->
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px; text-align: right;">5</span>
+                    <div class="progress-container" style="flex: 1; margin-left: 10px;">
+                        <div id="prog_star5"></div>
+                    </div>
+                    <asp:Literal ID="litProgStar5" runat="server" />
+                </div>
 
-            <td style="text-align: right; vertical-align: bottom; margin-bottom: 30px; padding-bottom: 15px;">
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px; text-align: right;">4</span>
+                    <div class="progress-container" style="flex: 1; margin-left: 10px;">
+                        <div id="prog_star4"></div>
+                    </div>
+                    <asp:Literal ID="litProgStar4" runat="server" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px; text-align: right;">3</span>
+                    <div class="progress-container" style="flex: 1; margin-left: 10px;">
+                        <div id="prog_star3"></div>
+                    </div>
+                    <asp:Literal ID="litProgStar3" runat="server" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px; text-align: right;">2</span>
+                    <div class="progress-container" style="flex: 1; margin-left: 10px;">
+                        <div id="prog_star2"></div>
+                    </div>
+                    <asp:Literal ID="litProgStar2" runat="server" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px; text-align: right;">1</span>
+                    <div class="progress-container" style="flex: 1; margin-left: 10px;">
+                        <div id="prog_star1"></div>
+                    </div>
+                    <asp:Literal ID="litProgStar1" runat="server" />
+                </div>
+            </div>
+        </div>
+
+
+
+        <div style="max-width: 1000px; margin: 50px auto; text-align: center;">
+            <!-- 評論按鈕面板 -->
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                 <asp:Panel ID="pn_comment_btn" runat="server">
                     <asp:Label ID="Label6" runat="server" Text="排序"></asp:Label><br />
-                    <asp:Button ID="btn_my_comment" runat="server" Text="我的評論" class="btn-edit" Font-Size="Large" Height="30px" Width="100px"  />
+                    <asp:Button ID="btn_my_comment" runat="server" Text="我的評論" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_my_comment_Click" />
                     &nbsp;&nbsp;
-                <asp:Button ID="btn_new_comment" runat="server" Text="最新評分" class="btn-edit" Font-Size="Large" Height="30px" Width="100px" />
+                    <asp:Button ID="btn_new_comment" runat="server" Text="最新評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_new_comment_Click" />
                     &nbsp;&nbsp;
-                <asp:Button ID="btn_higher_comment" runat="server" Text="最高評分" class="btn-edit" Font-Size="Large" Height="30px" Width="100px" />
+                    <asp:Button ID="btn_higher_comment" runat="server" Text="最高評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_higher_comment_Click" />
                     &nbsp;&nbsp;
-                <asp:Button ID="btn_low_comment" runat="server" Text="最低評分" class="btn-edit" Font-Size="Large" Height="30px" Width="100px" />
+                    <asp:Button ID="btn_low_comment" runat="server" Text="最低評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_low_comment_Click" />
                 </asp:Panel>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: left; vertical-align: bottom;">
-                <asp:ListView ID="rp_comment" runat="server">
+            </div>
+
+
+            <!-- 評論列表 -->
+            <div style="text-align: left; margin: 0 auto;">
+                <asp:ListView ID="rp_comment" runat="server" OnItemCommand="rp_comment_ItemCommand" OnItemDeleting="rp_comment_ItemDeleting" OnPagePropertiesChanging="rp_comment_PagePropertiesChanging">
                     <ItemTemplate>
-                        <div style="border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #C9C9C9;">
-                            <div style="width: 600px;">
-                                <div style="width: 400px; display: inline-block;">
-                                    <asp:Image ID="Image2" runat="server" Height="40px" Width="40px" CssClass="circular-image"
-                                          ImageAlign="Bottom" style="object-fit:cover;" />
-                                    <asp:Label ID="Label1" runat="server" Text='<%# Eval("User_name") %>'></asp:Label>
+                        <div style="border-bottom: 1px solid #C9C9C9; padding-bottom: 20px; margin-bottom: 20px;">
+                            <!-- 用戶信息 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center;">
+                                    <asp:Image ID="Image2" runat="server" Height="50px" Width="50px" CssClass="circular-image" draggable="false"
+                                        ImageUrl='<%# GetImageUrl(Eval("使用者圖片"),20) %>' ImageAlign="Bottom" Style="object-fit: cover; border-radius: 50%; margin-right: 15px;" />
+                                    <asp:Label ID="Label1" runat="server" Text='<%# Eval("使用者姓名") %>' Font-Size="Large" Font-Bold="True"></asp:Label>
                                 </div>
-                                <asp:PlaceHolder ID="ph_user_edit" runat="server" >
-                                    <div style="width: 200px; display: inline-block; float: right;">
-                                        <asp:Button ID="Button1" runat="server" Text="修改" CssClass="button2222" Height="30px" Width="60px" CommandName="edit" CommandArgument='<%# Eval("預約編號") %>' />&nbsp;&nbsp;
-                                        <asp:Button ID="Button2" runat="server" Text="刪除" CssClass="button2222" Height="30px" Width="60px" CommandName="delete" CommandArgument='<%# Eval("預約編號") %>' /><br />
+                                <!-- 修改刪除按鈕 -->
+                                <asp:PlaceHolder ID="ph_user_edit" runat="server" Visible='<%# has_comment(Eval("評論編號"))%>'>
+                                    <div style="display: flex; gap: 15px;">
+                                        <asp:Button ID="Button1" runat="server" Text="修改" CssClass="btn btn-outline-primary px-4 py-2" CommandName="edit" CommandArgument='<%# Eval("預約編號") %>' />
+                                        <asp:Button ID="Button2" runat="server" Text="刪除" CssClass="btn btn-outline-danger px-4 py-2" CommandName="delete" CommandArgument='<%# Eval("預約編號") %>' />
                                     </div>
                                 </asp:PlaceHolder>
                             </div>
-                            <asp:Image ID="Image7" runat="server" Height="20" Width="120" />
-                            <asp:Label ID="Label5" runat="server" Text='<%# Eval("評論日期", "{0:yyyy/MM/dd}") %>'></asp:Label>
-                            <%--                            <asp:Label ID="Label6" runat="server" Text='<%# ((TimeSpan)Eval("評論時間")).ToString(@"hh\:mm") %>'></asp:Label>--%>
-                            <br />
-                            <asp:Label ID="Label13" runat="server" Text='<%# "預約項目："+Eval("服務項目名稱") %>' Font-Size="14px" ForeColor="#ACACAC"></asp:Label><br />
-                            <asp:Label ID="Label2" runat="server" Text='<%# Eval("評論內容") %>'></asp:Label><br />
-                            <asp:PlaceHolder ID="phDesignerReply" runat="server" >
-                                <div style="border: 0px hidden #FFCC00; background-color: #E6E3BB; border-radius: 10px; padding-left: 10px; margin-left: 5px; margin-top: 5px; padding-top: 5px; width: 560px; margin-right: 5px;">
-                                    <asp:Label ID="Label3" runat="server" Text="設計師的回覆："></asp:Label><br />
-                                    <asp:Label ID="Label4" runat="server" Text='<%# Eval("回復") %>' Width="560px" Style="display: block; word-wrap: break-word; max-width: 540px;"></asp:Label><br />
+
+                            <!-- 評分及日期 -->
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <asp:Image ID="Image7" runat="server" Height="25" Width="150" ImageUrl='<%# Getstar_img(Eval("評分"))  %>' draggable="false" />
+                                <asp:Label ID="Label5" runat="server" Text='<%# Eval("評論日期", "{0:yyyy/MM/dd}") %>' Font-Size="Large"></asp:Label>
+                            </div>
+
+                            <!-- 課程名稱及評論內容 -->
+                            <asp:Label ID="Label13" runat="server" Text='<%# "課程名稱："+Eval("課程名稱") %>' Font-Size="Large" ForeColor="#ACACAC" Style="display: block; margin-top: 15px;"></asp:Label>
+                            <asp:Label ID="Label2" runat="server" Text='<%# Eval("評論內容") %>' Font-Size="Large" Style="display: block; margin-top: 10px;"></asp:Label>
+
+                            <!-- 教練回覆 -->
+                            <asp:PlaceHolder ID="phCoachReply" runat="server" Visible='<%# Has_reply(Eval("評論編號"))%>'>
+                                <div style="background-color: #E6E3BB; border-radius: 10px; padding: 15px; margin-top: 15px;">
+                                    <asp:Label ID="Label3" runat="server" Text="健身教練的回覆：" Font-Size="Large" Font-Bold="True" Style="display: block; font-weight: bold;"></asp:Label>
+                                    <asp:Label ID="Label4" runat="server" Text='<%# Eval("回覆") %>' Font-Size="Large" Style="display: block; word-wrap: break-word;"></asp:Label>
                                 </div>
-                                <br />
                             </asp:PlaceHolder>
                         </div>
-                        <br />
                     </ItemTemplate>
                 </asp:ListView>
-                <tr>
-                <td style="text-align:center;">
+            </div>
+
+
+            <!-- 分頁控制 -->
+            <div style="margin-top: 20px;">
                 <asp:DataPager ID="DataPager2" runat="server" PagedControlID="rp_comment" PageSize="3">
                     <Fields>
                         <asp:NumericPagerField NumericButtonCssClass="datapagerStyle" />
                     </Fields>
                 </asp:DataPager>
-            </td>
-        </tr>
-    </table>
+            </div>
+        </div>
 
-
-    <table style="vertical-align: text-top; margin-top: 0px; width: 800px; text-align: left;">
-        <tr>
-            <td style="text-align: left; height: 62px;">&nbsp;</td>
-            <td style="text-align: left; height: 62px;" colspan="6">
-                <asp:Label ID="Label9" runat="server" Text="可預約時段" Font-Bold="True" Font-Size="XX-Large"></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; height: 26px; padding-top: -5px;">
-                <asp:ImageButton ID="img_btn_left" runat="server" Height="25px" ImageUrl="~/userpage/img/arrow-left.png" Width="25px" Visible="False"/>
-            </td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList1" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="1"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList>
-            </td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList2" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="2"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList3" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="3"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList4" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="4"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList5" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="5"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList6" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="6"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; vertical-align: text-top;" rowspan="7">
-                <asp:DataList ID="DataList7" runat="server">
-                    <HeaderTemplate>
-                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("Date") %>'></asp:Label><br />
-                        <asp:Label ID="Label11" runat="server" Text="7"></asp:Label><br />
-                        <br />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <asp:Label ID="Label12" runat="server" Text='<%# ((TimeSpan)Container.DataItem).ToString("hh\\:mm") %>'></asp:Label>
-                    </ItemTemplate>
-                </asp:DataList></td>
-            <td style="width: 50PX; height: 26px; padding-top: -5px;">
-                <asp:ImageButton ID="img_btn_right" runat="server" Height="25px" ImageUrl="~/userpage/img/right-arrow.png" Width="25px" />
-            </td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50PX; vertical-align: text-top; padding-top: 0px;">&nbsp;</td>
-            <td style="width: 50PX; vertical-align: text-top;">&nbsp;</td>
-        </tr>
-    </table>
-</center>
-<br />
+    </center>
+    <br />
 </asp:Content>
 

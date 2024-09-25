@@ -1,36 +1,77 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage.master" AutoEventWireup="true" CodeFile="class.aspx.cs" Inherits="page_class"   %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="class.aspx.cs" Inherits="page_class" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 25px;">
-        <h1>找課程</h1>
-        <hr style="border: 0.5px solid black; width: 80%; margin-bottom: 15px;"/>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+            <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">尋找課程</h4>
+        </div>
     </div>
-    <div style="display: flex; justify-content: center; flex-wrap: wrap;" >
-                <asp:Repeater ID="rp_class" runat="server" OnItemCommand="rp_class_ItemCommand">
-            <ItemTemplate>
-                <%# (Container.ItemIndex + 1) % 4 == 1 ? "<div class='row horizontal-row'>" : "" %>
-                <div class="card repeater-de" style="display: inline-block; width: 200px; height: 300px; text-align: center; margin-bottom: 5px;">
-                    <asp:Image ID="Image1" runat="server"  ImageUrl='<%# GetImageUrl(Eval("課程圖片"),15) %>' Width="150px"  /><br>
-                    <asp:Label ID="Label1" runat="server" CssClass="mt-4" Text='<%# Eval("課程名稱") %>' Font-Size="Larger" Font-Bold="True"></asp:Label><br>
-                    <asp:Label ID="Label4" runat="server" CssClass="mt-4" Text='<%# Eval("健身教練姓名") %>'></asp:Label><br>
-                    <asp:Label ID="Label2" runat="server" CssClass="mb-0" Text='<%# "人數：" +  Eval("上課人數") %>' Font-Size="Small"></asp:Label><br />
-                    <asp:Label ID="Label3" runat="server" CssClass="mb-0" Text='<%# "$" + Convert.ToDouble(Eval("課程費用")).ToString("F0") %>' Font-Size="Small"></asp:Label><br />
-                                                                                        <%--↑去除小數點--%>
-                    <asp:Label ID="Label5" runat="server"  Text='<%# "時段：" +  Eval("日期 ","{0:yyyy/MM/dd}")  %>' Font-Size="Small"></asp:Label><br>
-                    <asp:Label ID="Label6" runat="server"  Text='<%# "(" + Eval("開始時間") %>' Font-Size="Small"></asp:Label>
-                    <asp:Label ID="Label7" runat="server"  Text='<%#  "~" + Eval("結束時間") +")"  %>' Font-Size="Small"></asp:Label><br>                                                              
-                    <asp:Button ID="Button2" runat="server" class="btn btn-primary rounded-pill py-2 px-4  top-0 end-0 me-2" Text="查看詳細資訊" CommandName="see_detail" CommandArgument='<%# Eval("課表編號") %>' />&nbsp;
-                </div>
-                <br>
-                <%# (Container.ItemIndex + 1) % 4 == 0 || Container.ItemIndex == rp_class.Items.Count - 1 ? "</div>" : "" %>
-            </ItemTemplate>
-        </asp:Repeater>
-    </div>
-    
+    <!-- Page Header End -->
 
-    
+    <!-- GYM Class Start -->
+    <div class="container feature pt-5 w-100">
+        <!-- 評論按鈕面板 --> <!-- 尚未建置完成 -->
+        <div style="display: flex; justify-content: center; margin-bottom: 20px; padding-bottom: 20px;">
+            <asp:Panel ID="pn_comment_btn" runat="server">
+                <h4 class="font-weight-bold">篩選</h4>
+                <asp:Button ID="btn_my_comment" runat="server" Text="全部" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
+                &nbsp;&nbsp;
+        <asp:Button ID="btn_new_comment" runat="server" Text="評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
+                &nbsp;&nbsp;
+        <asp:Button ID="btn_higher_comment" runat="server" Text="人數" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
+                &nbsp;&nbsp;
+                <asp:Button ID="btn_location" runat="server" Text="地區" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
+                &nbsp;&nbsp;
+        <asp:Button ID="btn_low_comment" runat="server" Text="分類" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
+                &nbsp;&nbsp;
+            </asp:Panel>
+
+        </div>
+
+        <div class="row">
+            <asp:ListView ID="lv_class" runat="server" OnItemCommand="lv_class_ItemCommand">
+                <LayoutTemplate>
+                    <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+                </LayoutTemplate>
+                <ItemTemplate>
+                    <!-- 使用 col-md-6 控制每個課程寬度為6格 (半行寬) -->
+                    <div class="col-md-6 mb-4" style="display: flex; justify-content: center;">
+                        <!-- 調整 linkbtn 的 style 確保不會影響內部元素 -->
+                        <!-- 將這裡的框線改為黑色且加粗 -->
+                        <div style="width: 100%; transition: background-color 0.3s ease; border: 2px solid black; border-radius: 8px; overflow: hidden;"
+                            onmouseover="this.style.backgroundColor='#f0f0f0'"
+                            onmouseout="this.style.backgroundColor=''">
+                            <!-- 將背景色過渡效果與懸停效果直接加在 style 和事件屬性中 -->
+                            <asp:LinkButton ID="lb_class" runat="server" CommandName="see_detail" CommandArgument='<%# Eval("課程編號") %>'
+                                CssClass="unstyled-link"
+                                Style="display: block; text-align: left; text-decoration: none; cursor: pointer;">
+                                <div class="row align-items-center" style="padding: 20px;">
+                                    <div class="col-sm-6" style="padding: 10px 15px;">
+                                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
+                                        <%# Convert.ToInt32(Eval("上課人數")) == 1 ? 
+                                            "<i style='font-size:20px; font-weight: bold;'>一對一</i>" : 
+                                            "<i style='font-size:20px; font-weight: bold;'>團體</i>" %>
+                                    </div>
+                                    <div class="col-sm-6" style="padding: 10px 15px;">
+                                        <h4 class="font-weight-bold"><%# Eval("課程名稱") %></h4>
+                                        <h4 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h4>
+                                        <p><%# Eval("健身教練姓名") + " 教練" %></p>
+                                        <p><%# Eval("課程內容介紹") %></p>
+                                        <p><%# "人數：" + Eval("上課人數") + "人"%></p>
+                                    </div>
+                                </div>
+                            </asp:LinkButton>
+                        </div>
+                    </div>
+                </ItemTemplate>
+            </asp:ListView>
+        </div>
+    </div>
+    <!-- GYM Class End -->
+
 
 </asp:Content>
 

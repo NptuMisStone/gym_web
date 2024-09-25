@@ -51,7 +51,6 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
                     });
                 </script>";
 
-        // 注册 SweetAlert 脚本到页面
         Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlert", script, false);
     }
 

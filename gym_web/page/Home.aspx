@@ -1,7 +1,8 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage.master" AutoEventWireup="true" CodeFile="Home.aspx.cs" Inherits="Home" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="Home.aspx.cs" Inherits="Home" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
     <section class="client py-lg-0 py-md-0 py-sm-0 py-0" id="client">
         <div class="container-fluid px-0">
@@ -13,12 +14,12 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </ol>
-                <div class="carousel-inner" style="max-height: 480px; margin: auto;">
+                <div class="carousel-inner" style="max-height: 720px; margin: auto;">
                     <asp:Repeater ID="Repeater1" runat="server">
                         <ItemTemplate>
                             <div class="carousel-item <%# Container.ItemIndex == 0 ? "active" : "" %>">
                                 <a href='<%# ((Tuple<string, string>)Container.DataItem).Item2 %>' target="_blank">
-                                    <img src='<%# ((Tuple<string, string>)Container.DataItem).Item1 %>' class="d-block w-100" alt="Slide <%# Container.ItemIndex + 1 %>" style="height: 480px; object-fit: cover;">
+                                    <img src='<%# ((Tuple<string, string>)Container.DataItem).Item1 %>' class="d-block w-100" alt="Slide <%# Container.ItemIndex + 1 %>" style="height: 720px; object-fit: cover;">
                                 </a>
                             </div>
                         </ItemTemplate>
@@ -33,7 +34,7 @@
                     <span class="sr-only">Next</span>
                 </a>
             </div>
-            
+
             <h3 class="title text-center mb-lg-5 mb-md-4 mb-sm-4 mb-3">首頁</h3>
         </div>
     </section>

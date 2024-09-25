@@ -1,8 +1,14 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage.master" AutoEventWireup="true" CodeFile="User_info.aspx.cs" Inherits="User_User_info" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="User_info.aspx.cs" Inherits="User_User_info" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <!-- Page Header Start -->
+<div class="container-fluid page-header mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 130px">
+    </div>
+</div>
+<!-- Page Header End -->
     <section class="team  py-lg-4 py-md-3 py-sm-3 py-3" id="team">
         <div class="container py-lg-5 py-md-4 py-sm-4 py-3">
             <h3 class="title text-center clr mb-lg-5 mb-md-4 mb-sm-4 mb-3">維護個人資料</h3>
@@ -75,9 +81,13 @@
                             </div>
                             <div class="form-group contact-forms mb-2">
                                 <asp:TextBox ID="Txtnewpassword2" TextMode="Password" runat="server" CssClass="form-control" placeholder="請再次輸入新密碼"></asp:TextBox>
-                            </div>
-                            <div>
-                                <asp:CompareValidator ID="CompareValidator2" runat="server" ErrorMessage="新密碼不一致" ControlToCompare="Txtnewpassword" ControlToValidate="Txtnewpassword2" ForeColor="Red" SetFocusOnError="True"></asp:CompareValidator>
+                                <asp:CompareValidator ID="CompareValidator2" runat="server" ErrorMessage="新密碼不一致" ControlToCompare="Txtnewpassword" ControlToValidate="Txtnewpassword2" ForeColor="Red" SetFocusOnError="True" Display="Dynamic"></asp:CompareValidator>
+                                <asp:CustomValidator ID="CustomValidator1" runat="server"
+                                    ErrorMessage="密碼長度至少6個字元且不可與帳號相同"
+                                    ControlToValidate="Txtnewpassword"
+                                    ForeColor="Red"
+                                    SetFocusOnError="True"
+                                    OnServerValidate="CustomValidator1_ServerValidate" Display="Dynamic"></asp:CustomValidator>
                             </div>
                             <div>
                                 <asp:Button ID="PWDBtnSave" runat="server" Text="更新" OnClick="PWDBtnSave_Click" CssClass="btn sent-butnn form-control" Style="width: 100%;" />

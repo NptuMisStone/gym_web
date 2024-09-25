@@ -1,71 +1,171 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Coach_register.aspx.cs" Inherits="Coach_Coach_register" %>
 
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-    
 <head runat="server">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-   
-    <style>
-        .radioButtonList {
-            margin:auto;
-        }
-        .radioButtonList label {
-            font-size: 18px;
-            margin:20px;
-        }
-    </style>
-    
     <title>教練註冊</title>
-    <link rel="stylesheet" href=" css/login.css">
-    <link rel="stylesheet" type="text/css" href="slide navbar login.css">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.all.min.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(to right, rgba(36, 36, 36, 0.7), rgba(36, 36, 36, 0.7)), url('img/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow-y: auto; /* 整個頁面可滾動 */
+        }
+
+        .main {
+            width: 100%;
+            max-width: 400px; /* 最大寬度 */
+            background: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+            backdrop-filter: blur(10px); /* 霧面玻璃效果 */
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left; /* 置左對齊 */
+            margin: 50px auto; /* 自動居中，並上方留出一些距離 */
+            overflow: hidden; /* 確保不出現滾動條 */
+        }
+
+            .main label {
+                font-size: 2em;
+                color: #ff0000; /* 改為單一的紅色 */
+                text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+                margin-bottom: 20px;
+                display: block;
+                font-weight: bold; /* 加粗文字 */
+            }
+
+            .main input[type="text"],
+            .main input[type="password"],
+            .main input[type="email"] {
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0;
+                border: none;
+                border-radius: 5px;
+                box-sizing: border-box;
+                font-size: 1em;
+                background: rgba(255, 255, 255, 0.3);
+                color: #ffffff;
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+                transition: all 0.3s ease-in-out;
+            }
+
+                .main input[type="text"]::placeholder,
+                .main input[type="password"]::placeholder,
+                .main input[type="email"]::placeholder {
+                    color: #bbb;
+                }
+
+                .main input[type="text"]:focus,
+                .main input[type="password"]:focus,
+                .main input[type="email"]:focus {
+                    background: rgba(255, 255, 255, 0.5);
+                    box-shadow: 0 0 10px #ff4d4d, 0 0 20px #606060; /* 聚焦時霓虹燈效果 */
+                    outline: none;
+                }
+
+        .radioButtonList {
+            display: flex; /* 使所有項目以 flex 排列 */
+            align-items: center; /* 確保所有項目在垂直方向上對齊 */
+            gap: 30px; /* 控制每個選項的間距 */
+            justify-content: center; /* 確保在容器中居中 */
+            margin: 20px 0; /* 添加一些上下邊距 */
+        }
+
+            .radioButtonList label {
+                font-size: 18px;
+                color: #fff; /* 根據需要調整顏色 */
+                margin: 0; /* 移除外邊距 */
+            }
+
+
+        .main .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background: linear-gradient(45deg, #e31c25, #303030); /* 原始漸層顏色 */
+            color: white;
+            cursor: pointer; /* 顯示手型指標 */
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px #e31c25, 0 0 20px #303030; /* 原始霓虹燈效果 */
+        }
+
+            .main .btn:hover {
+                box-shadow: 0 0 50px #e31c25, 0 0 40px #303030; /* 懸停時的霓虹燈效果放大 */
+            }
+
+        .main a {
+            color: #ff4d4d; /* 使用更亮的紅色 */
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s ease-in-out;
+        }
+
+            .main a:hover {
+                color: #ff80ff; /* 改為更亮的紫紅色 */
+            }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
         <asp:ScriptManager runat="server" ID="ScriptManager" />
         <div class="main">
-            <input type="checkbox" id="chk" aria-hidden="true">
-            <div class="signup">
-                <div style="max-height: 500px; overflow-y: auto; padding-bottom: 10px;" class="custom-scrollbar">
-                    <label for="chk" aria-hidden="true">教練註冊</label>
-                    <asp:Label ID="Label2" runat="server" Text="請輸入姓名" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label7" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:TextBox ID="tb_coach_name" required="required" runat="server"></asp:TextBox>
-                    <asp:Label ID="Label1" runat="server" Text="請輸入帳號" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label8" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:TextBox ID="tb_coach_acc" required="required" runat="server"></asp:TextBox>
-                    <asp:Label ID="Label3" runat="server" Text="請輸入密碼" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label9" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:TextBox ID="tb_coach_pwd" required="required" runat="server" TextMode="Password" ControlToCompare="tb_coach_pwd" CausesValidation="True"></asp:TextBox>
-                    <asp:Label ID="Label4" runat="server" Text="再次輸入密碼" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label10" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:CompareValidator ID="CompareValidator1" runat="server" ErrorMessage="*密碼不一致~" ControlToCompare="tb_coach_pwd" ControlToValidate="tb_coach_pwd2" ForeColor="Red" SetFocusOnError="True"></asp:CompareValidator>
-                    <asp:TextBox ID="tb_coach_pwd2" required="required" runat="server" TextMode="Password"></asp:TextBox>
-                    <asp:Label ID="Label5" runat="server" Text="請輸入電話" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label11" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:TextBox ID="tb_phone" required="required" runat="server"></asp:TextBox>
-                    <asp:Label ID="Label6" runat="server" Text="請輸入email" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label12" runat="server" Text="*(必填)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    <asp:TextBox ID="tb_email" runat="server" required="required"></asp:TextBox>
-                    <asp:Label ID="Label13" runat="server" Text="請勾選性別" ForeColor="White" Style="margin-left: 70px;" Font-Bold="True"></asp:Label>
-                    <asp:Label ID="Label14" runat="server" Text="*(必勾)" ForeColor="red" Font-Bold="True"></asp:Label>
-                    
-                    <asp:RadioButtonList ID="tb_gender" runat="server" CssClass="radioButtonList" RepeatDirection="Horizontal" >
-                        <asp:ListItem Value="1" >男生</asp:ListItem>
-                        <asp:ListItem Value="2" >女生</asp:ListItem>
-                        <asp:ListItem Value="3" >其他</asp:ListItem>
-                    </asp:RadioButtonList>
+            <label aria-hidden="true">教練註冊</label>
 
-                    <asp:Button ID="btn_coach_login" runat="server" Text="註冊" OnClick="btn_coach_login_Click" CssClass="btn" />
-                    <asp:HyperLink ID="HyperLink1" runat="server" Style="margin-left: 140px;" NavigateUrl="~/Coach/Coach_login.aspx" ForeColor="White">返回登入頁面</asp:HyperLink>
-                    <%-- <button>Sign up</button>--%>
-                </div>
+            <asp:TextBox ID="tb_coach_name" placeholder="請輸入姓名" runat="server" required="required"></asp:TextBox>
+            <asp:TextBox ID="tb_coach_acc" placeholder="請輸入帳號" runat="server" required="required"></asp:TextBox>
+            <asp:TextBox ID="tb_coach_pwd" placeholder="請輸入密碼" runat="server" TextMode="Password" required="required"></asp:TextBox>
+            <asp:TextBox ID="tb_coach_pwd2" placeholder="再次輸入密碼" runat="server" TextMode="Password" required="required"></asp:TextBox>
+            <asp:CompareValidator ID="CompareValidator1" runat="server" ErrorMessage="密碼不一致" ControlToCompare="tb_coach_pwd" ControlToValidate="tb_coach_pwd2" ForeColor="Red" SetFocusOnError="True" Display="Dynamic"></asp:CompareValidator>
+
+            <asp:CustomValidator ID="CustomValidator1" runat="server"
+                ErrorMessage="密碼長度至少6個字元且不可與帳號相同"
+                ControlToValidate="tb_coach_pwd"
+                ForeColor="Red"
+                SetFocusOnError="True"
+                OnServerValidate="CustomValidator1_ServerValidate" Display="Dynamic"></asp:CustomValidator>
+
+            <!-- 電話號碼輸入框 -->
+            <asp:TextBox ID="tb_phone" placeholder="請輸入電話" runat="server" required="required"></asp:TextBox>
+            <asp:RegularExpressionValidator ID="revPhone" runat="server"
+                ControlToValidate="tb_phone"
+                ErrorMessage="請輸入正確的聯絡電話（格式: 09XXXXXXXX）"
+                ForeColor="Red"
+                ValidationExpression="^09\d{8}$"
+                SetFocusOnError="True" Display="Dynamic"></asp:RegularExpressionValidator>
+
+            <!-- 電子郵件輸入框 -->
+            <asp:TextBox ID="tb_email" placeholder="請輸入email" runat="server" required="required" TextMode="Email"></asp:TextBox>
+            <asp:RegularExpressionValidator ID="revEmail" runat="server"
+                ControlToValidate="tb_email"
+                ErrorMessage="請輸入正確的電子郵件地址"
+                ForeColor="Red"
+                ValidationExpression="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                SetFocusOnError="True" Display="Dynamic"></asp:RegularExpressionValidator>
+
+            <asp:RadioButtonList ID="tb_gender" runat="server" CssClass="radioButtonList" RepeatDirection="Horizontal" RepeatLayout="Flow">
+                <asp:ListItem Value="1" Selected="True">男生</asp:ListItem>
+                <asp:ListItem Value="2">女生</asp:ListItem>
+                <asp:ListItem Value="3">不願透露</asp:ListItem>
+            </asp:RadioButtonList>
+
+
+            <asp:Button ID="btn_coach_login" runat="server" Text="註冊" OnClick="btn_coach_login_Click" CssClass="btn" />
+
+            <div class="extra-links">
+                <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Coach/Coach_login.aspx">返回登入頁面</asp:HyperLink>
             </div>
         </div>
     </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 </body>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 </html>
-

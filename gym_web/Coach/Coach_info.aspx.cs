@@ -20,7 +20,6 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         Coach_id = Convert.ToString(Session["Coach_id"]);
-
         //驗證教練是否登入的類別函數
         CoachHelper.CheckLogin(this);
 
@@ -29,6 +28,7 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
             BindCoachData();
             DisplayCoachImage();
             SetReviewStatus(Coach_id);
+            LoadCoachDetails();
         }
     }
 
@@ -136,7 +136,6 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
     private void BindCoachData()
     {
         string query = "SELECT * FROM [健身教練資料] where [健身教練編號] = @Coach_id";
-        string query2 = "SELECT * FROM [健身教練合併] where [健身教練編號] = @Coach_id AND [審核狀態] = 1";
 
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
@@ -159,36 +158,57 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                 }
                 reader.Close();
             }
+        }
+    }
+    private void LoadCoachDetails()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM [健身教練審核合併] WHERE [健身教練編號] = @coach_id";
+            connection.Open();
+            SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@coach_id", Coach_id);
+            SqlDataReader reader = command.ExecuteReader();
 
-            using (SqlCommand command = new SqlCommand(query2, connection))
+            // 使用 DataTable 來綁定 Repeater，方便在 ItemDataBound 中存取欄位
+            DataTable dt = new DataTable();
+            dt.Load(reader);
+            rp_coach.DataSource = dt;
+            rp_coach.DataBind();
+
+            reader.Close();
+        }
+    }
+    protected void rp_coach_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        // 確保只處理資料項目（排除 Header、Footer 等）
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+            // 根據資料來源類型調整轉型
+            var dataItem = e.Item.DataItem as DataRowView; // 如果使用 DataTable
+
+            if (dataItem != null)
             {
-                command.Parameters.AddWithValue("@Coach_id", Coach_id);
-                SqlDataReader reader = command.ExecuteReader();
-                if (reader.Read())
-                {
-                    lb_store.Text = reader["服務地點名稱"].ToString();
-                    lb_type.Text = reader["註冊類型"].ToString();
+                string registrationType = dataItem["註冊類型"].ToString();
 
-                    string registrationType = reader["註冊類型"].ToString();
-                    if (registrationType == "私人教練")
+                // 找到 Panel_store 控制項
+                Panel panelStore = e.Item.FindControl("Panel_store") as Panel;
+                if (panelStore != null)
+                {
+                    if (registrationType == "私人健身教練")
                     {
-                        store.Visible = false;
+                        lblReviewStatusText.Text = "私人健身教練";
+                        panelStore.Visible = false; // 隱藏 Panel_store
                     }
                     else
                     {
-                        store.Visible = true;
+                        lblReviewStatusText.Text = "店家健身教練";
+                        panelStore.Visible = true; // 顯示 Panel_store
                     }
-                }
-                else
-                {
-                    store.Visible = false;
-                    type.Visible = false;
                 }
             }
         }
     }
-
-
     protected void PWDBtnSave_Click(object sender, EventArgs e)
     {
         int coachId = int.Parse(Session["Coach_id"].ToString());
@@ -211,14 +231,16 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         }
         else
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (IsValid)
             {
-                string updateQuery = "UPDATE 健身教練資料 SET " +
-                                     "[健身教練密碼]=@password " +
-                                     "WHERE [健身教練編號] = @CoachId";
-                if (!CheckOldPwd(editedPassword))
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string script = @"<script>
+                    string updateQuery = "UPDATE 健身教練資料 SET " +
+                                         "[健身教練密碼]=@password " +
+                                         "WHERE [健身教練編號] = @CoachId";
+                    if (!CheckOldPwd(editedPassword))
+                    {
+                        string script = @"<script>
                     Swal.fire({
                     icon: ""error"",
                     title: ""更新失敗"",
@@ -228,22 +250,22 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                     });
                     </script>";
 
-                    Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
-                }
-                else
-                {
-                    using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                    }
+                    else
                     {
-                        command.Parameters.AddWithValue("@CoachId", coachId);
-                        command.Parameters.AddWithValue("@password", editednewPassword);
-
-                        connection.Open();
-                        int rowsAffected = command.ExecuteNonQuery();
-                        connection.Close();
-
-                        if (rowsAffected > 0)
+                        using (SqlCommand command = new SqlCommand(updateQuery, connection))
                         {
-                            string script = @"<script>
+                            command.Parameters.AddWithValue("@CoachId", coachId);
+                            command.Parameters.AddWithValue("@password", editednewPassword);
+
+                            connection.Open();
+                            int rowsAffected = command.ExecuteNonQuery();
+                            connection.Close();
+
+                            if (rowsAffected > 0)
+                            {
+                                string script = @"<script>
                             Swal.fire({
                             icon: ""success"",
                             title: ""更新成功"",
@@ -253,10 +275,25 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                             });
                             </script>";
 
-                            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                string script = @"<script>
+                            Swal.fire({
+                            icon: ""error"",
+                            title: ""錯誤"",
+                            text: '密碼重設失敗',
+                            showConfirmButton: false,
+                            timer: 1500
+                            });
+                            </script>";
+
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
             }
         }
     }
@@ -281,6 +318,11 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         }
         return isValid;
     }
+    protected void btn_verify_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("Coach_verify.aspx");
+    }
+
 
     private void DisplayCoachImage()
     {
@@ -353,8 +395,13 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
 
                 if (result == null)
                 {
-                    lblReviewStatus.Text = "尚未審核";
+                    lblReviewStatus.Text = "立即驗證健身教練身分！";
                     lblReviewStatus.ForeColor = System.Drawing.Color.Gray;
+                    lblReviewStatusText.Text = "提醒您，為了保障平台使用者的安全與信任，教練必須先完成身分驗證才能在平台上被用戶搜尋及預約。" +
+                        "如未驗證，您的資訊將不會被上架顯示。";
+                    btn_verify.Visible = true; // 顯示 "立即驗證" 按鈕
+                    btn_verify.Text = "立即驗證";
+                    img_Status.ImageUrl = "img/information.png"; // 設定圖示為尚未審核
                 }
                 else
                 {
@@ -365,20 +412,28 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                         case "0":
                             lblReviewStatus.Text = "審核中";
                             lblReviewStatus.ForeColor = System.Drawing.Color.Yellow;
-                            hlVerify.Visible = false;
+                            lblReviewStatusText.Text = "我們正在處理您的教練身分審核，這可能需要一些時間。感謝您的耐心等候！如有任何問題，請聯繫我們。";
+                            btn_verify.Visible = false; // 審核中不顯示按鈕
+                            img_Status.ImageUrl = "img/review.png";
                             break;
                         case "1":
                             lblReviewStatus.Text = "審核通過";
                             lblReviewStatus.ForeColor = System.Drawing.Color.Green;
-                            hlVerify.Text = "重新驗證健身教練身分";
+                            btn_verify.Visible = true; // 顯示 "重新驗證" 按鈕
+                            btn_verify.Text = "重新驗證";
+                            img_Status.ImageUrl = "img/check.png";
                             break;
                         case "2":
                             lblReviewStatus.Text = "審核未通過，請重新提出申請";
                             lblReviewStatus.ForeColor = System.Drawing.Color.Red;
+                            btn_verify.Visible = true; // 顯示 "重新驗證" 按鈕
+                            btn_verify.Text = "重新驗證";
+                            img_Status.ImageUrl = "img/cross-button.png";
                             break;
                         default:
                             lblReviewStatus.Text = "未知狀態";
                             lblReviewStatus.ForeColor = System.Drawing.Color.Black;
+                            btn_verify.Visible = false; // 不顯示按鈕
                             break;
                     }
                 }
@@ -386,4 +441,11 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         }
     }
 
+    protected void CustomValidator1_ServerValidate(object source, ServerValidateEventArgs args)
+    {
+        string password = Txtnewpassword.Text;
+        string account = lb_account.Text;
+
+        args.IsValid = password.Length >= 6 && password != account;
+    }
 }

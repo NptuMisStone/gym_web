@@ -1,31 +1,53 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage.master" AutoEventWireup="true" CodeFile="coach.aspx.cs" Inherits="page_coach" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="coach.aspx.cs" Inherits="page_coach" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-    
-<div class="container-xxl py-5">
-    <div class="container">
-        <div class="text-center  wow fadeInUp" data-wow-delay="0.1s">
-            <h1 class="mb-5">健身教練</h1>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+            <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">健身教練</h4>
         </div>
     </div>
-</div>
-<div class="row  gx-4 ">
-    <asp:Repeater ID="rp_coachdata" runat="server" OnItemCommand="rp_coachdata_ItemCommand">
-        <ItemTemplate>
-            <%# (Container.ItemIndex + 1) % 4 == 1 ? "<div class='row horizontal-row'>" : "" %>
-            <div class="card repeater-de" style="display: inline-block; width: 275px; height: 260px; text-align: center; margin-bottom: 5px;">
-                <asp:Image ID="Image1" runat="server" Height="120px" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),15) %>' Width="120px" CssClass="circular-image" /><br>
-                <asp:Label ID="Label1" runat="server" CssClass="mt-4" Text='<%# Eval("健身教練姓名") %>' Font-Size="Medium" Font-Bold="True"></asp:Label><br>
-                <asp:Label ID="Label2" runat="server" CssClass="mb-0" Text='<%#  Eval("服務地點名稱") %>'></asp:Label><br />
-                <!--<asp:Image ID="Image2" runat="server" ImageUrl="img/a star.png" Width="15px" Height="15px" /> -->
-                <asp:Button ID="Button2" runat="server" class="btn btn-primary rounded-pill py-2 px-4  top-0 end-0 me-2" Text="查看健身教練資訊" CommandName="coach_detail" CommandArgument='<%# Eval("健身教練編號") %>' />&nbsp;
-            </div>
-            <br>
-            <%# (Container.ItemIndex + 1) % 4 == 0 || Container.ItemIndex == rp_coachdata.Items.Count - 1 ? "</div>" : "" %>
-        </ItemTemplate>
-    </asp:Repeater>
-</div>
+    <!-- Page Header End -->
+
+    <!-- Team Start -->
+    <div class="container pt-5 team">
+        <div class="d-flex flex-column text-center mb-5">
+            <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
+            <h4 class="display-4 font-weight-bold">我們的合作夥伴</h4>
+        </div>
+
+        <asp:ListView ID="lv_coachdata" runat="server" OnItemCommand="lv_coachdata_ItemCommand">
+            <LayoutTemplate>
+                <div class="row gx-4">
+                    <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+                </div>
+            </LayoutTemplate>
+            <ItemTemplate>
+                <div class="col-lg-3 col-md-6 mb-5">
+                    <div class="card border-0 bg-secondary text-center text-white">
+                        <!-- 顯示圖片 -->
+                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' CssClass="card-img-top" Style="object-fit: cover; height: 250px; width: 100%;" />
+
+                        <!-- 社交媒體圖示 -->
+                        <div class="card-social d-flex align-items-center justify-content-center">
+                            <a class="btn btn-outline-light rounded-circle text-center mr-2 px-0" style="width: 40px; height: 40px;"><i class="fab fa-twitter"></i></a>
+                        </div>
+
+                        <!-- 點擊區域，透過 LinkButton 觸發事件 -->
+                        <asp:LinkButton ID="lb_coach" runat="server" CommandName="coach_detail" CommandArgument='<%# Eval("健身教練編號") %>' CssClass="card-body bg-secondary" Style="display: block; text-align: center; text-decoration: none; cursor: pointer;">
+                            <h4 class="card-title text-primary font-weight-bold"><%# Eval("健身教練姓名") %></h4>
+                            <p class="card-text" style="color:white"><%# Eval("註冊類型") %></p>
+                        </asp:LinkButton>
+                    </div>
+                </div>
+            </ItemTemplate>
+
+        </asp:ListView>
+
+    </div>
+    <!-- Team End -->
 </asp:Content>
 

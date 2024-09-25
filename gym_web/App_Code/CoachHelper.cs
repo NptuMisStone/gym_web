@@ -12,7 +12,6 @@ public class CoachHelper
     public static void CheckLogin(Page page)
     {
         string coachId = Convert.ToString(HttpContext.Current.Session["Coach_id"]);
-
         if (string.IsNullOrEmpty(coachId))
         {
             string script = @"<script>

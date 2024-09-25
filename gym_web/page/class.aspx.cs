@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Configuration;
+using System.Activities.Statements;
 
 public partial class page_class : System.Web.UI.Page
 {
@@ -26,22 +27,25 @@ public partial class page_class : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "Select 課程圖片,課程名稱,健身教練姓名,上課人數,課程費用,日期,開始時間,結束時間,課表編號 From 健身教練課表課程合併";
+            string sql = "Select * From [健身教練課程-有排課的]";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
             SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
-            rp_class.DataSource = dataReader;
-            rp_class.DataBind();
+            lv_class.DataSource = dataReader;
+            lv_class.DataBind();
         }
     }
-    protected void rp_class_ItemCommand(object source, RepeaterCommandEventArgs e)
+
+    protected void lv_class_ItemCommand(object sender, ListViewCommandEventArgs e)
     {
         if (e.CommandName == "see_detail")
         {
-            Session["Schedule_id"] = Convert.ToInt32(e.CommandArgument);
+            // 取得課程編號，存入 Session，並跳轉至詳細頁面
+            Session["Class_id"] = Convert.ToInt32(e.CommandArgument);
             Response.Redirect("class_detail.aspx");
         }
     }
+
     protected string GetImageUrl(object imageData, int quality)
     {
         if (imageData != null && imageData != DBNull.Value)
@@ -74,7 +78,7 @@ public partial class page_class : System.Web.UI.Page
         }
         else
         {
-            return "img/team-1.jpg"; // 替代圖片的路徑
+            return "img/null.png"; // 替代圖片的路徑
         }
     }
 }

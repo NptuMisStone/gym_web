@@ -26,12 +26,12 @@ public partial class page_coach : System.Web.UI.Page
             string conectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(conectionString))
             {
-                string sql = "select 健身教練圖片,健身教練姓名,服務地點名稱,健身教練編號 from 健身教練合併 where 審核狀態 = 1";
+                string sql = "select 健身教練圖片,健身教練姓名,註冊類型,健身教練編號 from 健身教練審核合併 where 審核狀態 = 1";
                 connection.Open();
                 SqlCommand command = new SqlCommand(sql, connection);
                 SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
-                rp_coachdata.DataSource = dataReader;
-                rp_coachdata.DataBind();
+                lv_coachdata.DataSource = dataReader;
+                lv_coachdata.DataBind();
             }
         }
         catch (Exception ex)
@@ -40,14 +40,16 @@ public partial class page_coach : System.Web.UI.Page
             Debug.WriteLine("Error retrieving data: " + ex.Message);
         }
     }
-    protected void rp_coachdata_ItemCommand(object source, RepeaterCommandEventArgs e)
+    protected void lv_coachdata_ItemCommand(object sender, ListViewCommandEventArgs e)
     {
         if (e.CommandName == "coach_detail")
         {
-            string coachId = e.CommandArgument.ToString();
-            Response.Redirect("coach_detail.aspx?no=" + coachId);
+            // 取得教練編號，存入 Session，並跳轉至詳細頁面
+            Session["coach_num"] = Convert.ToInt32(e.CommandArgument);
+            Response.Redirect("coach_detail.aspx");
         }
     }
+
 
     protected string GetImageUrl(object imageData, int quality)
     {
@@ -82,7 +84,7 @@ public partial class page_coach : System.Web.UI.Page
         }
         else
         {
-            return "img/team-1.jpg"; // 替代圖片的路徑
+            return "img/user.png"; // 替代圖片的路徑
         }
     }
 }
