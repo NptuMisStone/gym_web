@@ -18,7 +18,7 @@
     background: linear-gradient(to right, rgba(36, 36, 36, 0.7), rgba(36, 36, 36, 0.7)), url('img/bg.jpg') no-repeat center center fixed;
     background-size: cover;
     display: flex;
-    justify-content: flex-end; /* 水平置右 */
+    justify-content: center; /* 水平置右 */
     align-items: center; /* 垂直置中 */
     padding: 30px; /* 為了讓內容不靠太近邊緣 */
     overflow: hidden; /* 隱藏滾動條 */
