@@ -81,4 +81,18 @@ public partial class page_class : System.Web.UI.Page
             return "img/null.png"; // 替代圖片的路徑
         }
     }
+
+    protected void SearchBtn_Click(object sender, ImageClickEventArgs e)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString)) 
+        {
+            string sql = "SELECT * FROM [健身教練課程-有排課的] WHERE [課程名稱] LIKE '%' + @SearchTxT + '%' OR [分類名稱] LIKE '%' + @SearchTxT + '%'";
+            connection.Open();
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@SearchTxT", SearchText.Text);
+            SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+            lv_class.DataSource = dataReader;
+            lv_class.DataBind();
+        }
+    }
 }
