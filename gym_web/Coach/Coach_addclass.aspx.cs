@@ -146,7 +146,14 @@ public partial class Coach_Coach_addclass : System.Web.UI.Page
                 courseImage = null;
             }
 
-            string query = "INSERT INTO [健身教練課程] ([課程名稱], [分類編號], [課程內容介紹], [課程時間長度], [上課人數], [地點類型], [地點名稱], [地點地址], [課程費用], [所需設備], [課程圖片], [健身教練編號]) VALUES (@CourseName, @CourseType, @CourseDescription, @CourseDuration, @ClassSize, @LocationType, @LocationName, @LocationAddress, @CourseFee, @RequiredEquipment, @CourseImage, @CoachID)";
+            string query = @"
+            INSERT INTO [健身教練課程] 
+            ([課程名稱], [分類編號], [課程內容介紹], [課程時間長度], [上課人數], [地點類型], [地點名稱], [地點地址], [課程費用], [所需設備], [健身教練編號]
+            " + (courseImage != null ? ", [課程圖片]" : "") + @")
+            VALUES 
+            (@CourseName, @CourseType, @CourseDescription, @CourseDuration, @ClassSize, @LocationType, @LocationName, @LocationAddress, @CourseFee, @RequiredEquipment, @CoachID
+            " + (courseImage != null ? ", @CourseImage" : "") + ")";
+
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -161,23 +168,27 @@ public partial class Coach_Coach_addclass : System.Web.UI.Page
                     command.Parameters.AddWithValue("@LocationAddress", LocationType == 3 ? (object)LocationAddress : DBNull.Value);
                     command.Parameters.AddWithValue("@CourseFee", courseFee);
                     command.Parameters.AddWithValue("@RequiredEquipment", requiredEquipment);
-                    command.Parameters.AddWithValue("@CourseImage", courseImage);
                     command.Parameters.AddWithValue("@CoachID", Coach_id);
+
+                    if (courseImage != null)
+                    {
+                        command.Parameters.AddWithValue("@CourseImage", courseImage);
+                    }
 
                     connection.Open();
                     command.ExecuteNonQuery();
 
                     // 新增成功後，彈出提示並跳轉到 Coach_class.aspx
-                    string script = @"
-                Swal.fire({
-                    icon: 'success',
-                    title: '新增成功',
-                    text: '課程已更新',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(function() {
-                    window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
-                });";
+                     string script = @"
+                        Swal.fire({
+                        icon: 'success',
+                        title: '新增成功',
+                        text: '課程已更新',
+                        showConfirmButton: false,
+                        timer: 1500
+                        }).then(function() {
+                        window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
+                        });";
 
                     ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, true);
                 }

@@ -13,13 +13,19 @@
 
     <!-- GYM Class Start -->
     <div class="container feature pt-5 w-100">
-        <div style="display: flex;justify-content: center; align-items: center; border: 2px solid #000000; border-radius: 10px; padding: 5px; width:60%; margin: 0 auto;">
-            <asp:TextBox ID="SearchText" runat="server" placeholder="搜尋..." style="border: none; outline: none; width: 100%;"></asp:TextBox>
-            <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/img/search.png" style="width: 20px; height: 20px;" OnClick="SearchBtn_Click" />
-        </div>
-        <br />
-        <br />
-        <!-- 評論按鈕面板 --> <!-- 尚未建置完成 -->
+    <div style="display: flex; justify-content: center; align-items: center; border: 2px solid #000000; border-radius: 10px; padding: 10px; width: 70%; margin: 0 auto;">
+        <!-- 調整 TextBox 大小 -->
+        <asp:TextBox ID="SearchText" runat="server" placeholder="搜尋..." 
+                     style="border: none; outline: none; width: 90%; font-size: 18px; padding: 10px;" />
+        <!-- 調整 ImageButton 大小 -->
+        <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/img/search.png" 
+                         style="width: 30px; height: 30px;" OnClick="SearchBtn_Click" />
+    </div>
+</div>
+
+    <div class="container feature pt-5 w-100">
+        <!-- 評論按鈕面板 -->
+        <!-- 尚未建置完成 -->
         <div style="display: flex; justify-content: center; margin-bottom: 20px; padding-bottom: 20px;">
             <asp:Panel ID="pn_comment_btn" runat="server">
                 <h4 class="font-weight-bold">篩選</h4>
@@ -39,10 +45,10 @@
 
         <div class="row">
             <asp:ListView ID="lv_class" runat="server" OnItemCommand="lv_class_ItemCommand">
-                <LayoutTemplate>
+                <layouttemplate>
                     <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
-                </LayoutTemplate>
-                <ItemTemplate>
+                </layouttemplate>
+                <itemtemplate>
                     <!-- 使用 col-md-6 控制每個課程寬度為6格 (半行寬) -->
                     <div class="col-md-6 mb-4" style="display: flex; justify-content: center;">
                         <!-- 調整 linkbtn 的 style 確保不會影響內部元素 -->
@@ -61,7 +67,7 @@
                                             "<i style='font-size:20px; font-weight: bold;'>一對一</i>" : 
                                             "<i style='font-size:20px; font-weight: bold;'>團體</i>" %>
                                     </div>
-                                    <div class="col-sm-6" style="padding: 10px 15px;" >
+                                    <div class="col-sm-6" style="padding: 10px 15px;">
                                         <h4 class="font-weight-bold"><%# Eval("課程名稱") %></h4>
                                         <h4 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h4>
                                         <p><%# Eval("健身教練姓名") + " 教練" %></p>
@@ -72,12 +78,10 @@
                             </asp:LinkButton>
                         </div>
                     </div>
-                </ItemTemplate>
+                </itemtemplate>
             </asp:ListView>
         </div>
     </div>
     <!-- GYM Class End -->
-
-
 </asp:Content>
 

@@ -201,25 +201,28 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
     protected void btnUpdateCourse_Click(object sender, EventArgs e)
     {
-        // 確認頁面上的所有驗證是否通過
         if (Page.IsValid)
         {
-            // 準備更新的 SQL 語句
             string query = @"UPDATE [健身教練課程]
-                         SET [課程名稱] = @CourseName,
-                             [分類編號] = @CourseType,
-                             [課程時間長度] = @CourseTime,
-                             [課程內容介紹] = @CourseDescription,
-                             [所需設備] = @RequiredEquipment,
-                             [課程費用] = @CourseFee,
-                             [上課人數] = @ClassSize,
-                             [地點類型] = @LocationType,
-                             [地點名稱] = @LocationName,
-                             [地點地址] = @LocationAddress,
-                             [課程圖片] = @CourseImage
-                         WHERE [課程編號] = @ClassID";
+                 SET [課程名稱] = @CourseName,
+                     [分類編號] = @CourseType,
+                     [課程時間長度] = @CourseTime,
+                     [課程內容介紹] = @CourseDescription,
+                     [所需設備] = @RequiredEquipment,
+                     [課程費用] = @CourseFee,
+                     [上課人數] = @ClassSize,
+                     [地點類型] = @LocationType,
+                     [地點名稱] = @LocationName,
+                     [地點地址] = @LocationAddress";
 
-            // 獲取表單中的資料
+            // 只有當 courseImage 有值時才更新圖片
+            if (Session["uploadedImage"] != null)
+            {
+                query += ", [課程圖片] = @CourseImage";
+            }
+
+            query += " WHERE [課程編號] = @ClassID";
+
             string courseName = tbCourseName.Text.Trim();
             string courseType = ddlCourseType.SelectedValue;
             int courseTime = int.Parse(ddlCourseTime.SelectedValue);
@@ -230,25 +233,12 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             int locationType = int.Parse(rblLocation.SelectedValue);
             string LocationName = tbClassLocation.Text.Trim();
             string LocationAddress = tbClassAddress.Text.Trim();
-            byte[] courseImage;
+            byte[] courseImage = Session["uploadedImage"] != null ? (byte[])Session["uploadedImage"] : null;
 
-            if (Session["uploadedImage"] != null)
-            {
-                courseImage = (byte[])Session["uploadedImage"];
-            }
-            else
-            {
-                // 否則使用預設圖片
-                string imagePath = Server.MapPath("~/Coach/img/課程預設圖.png");
-                courseImage = File.ReadAllBytes(imagePath);
-            }
-
-            // 連接資料庫，並執行更新
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    // 設定參數值
                     command.Parameters.AddWithValue("@CourseName", courseName);
                     command.Parameters.AddWithValue("@CourseType", courseType);
                     command.Parameters.AddWithValue("@CourseTime", courseTime);
@@ -259,73 +249,36 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                     command.Parameters.AddWithValue("@LocationType", locationType);
                     command.Parameters.AddWithValue("@LocationName", locationType == 3 ? (object)LocationName : DBNull.Value);
                     command.Parameters.AddWithValue("@LocationAddress", locationType == 3 ? (object)LocationAddress : DBNull.Value);
-                    command.Parameters.AddWithValue("@ClassID", Class_id);
 
-                    // 判斷是否有圖片上傳，並設置圖片參數
-                    if (courseImage != null && courseImage.Length > 0)
+                    // 只有當有圖片時才傳遞圖片參數
+                    if (courseImage != null)
                     {
                         command.Parameters.AddWithValue("@CourseImage", courseImage);
                     }
-                    else
-                    {
-                        // 若無圖片，則設定為資料庫原本圖片
-                        command.Parameters.AddWithValue("@CourseImage", Session["uploadedImage"] ?? DBNull.Value);
-                    }
 
-                    // 開啟連接並執行命令
+                    command.Parameters.AddWithValue("@ClassID", Class_id);
+
                     connection.Open();
                     int rowsAffected = command.ExecuteNonQuery();
 
                     if (rowsAffected > 0)
                     {
-                        // 新增成功後，彈出提示並跳轉到 Coach_class.aspx
-                        string script = @"
-                Swal.fire({
-                    icon: 'success',
-                    title: '更新成功',
-                    text: '課程已更新',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(function() {
-                    window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
-                });";
-
-                        ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, true);
+                        ShowAlert("success", "更新成功", "課程已更新", 1500, true, "Coach_class.aspx");
                     }
                     else
                     {
-                        string script = @"
-                Swal.fire({
-                    icon: 'error',
-                    title: '更新失敗',
-                    text: '資料填寫不完整或有誤，請檢查後再試',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(function() {
-                    window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
-                });";
-
-                        ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, true);
+                        ShowAlert("error", "更新失敗", "資料填寫不完整或有誤，請檢查後再試", 1500, true, "Coach_class.aspx");
                     }
                 }
             }
         }
         else
         {
-            string script = @"
-                Swal.fire({
-                    icon: 'error',
-                    title: '更新失敗',
-                    text: '資料填寫不完整或有誤，請檢查後再試',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(function() {
-                    window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
-                });";
-
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, true);
+            ShowAlert("error", "更新失敗", "資料填寫不完整或有誤，請檢查後再試", 1500, true, "Coach_class.aspx");
         }
     }
+
+
     protected void btnDeleteCourse_Click(object sender, EventArgs e)
     {
         string qry = @"DELETE FROM 健身教練課程 WHERE 課程編號 =@Class_id ";
@@ -338,21 +291,11 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                 command.ExecuteReader();
                 conn.Close();
 
-                string script = @"
-                Swal.fire({
-                    icon: 'success',
-                    title: '刪除成功',
-                    text: '課程已刪除',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(function() {
-                    window.location = 'Coach_class.aspx'; // 導向到 Coach_class.aspx
-                });";
-
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, true);
+                ShowAlert("success", "刪除成功", "課程已刪除", 1500, true, "Coach_class.aspx");
             }
         }
     }
+
     protected void rdlLocation_SelectedIndexChanged(object sender, EventArgs e)
     {
         if (rblLocation.SelectedItem.Value == "3") // 選擇其他選項
@@ -491,4 +434,26 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             return "課程預設圖.png"; // 替代圖片的路徑
         }
     }
+    private void ShowAlert(string icon, string title, string text, int timer = 1500, bool redirect = false, string redirectUrl = null)
+    {
+        string script = $@"<script>
+        Swal.fire({{
+            icon: '{icon}',
+            title: '{title}',
+            text: '{text}',
+            showConfirmButton: false,
+            timer: {timer}
+        }});
+    ";
+
+        if (redirect && !string.IsNullOrEmpty(redirectUrl))
+        {
+            script += $"setTimeout(function () {{ window.location.href = '{redirectUrl}'; }}, {timer});";
+        }
+
+        script += "</script>";
+
+        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+    }
+
 }
