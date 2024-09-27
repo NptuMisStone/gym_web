@@ -15,7 +15,7 @@
     <div class="container feature pt-5 w-100">
         <div style="display: flex;justify-content: center; align-items: center; border: 2px solid #000000; border-radius: 10px; padding: 5px; width:60%; margin: 0 auto;">
             <asp:TextBox ID="SearchText" runat="server" placeholder="搜尋..." style="border: none; outline: none; width: 100%;"></asp:TextBox>
-            <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/images/search.png" style="width: 20px; height: 20px;" OnClick="SearchBtn_Click" />
+            <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/img/search.png" style="width: 20px; height: 20px;" OnClick="SearchBtn_Click" />
         </div>
         <br />
         <br />

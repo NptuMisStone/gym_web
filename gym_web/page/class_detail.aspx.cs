@@ -107,7 +107,7 @@ public partial class page_class_detail : System.Web.UI.Page
         }
         else
         {
-            return "img/null.jpg"; // 替代圖片的路徑
+            return "img/user.png"; // 替代圖片的路徑
         }
     }
     public void GetAddress()
