@@ -10,6 +10,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Configuration;
 using System.Activities.Statements;
+using System.Text;
+using System.Windows.Input;
+using System.Activities.Expressions;
 
 public partial class page_class : System.Web.UI.Page
 {
@@ -20,8 +23,8 @@ public partial class page_class : System.Web.UI.Page
         if (!IsPostBack)
         {
             BindClass();
+            BindFilter();
         }
-        
     }
     private void BindClass()
     {
@@ -95,4 +98,137 @@ public partial class page_class : System.Web.UI.Page
             lv_class.DataBind();
         }
     }
+    private void BindFilter()
+    {
+        BindTypeDDL();
+        BindClassPlaceCBL();
+    }
+    private void BindTypeDDL()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT * FROM [健身教練課程-有排課的]";
+            connection.Open();
+            SqlCommand command = new SqlCommand(sql, connection);
+            SqlDataReader reader = command.ExecuteReader();
+            ClassTypeDDL.DataSource = reader;
+            ClassTypeDDL.DataTextField = "分類名稱";  // 要顯示文字
+            ClassTypeDDL.DataValueField = "分類編號";  // 值
+            ClassTypeDDL.DataBind();
+            connection.Close();
+            ClassTypeDDL.Items.Insert(0, new ListItem("全部", string.Empty));
+           
+        }
+    }
+    private void BindClassPlaceCBL()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT * FROM 縣市";
+            connection.Open();
+            SqlDataAdapter da = new SqlDataAdapter(sql, connection);
+            DataTable dataTable = new DataTable();
+            da.Fill(dataTable);
+            ClassPlaceCBL.DataSource = dataTable;
+            ClassPlaceCBL.DataTextField = "縣市";  // 要顯示文字
+            ClassPlaceCBL.DataValueField = "縣市";  // 值
+            ClassPlaceCBL.DataBind();
+            connection.Close();
+        }
+    }
+
+    protected void FilterBtn_Click(object sender, EventArgs e)
+    {
+    }
+
+    protected void SearchFilterBtn_Click(object sender, EventArgs e)
+    {
+        List<string> selectedItems = new List<string>();
+        foreach (ListItem item in ClassPlaceCBL.Items)
+        {
+            if (item.Selected)
+            {
+                selectedItems.Add(item.Value);
+            }
+        }
+        string[] selectedPlace = selectedItems.ToArray();
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append(
+                "SELECT * FROM [健身教練課程-有排課的] " +
+                "WHERE [分類編號] LIKE '%' + @Type + '%'  " +
+                "AND [健身教練性別] LIKE '%' + @Gender + '%'  " +
+                "AND ([課程費用] >= @Min AND [課程費用] <= @Max) " +
+                "AND ");
+            switch (ClassPeopleRBL.SelectedValue)
+            {
+                case "0":
+                    sqlBuilder.Append("[上課人數] LIKE '%' + @People + '%' AND ");
+                    break;
+                case "1":
+                    sqlBuilder.Append("[上課人數] = 1 AND ");
+                    break;
+                case "2":
+                    sqlBuilder.Append("[上課人數] > 1 AND ");
+                    break;
+            }
+            if (selectedPlace == null || selectedPlace.Length == 0)
+            {   // 課程地點沒選
+                selectedPlace = new string[0];
+                sqlBuilder.Append("[顯示地點地址] LIKE @Place");
+            }
+            else
+            {   // 課程地點有選
+                for (int i = 0; i < selectedPlace.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sqlBuilder.Append(" OR ");
+                    }
+                    sqlBuilder.Append("[顯示地點地址] LIKE @Place" + i);
+                }
+            }
+            string sql = sqlBuilder.ToString();
+
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@Type",ClassTypeDDL.SelectedValue);
+                command.Parameters.AddWithValue("@Gender",CoachGenderRB.SelectedValue);
+                string min,max;
+                if (MinMoney.Text.ToString().Trim() == string.Empty) { min = "0"; } else { min = MinMoney.Text.ToString().Trim(); }
+                if (MaxMoney.Text.ToString().Trim() == string.Empty) { max = "9999"; } else { max = MaxMoney.Text.ToString().Trim(); }
+                command.Parameters.AddWithValue("@Min",min);
+                command.Parameters.AddWithValue("@Max",max);
+                switch (ClassPeopleRBL.SelectedValue)
+                {
+                    case "0":
+                        command.Parameters.AddWithValue("@People", "");
+                        break;
+                }
+                // 課程地點沒選
+                if (selectedPlace == null || selectedPlace.Length == 0)
+                {
+                    command.Parameters.AddWithValue("@Place", "%"+""+"%");
+                }
+                else
+                {
+                    // 課程地點有選
+                    for (int i = 0; i < selectedPlace.Length; i++)
+                    {
+                        command.Parameters.AddWithValue("@Place" + i, "%" + selectedPlace[i] + "%");
+                    }
+                }
+                connection.Open();
+
+                SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+                lv_class.DataSource = dataReader;
+                lv_class.DataBind();
+            }
+        }
+        
+
+    }
+
 }

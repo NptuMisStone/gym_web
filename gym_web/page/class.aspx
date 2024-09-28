@@ -3,6 +3,79 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <style>
+        /* 灰色覆蓋層 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* 側邊彈窗 */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            left: -300px; /* 初始位置在頁面外 */
+            width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+            z-index: 1000;
+            transition: left 0.5s; /* 動畫效果 */
+        }
+
+        /* 弹窗内容 */
+        .panel-content {
+            padding: 20px;
+            max-height: 100%; /* 內容的最大高度 */
+            overflow-y: auto; /* 內容超出時，啟用滾動 */
+        }
+    </style>
+    <script>
+        // 顯示弹窗
+        function showPopup() {
+            document.getElementById('overlay').style.display = 'block';
+            var panel = document.getElementById('<%= sidePanel.ClientID %>');
+            panel.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 禁止頁面滾動
+            setTimeout(function () {
+                panel.style.left = '0'; // 右邊滑出
+            }, 10);
+        }
+
+        // 隐藏弹窗
+        function hidePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            var panel = document.getElementById('<%= sidePanel.ClientID %>');
+            panel.style.left = '-300px'; // 滑回去XD
+            setTimeout(function () {
+                panel.style.display = 'none';
+                document.body.style.overflow = ''; // 恢復頁面滾動
+            }, 500); // 延遲
+        }
+
+    </script>
+    <script type="text/javascript">
+        function validateInput(textbox) {
+            var value = parseInt(textbox.value, 10);
+
+            // 如果輸入不是數字或為空，直接返回，不修改值
+            if (isNaN(value) || textbox.value === "") {
+                return;
+            }
+            // 檢查是否超出範圍
+            if (value > 9999) {
+                textbox.value = 9999;  // 將值限制為9999
+            } else if (value < 0) {
+                textbox.value = 0;     // 將值限制為0
+            }
+        }
+    </script>
+
     <!-- Page Header Start -->
     <div class="container-fluid page-header mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
@@ -12,17 +85,54 @@
     <!-- Page Header End -->
 
     <!-- GYM Class Start -->
-    <div class="container feature pt-5 w-100">
-    <div style="display: flex; justify-content: center; align-items: center; border: 2px solid #000000; border-radius: 10px; padding: 10px; width: 70%; margin: 0 auto;">
-        <!-- 調整 TextBox 大小 -->
-        <asp:TextBox ID="SearchText" runat="server" placeholder="搜尋..." 
-                     style="border: none; outline: none; width: 90%; font-size: 18px; padding: 10px;" />
-        <!-- 調整 ImageButton 大小 -->
-        <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/img/search.png" 
-                         style="width: 30px; height: 30px;" OnClick="SearchBtn_Click" />
+    <div class="container feature pt-5 w-100" style="position: relative;">
+        <div style="display: flex; justify-content: center; align-items: center; border: 2px solid #000000; border-radius: 10px; padding: 10px; width: 70%; margin: 0 auto;">
+            <!-- 調整 TextBox 大小 -->
+            <asp:TextBox ID="SearchText" runat="server" placeholder="搜尋..." 
+                         style="border: none; outline: none; width: 90%; font-size: 18px; padding: 10px;" />
+            <!-- 調整 ImageButton 大小 -->
+            <asp:ImageButton ID="SearchBtn" runat="server" ImageUrl="~/page/img/search.png" 
+                             style="width: 30px; height: 30px;" OnClick="SearchBtn_Click" />
+        </div>
+            <asp:ImageButton ID="FilterBtn" runat="server" ImageUrl="~/page/img/filter.png" 
+                AlternateText="篩選" style="position: absolute; top: 67.5%; right: 10%; transform: translateY(-50%); width: 50px; height: 50px;" 
+                OnClientClick="showPopup(); return false;" OnClick="FilterBtn_Click" />
     </div>
-</div>
-
+    
+    <!-- 灰色覆蓋層 -->
+    <div id="overlay" class="overlay" style="display:none;"></div>
+    <!-- 弹窗内容 -->
+    <asp:Panel ID="sidePanel" runat="server" CssClass="side-panel" style="display:none;">
+        <div class="panel-content">
+            <h2>篩選</h2>
+            <asp:Label ID="Label1" runat="server" Text="課程類型"></asp:Label>
+            <br />
+            <asp:DropDownList ID="ClassTypeDDL" runat="server"></asp:DropDownList>
+            <br />
+            <asp:Label ID="Label2" runat="server" Text="教練性別"></asp:Label>
+            <asp:RadioButtonList ID="CoachGenderRB" runat="server" RepeatDirection="Horizontal">
+                <asp:ListItem Value="" Selected="True" >全部</asp:ListItem>
+                <asp:ListItem Value="1">男</asp:ListItem>
+                <asp:ListItem Value="2">女</asp:ListItem>
+                <asp:ListItem Value="3">其他</asp:ListItem>
+            </asp:RadioButtonList>
+            <asp:Label ID="Label3" runat="server" Text="課程費用"></asp:Label>
+            <br />
+            <asp:TextBox ID="MinMoney" runat="server" placeholder="最小值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)"  ></asp:TextBox>
+            <span>~</span>
+            <asp:TextBox ID="MaxMoney" runat="server" placeholder="最大值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)"  ></asp:TextBox>
+            <br />
+            <asp:Label ID="Label4" runat="server" Text="課程人數"></asp:Label>
+            <asp:RadioButtonList ID="ClassPeopleRBL" runat="server" RepeatDirection="Horizontal">
+                <asp:ListItem Value="0" Selected="True" >全部</asp:ListItem>
+                <asp:ListItem Value="1"> 一對一</asp:ListItem>
+                <asp:ListItem Value="2">團體</asp:ListItem>
+            </asp:RadioButtonList>
+            <asp:Label ID="Label5" runat="server" Text="課程地點"></asp:Label>
+            <asp:CheckBoxList ID="ClassPlaceCBL" runat="server"></asp:CheckBoxList>
+            <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="hidePopup(); " OnClick="SearchFilterBtn_Click" />
+        </div>
+    </asp:Panel>
     <div class="container feature pt-5 w-100">
         <!-- 評論按鈕面板 -->
         <!-- 尚未建置完成 -->
