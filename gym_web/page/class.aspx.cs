@@ -159,7 +159,8 @@ public partial class page_class : System.Web.UI.Page
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(
                 "SELECT * FROM [健身教練課程-有排課的] " +
-                "WHERE [分類編號] LIKE '%' + @Type + '%'  " +
+                "WHERE ([課程名稱] LIKE '%' + @SearchTxT + '%' OR [分類名稱] LIKE '%' + @SearchTxT + '%') " +
+                "AND [分類編號] LIKE '%' + @Type + '%'  " +
                 "AND [健身教練性別] LIKE '%' + @Gender + '%'  " +
                 "AND ([課程費用] >= @Min AND [課程費用] <= @Max) " +
                 "AND ");
@@ -190,7 +191,7 @@ public partial class page_class : System.Web.UI.Page
                         {
                             sqlBuilder.Append(" OR ");
                         }
-                        sqlBuilder.Append("[課程編號] = @HomePlace" + i);
+                        sqlBuilder.Append("[課程編號] LIKE @HomePlace" + i);
                     }
                 }
             }
@@ -216,6 +217,7 @@ public partial class page_class : System.Web.UI.Page
 
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
+                command.Parameters.AddWithValue("@SearchTxT", SearchText.Text);
                 command.Parameters.AddWithValue("@Type",ClassTypeDDL.SelectedValue);
                 command.Parameters.AddWithValue("@Gender",CoachGenderRB.SelectedValue);
                 string min,max;
@@ -238,7 +240,7 @@ public partial class page_class : System.Web.UI.Page
                 {
                     for (int i = 0; i < selectedPlaceHome.Length; i++)
                     {
-                        command.Parameters.AddWithValue("@HomePlace" + i,selectedPlaceHome[i]);
+                        command.Parameters.AddWithValue("@HomePlace" + i, "%" + selectedPlaceHome[i] + "%");
                     }
                 }
                 // 課程地點沒選
@@ -282,7 +284,7 @@ public partial class page_class : System.Web.UI.Page
                 {
                     sqlBuilder.Append(" OR ");
                 }
-                sqlBuilder.Append("[縣市] = @Place" + i);
+                sqlBuilder.Append("[縣市] LIKE @Place" + i);
             }
         }
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -311,17 +313,17 @@ public partial class page_class : System.Web.UI.Page
                     // 課程地點有選
                     for (int i = 0; i < selectedPlace.Length; i++)
                     {
-                        command.Parameters.AddWithValue("@Place" + i, selectedPlace[i]);
-                        connection.Open();
-                        using (SqlDataReader reader = command.ExecuteReader())
+                        command.Parameters.AddWithValue("@Place" + i, "%" + selectedPlace[i] + "%");
+                    }
+                    connection.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
                         {
-                            while (reader.Read())
+                            string coachId = reader["課程編號"].ToString();
+                            if (!string.IsNullOrEmpty(coachId))
                             {
-                                string coachId = reader["課程編號"].ToString();
-                                if (!string.IsNullOrEmpty(coachId))
-                                {
-                                    coachIds.Add(coachId); // 添加課程編號到結果列表
-                                }
+                                coachIds.Add(coachId); // 添加課程編號到結果列表
                             }
                         }
                     }
