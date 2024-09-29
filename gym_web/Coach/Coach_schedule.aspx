@@ -5,6 +5,14 @@
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+
+    <!-- Page Header Start -->
+<div class="container-fluid page-header mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+        <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">課程安排</h4>
+    </div>
+</div>
+
 <script type="text/javascript">
     $(function () {
         $('#startTimePicker').datetimepicker({

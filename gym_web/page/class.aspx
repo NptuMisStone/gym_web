@@ -133,26 +133,8 @@
             <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="hidePopup(); " OnClick="SearchFilterBtn_Click" />
         </div>
     </asp:Panel>
+
     <div class="container feature pt-5 w-100">
-        <!-- 評論按鈕面板 -->
-        <!-- 尚未建置完成 -->
-        <div style="display: flex; justify-content: center; margin-bottom: 20px; padding-bottom: 20px;">
-            <asp:Panel ID="pn_comment_btn" runat="server">
-                <h4 class="font-weight-bold">篩選</h4>
-                <asp:Button ID="btn_my_comment" runat="server" Text="全部" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
-                &nbsp;&nbsp;
-        <asp:Button ID="btn_new_comment" runat="server" Text="評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
-                &nbsp;&nbsp;
-        <asp:Button ID="btn_higher_comment" runat="server" Text="人數" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
-                &nbsp;&nbsp;
-                <asp:Button ID="btn_location" runat="server" Text="地區" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
-                &nbsp;&nbsp;
-        <asp:Button ID="btn_low_comment" runat="server" Text="分類" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" />
-                &nbsp;&nbsp;
-            </asp:Panel>
-
-        </div>
-
         <div class="row">
             <asp:ListView ID="lv_class" runat="server" OnItemCommand="lv_class_ItemCommand">
                 <layouttemplate>
