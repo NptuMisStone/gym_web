@@ -29,6 +29,7 @@ public partial class page_coach_detail : System.Web.UI.Page
             update_ProgressBar();
             bind_commend_score();
             bind_rp_comment();
+            BindLikeBtn();
         }
     }
     private void LoadCoachDetails()
@@ -594,5 +595,83 @@ public partial class page_coach_detail : System.Web.UI.Page
         bind_low_comment();
         string script = "scrollToReviewSection();";
         ClientScript.RegisterStartupScript(this.GetType(), "ScrollToReview", script, true);
+    }
+
+    private void BindLikeBtn()
+    {
+        if (Session["User_id"] == null)
+        {
+            LikeBtn.ImageUrl = "img/dislike.png";
+        }
+        else
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "select count(*) from 教練被收藏 where 健身教練編號=@likecoach_id and 使用者編號=@likeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likecoach_id", coach_num);
+                command.Parameters.AddWithValue("@likeuser_id", User_id);
+                int count = (int)command.ExecuteScalar();
+                if (count > 0)
+                {
+                    LikeBtn.ImageUrl = "img/like.png";
+                }
+                else
+                {
+                    LikeBtn.ImageUrl = "img/dislike.png";
+                }
+            }
+        }
+    }
+    protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
+    {
+        if (Session["User_id"] == null)
+        {
+            string script = @"<script>
+                Swal.fire({
+                  icon: 'error',
+                  title: '請先登入！',
+                  confirmButtonText: '確定',
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                     window.location.href = '../User/User_login.aspx';
+                  }
+                });
+                </script>";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+        }
+        else
+        {
+            if (LikeBtn.ImageUrl == "img/dislike.png")
+            {
+                LikeBtn.ImageUrl = "img/like.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "insert into 教練被收藏 (使用者編號,健身教練編號) values(@likeuser_id,@likecoach_id)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@likeuser_id", User_id);
+                    command.Parameters.AddWithValue("@likecoach_id", coach_num);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            else
+            {
+                LikeBtn.ImageUrl = "img/dislike.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "delete from 教練被收藏 where 健身教練編號=@dislikecoach_id and 使用者編號=@dislikeuser_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@dislikecoach_id", coach_num);
+                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+        }
+
     }
 }

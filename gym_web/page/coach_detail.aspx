@@ -48,6 +48,10 @@
         </div>
     </div>
     <!-- Page Header End -->
+    <div style="display:flex;margin-left:20%;"><%--愛心--%>
+        <asp:ImageButton ID="LikeBtn"  runat="server" ImageUrl="~/page/img/dislike.png" style="width: 50px; height: 50px;" OnClick="LikeBtn_Click" />
+    </div>
+
     <asp:Repeater ID="rp_coach" runat="server" OnItemDataBound="rp_coach_ItemDataBound">
         <ItemTemplate>
             <div class="container pt-5">
