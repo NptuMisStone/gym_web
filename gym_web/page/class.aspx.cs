@@ -18,9 +18,11 @@ public partial class page_class : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
     static bool HomeId;
+    static string SearchTxT;
     protected void Page_Load(object sender, EventArgs e)
     {
         HomeId = true;
+        SearchTxT = "";
         if (!IsPostBack)
         {
             BindClass();
@@ -90,11 +92,12 @@ public partial class page_class : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString)) 
         {
-            string sql = "SELECT * FROM [健身教練課程-有排課的] WHERE [課程名稱] LIKE '%' + @SearchTxT + '%' OR [分類名稱] LIKE '%' + @SearchTxT + '%'";
+            string sql = "SELECT * FROM [健身教練課程-有排課的] WHERE [課程名稱] LIKE '%' + @SearchTxT + '%' ";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@SearchTxT", SearchText.Text);
             SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+            SearchTxT = SearchText.Text;
             lv_class.DataSource = dataReader;
             lv_class.DataBind();
         }
@@ -159,7 +162,7 @@ public partial class page_class : System.Web.UI.Page
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(
                 "SELECT * FROM [健身教練課程-有排課的] " +
-                "WHERE ([課程名稱] LIKE '%' + @SearchTxT + '%' OR [分類名稱] LIKE '%' + @SearchTxT + '%') " +
+                "WHERE [課程名稱] LIKE '%' + @SearchTxT+ '%'  " +
                 "AND [分類編號] LIKE '%' + @Type + '%'  " +
                 "AND [健身教練性別] LIKE '%' + @Gender + '%'  " +
                 "AND ([課程費用] >= @Min AND [課程費用] <= @Max) " +
@@ -176,15 +179,16 @@ public partial class page_class : System.Web.UI.Page
                     sqlBuilder.Append("[上課人數] > 1 AND ");
                     break;
             }
-            if (HomeId == false) { sqlBuilder.Append("[課程編號] =0 "); }
+            if (HomeId == false) { sqlBuilder.Append(" ( [課程編號] =0 "); }
             else {
                 if (selectedPlaceHome == null || selectedPlaceHome.Length == 0) //客戶到府
                 {
                     selectedPlaceHome = new string[0];
-                    sqlBuilder.Append("[課程編號] LIKE @HomePlace");
+                    sqlBuilder.Append(" ( [課程編號] LIKE @HomePlace");
                 }
                 else
                 {
+                    sqlBuilder.Append("( ");
                     for (int i = 0; i < selectedPlaceHome.Length; i++)
                     {
                         if (i > 0)
@@ -199,7 +203,7 @@ public partial class page_class : System.Web.UI.Page
             {   // 課程地點沒選
                 sqlBuilder.Append(" OR ");
                 selectedPlace = new string[0];
-                sqlBuilder.Append("[顯示地點地址] LIKE @Place");
+                sqlBuilder.Append("[顯示地點地址] LIKE @Place )");
             }
             else
             {   // 課程地點有選
@@ -212,6 +216,7 @@ public partial class page_class : System.Web.UI.Page
                     }
                     sqlBuilder.Append("[顯示地點地址] LIKE @Place" + i);
                 }
+                sqlBuilder.Append(" ) ");
             }
             string sql = sqlBuilder.ToString();
 
