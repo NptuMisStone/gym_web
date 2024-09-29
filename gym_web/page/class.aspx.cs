@@ -17,9 +17,10 @@ using System.Activities.Expressions;
 public partial class page_class : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-
+    static bool HomeId;
     protected void Page_Load(object sender, EventArgs e)
     {
+        HomeId = true;
         if (!IsPostBack)
         {
             BindClass();
@@ -152,7 +153,7 @@ public partial class page_class : System.Web.UI.Page
             }
         }
         string[] selectedPlace = selectedItems.ToArray();
-
+        string[] selectedPlaceHome = CheckHomeServicePlace(selectedPlace).ToArray();//客戶到府
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             StringBuilder sqlBuilder = new StringBuilder();
@@ -174,13 +175,34 @@ public partial class page_class : System.Web.UI.Page
                     sqlBuilder.Append("[上課人數] > 1 AND ");
                     break;
             }
+            if (HomeId == false) { sqlBuilder.Append("[課程編號] =0 "); }
+            else {
+                if (selectedPlaceHome == null || selectedPlaceHome.Length == 0) //客戶到府
+                {
+                    selectedPlaceHome = new string[0];
+                    sqlBuilder.Append("[課程編號] LIKE @HomePlace");
+                }
+                else
+                {
+                    for (int i = 0; i < selectedPlaceHome.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sqlBuilder.Append(" OR ");
+                        }
+                        sqlBuilder.Append("[課程編號] = @HomePlace" + i);
+                    }
+                }
+            }
             if (selectedPlace == null || selectedPlace.Length == 0)
             {   // 課程地點沒選
+                sqlBuilder.Append(" OR ");
                 selectedPlace = new string[0];
                 sqlBuilder.Append("[顯示地點地址] LIKE @Place");
             }
             else
             {   // 課程地點有選
+                sqlBuilder.Append(" OR ");
                 for (int i = 0; i < selectedPlace.Length; i++)
                 {
                     if (i > 0)
@@ -207,6 +229,18 @@ public partial class page_class : System.Web.UI.Page
                         command.Parameters.AddWithValue("@People", "");
                         break;
                 }
+                
+                if (selectedPlaceHome == null || selectedPlaceHome.Length == 0)//客戶到府
+                {
+                    command.Parameters.AddWithValue("@HomePlace", "%" + "" + "%");
+                }
+                else 
+                {
+                    for (int i = 0; i < selectedPlaceHome.Length; i++)
+                    {
+                        command.Parameters.AddWithValue("@HomePlace" + i,selectedPlaceHome[i]);
+                    }
+                }
                 // 課程地點沒選
                 if (selectedPlace == null || selectedPlace.Length == 0)
                 {
@@ -227,8 +261,75 @@ public partial class page_class : System.Web.UI.Page
                 lv_class.DataBind();
             }
         }
-        
-
     }
+    private List<string> CheckHomeServicePlace(string[] selectedPlace)
+    {
+        List<string> coachIds = new List<string>();
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.Append(
+            "SELECT DISTINCT [課程編號] FROM [教練到府偏好] " +
+            "WHERE ");
+        if (selectedPlace == null || selectedPlace.Length == 0)
+        {   // 課程地點沒選
+            selectedPlace = new string[0];
+            sqlBuilder.Append("[縣市] LIKE @Place ");
+        }
+        else
+        {   // 課程地點有選
+            for (int i = 0; i < selectedPlace.Length; i++)
+            {
+                if (i > 0)
+                {
+                    sqlBuilder.Append(" OR ");
+                }
+                sqlBuilder.Append("[縣市] = @Place" + i);
+            }
+        }
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = sqlBuilder.ToString();
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                if (selectedPlace == null || selectedPlace.Length == 0)
+                {
+                    command.Parameters.AddWithValue("@Place", "%" + "" + "%");
+                    connection.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string coachId = reader["課程編號"].ToString();
+                            if (!string.IsNullOrEmpty(coachId))
+                            {
+                                coachIds.Add(coachId); // 添加課程編號到結果列表
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // 課程地點有選
+                    for (int i = 0; i < selectedPlace.Length; i++)
+                    {
+                        command.Parameters.AddWithValue("@Place" + i, selectedPlace[i]);
+                        connection.Open();
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string coachId = reader["課程編號"].ToString();
+                                if (!string.IsNullOrEmpty(coachId))
+                                {
+                                    coachIds.Add(coachId); // 添加課程編號到結果列表
+                                }
+                            }
+                        }
+                    }
+                    if (coachIds.Count == 0) { HomeId = false; }
+                }
 
+            }
+        }
+        return coachIds;
+    }
 }
