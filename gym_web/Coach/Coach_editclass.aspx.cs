@@ -12,6 +12,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 {
     string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
     public static string Coach_id, Class_id, classType_id;
+    string city;
     protected void Page_Load(object sender, EventArgs e)
     {
         Coach_id = Convert.ToString(Session["Coach_id"]);
@@ -23,16 +24,16 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
         if (!IsPostBack)
         {
             Session["uploadedImage"] = null;
+            BindDropDownList();
+            BindRadioButtonList();
             LoadClassDetails();
             SetValidators();
-            BindCourseTypes();
-            BindRadioButtonList();
+            
         }
         showTempimg();
     }
     private void LoadClassDetails()
     {
-
         string query = @"SELECT * FROM [健身教練課程] WHERE [課程編號] = @ClassID";
 
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -48,6 +49,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                     {
                         classType_id = reader["分類編號"].ToString();
                         // 將讀取到的課程資料綁定到控制項上
+                        ddlCourseType.SelectedValue = classType_id;
                         tbCourseName.Text = reader["課程名稱"].ToString();
                         ddlCourseTime.SelectedValue = reader["課程時間長度"].ToString();
                         tbRequiredEquipment.Text = reader["所需設備"].ToString();
@@ -57,7 +59,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                         tbCourseFee.Text = courseFee.ToString("0");
 
                         int people = (int)reader["上課人數"];
-                        if (people == 1) 
+                        if (people == 1)
                         {
                             rblClassSize.SelectedValue = "1";
                         }
@@ -71,38 +73,72 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                         int locationType = (int)reader["地點類型"];
                         rblLocation.SelectedValue = locationType.ToString();
 
-                        if (locationType == 3)
+                        // 先檢查地點類型
+                        if (locationType == 3 || locationType == 2)
                         {
-                            tbClassLocation.Visible = true;
-                            tbClassAddress.Visible = true;
+                            // 設置地點名稱和地址
                             tbClassLocation.Text = reader["地點名稱"].ToString();
                             tbClassAddress.Text = reader["地點地址"].ToString();
+
+                            // 獲取縣市ID並選擇
+                            if (!reader.IsDBNull(reader.GetOrdinal("縣市id")))  // 檢查是否為 DBNull
+                            {
+                                int cityId = Convert.ToInt32(reader["縣市id"]);
+                                ddl_city.SelectedValue = cityId.ToString();
+
+                                // 加載行政區
+                                BindAreaItem(cityId);
+
+                                // 設置已選擇的行政區
+                                if (!reader.IsDBNull(reader.GetOrdinal("行政區id")))  // 檢查是否為 DBNull
+                                {
+                                    ddl_area.SelectedValue = reader["行政區id"].ToString();
+                                }
+                            }
                         }
 
                         // 顯示圖片
                         if (!reader.IsDBNull(reader.GetOrdinal("課程圖片")))
                         {
-                            // 如果圖片欄位不為 DBNull，則讀取圖片
                             Session["uploadedImage"] = (byte[])reader["課程圖片"];
                         }
                         else
                         {
-                            // 如果圖片欄位為 DBNull，則設置預設圖片或清空 Session 中的圖片資料
                             Session["uploadedImage"] = null;
                         }
-                        BindDropDownList();
                     }
                 }
             }
         }
     }
+
+    private void BindAreaItem(int cityId)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = @"SELECT 行政區id, 行政區 FROM 行政區 WHERE 縣市id = @CityId";
+            SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@CityId", cityId);
+            conn.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+            ddl_area.DataSource = reader;
+            ddl_area.DataTextField = "行政區";  // 顯示的文本
+            ddl_area.DataValueField = "行政區id";  // 對應的值
+            ddl_area.DataBind();
+
+            // 插入一個 "請選擇" 選項
+            ddl_area.Items.Insert(0, new ListItem("請選擇行政區", ""));
+        }
+    }
+
     private void BindDropDownList()
     {
+        // 1. 綁定運動分類清單
         using (SqlConnection conn = new SqlConnection(connectionString))
         {
             string query = @"SELECT * FROM [運動分類清單]";
             SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@Class_id", Class_id);
             conn.Open();
             SqlDataReader reader = cmd.ExecuteReader();
 
@@ -111,24 +147,20 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             ddlCourseType.DataValueField = "分類編號";
             ddlCourseType.DataBind();
         }
-        ddlCourseType.SelectedValue = classType_id;
-    }
-    private void BindCourseTypes()
-    {
-        string query = "SELECT * FROM [運動分類清單]";
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-                ddlCourseType.DataSource = reader;
-                ddlCourseType.DataValueField = "分類編號";
-                ddlCourseType.DataTextField = "分類名稱";
-                ddlCourseType.DataBind();
-            }
-        }
 
+        // 2. 綁定縣市
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = @"SELECT * FROM [縣市]";
+            SqlCommand cmd = new SqlCommand(query, conn);
+            conn.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            ddl_city.DataSource = reader;
+            ddl_city.DataTextField = "縣市";
+            ddl_city.DataValueField = "縣市id";
+            ddl_city.DataBind();
+        }
         // 添加一個空的初始項目
         ddlCourseType.Items.Insert(0, new ListItem("選擇課程類型", ""));
         ddlCourseTime.Items.Insert(0, new ListItem("選擇課程時長", ""));
@@ -161,8 +193,8 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                 }
             }
         }
+        rbReset();
     }
-
     protected void btnHiddenUpload_Click(object sender, EventArgs e)
     {
         showTempimg();
@@ -213,7 +245,9 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                      [上課人數] = @ClassSize,
                      [地點類型] = @LocationType,
                      [地點名稱] = @LocationName,
-                     [地點地址] = @LocationAddress";
+                     [地點地址] = @LocationAddress,
+                     [縣市id] = @City_id,
+                     [行政區id] = @Area_id";
 
             // 只有當 courseImage 有值時才更新圖片
             if (Session["uploadedImage"] != null)
@@ -234,6 +268,8 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             string LocationName = tbClassLocation.Text.Trim();
             string LocationAddress = tbClassAddress.Text.Trim();
             byte[] courseImage = Session["uploadedImage"] != null ? (byte[])Session["uploadedImage"] : null;
+            int city_id = Convert.ToInt32(ddl_city.SelectedValue);
+            int area_id = Convert.ToInt32(ddl_area.SelectedValue);
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -249,6 +285,9 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                     command.Parameters.AddWithValue("@LocationType", locationType);
                     command.Parameters.AddWithValue("@LocationName", locationType == 3 ? (object)LocationName : DBNull.Value);
                     command.Parameters.AddWithValue("@LocationAddress", locationType == 3 ? (object)LocationAddress : DBNull.Value);
+
+                    command.Parameters.AddWithValue("@City_id", city_id);
+                    command.Parameters.AddWithValue("@Area_id", area_id);
 
                     // 只有當有圖片時才傳遞圖片參數
                     if (courseImage != null)
@@ -295,18 +334,78 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             }
         }
     }
+    protected void ddl_city_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        // 檢查是否有選擇縣市，如果選擇的值為空，則不繼續執行
+        if (string.IsNullOrEmpty(ddl_city.SelectedValue) || ddl_city.SelectedValue == "0")
+        {
+            ddl_area.Items.Clear();
+            return;
+        }
+
+        city = ddl_city.SelectedItem.Text;
+        int city_id = Convert.ToInt32(ddl_city.SelectedValue);
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            string sql = "SELECT 行政區,行政區id FROM 行政區 WHERE 縣市id=@縣市id";
+            SqlCommand cmd = new SqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@縣市id", city_id);
+
+            SqlDataReader dataReader = cmd.ExecuteReader();
+
+            // 先清空 ddl_area 裡現有的項目，防止重複顯示
+            ddl_area.Items.Clear();
+            ddl_area.DataSource = dataReader;
+            ddl_area.DataTextField = "行政區";
+            ddl_area.DataValueField = "行政區id";
+            ddl_area.DataBind();
+
+            // 在第一項插入提示 "請選擇鄉鎮區"
+            ddl_area.Items.Insert(0, new ListItem("請選擇鄉鎮區", ""));
+
+            dataReader.Close();
+            connection.Close();
+            RegisterScrollScript();
+        }
+    }
+    protected void ddl_city_DataBound(object sender, EventArgs e)
+    {
+        ddl_city.Items.Insert(0, new ListItem("請選擇縣市", ""));
+    }
 
     protected void rdlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        rbReset();
+        RegisterScrollScript();
+    }
+    private void rbReset()
     {
         if (rblLocation.SelectedItem.Value == "3") // 選擇其他選項
         {
             tbClassLocation.Visible = true; // 顯示指定地點輸入框
+            ddl_city.Visible = true;
+            ddl_area.Visible = true;
             tbClassAddress.Visible = true;
             rfvClassLocation.Enabled = true; // 啟用指定地點的必填驗證
             rfvClassAddress.Enabled = true;
         }
-        else // 選擇到府選項
+        else if (rblLocation.SelectedItem.Value == "2") // 選擇到府選項
         {
+            ddl_city.Visible = true;
+            ddl_area.Visible = true;
+            tbClassLocation.Text = ""; // 清空指定地點輸入框
+            tbClassAddress.Text = "";
+            tbClassLocation.Visible = false; // 隱藏指定地點輸入框
+            tbClassAddress.Visible = false;
+            rfvClassLocation.Enabled = false; // 停用指定地點的必填驗證
+            rfvClassAddress.Enabled = false;
+        }
+        else // 選擇預設店家選項
+        {
+            ddl_city.Visible = false;
+            ddl_area.Visible = false;
             tbClassLocation.Text = ""; // 清空指定地點輸入框
             tbClassAddress.Text = "";
             tbClassLocation.Visible = false; // 隱藏指定地點輸入框
@@ -344,6 +443,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
             rblLocation.Items.FindByValue("2").Enabled = true; // 啟用到府選項
         }
+        RegisterScrollScript();
     }
     protected void cvClassSize_ServerValidate(object source, ServerValidateEventArgs args)
     {
@@ -387,12 +487,25 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
         if (rblLocation.SelectedValue == "3") // 教練指定地點
         {
             tbClassLocation.Visible = true;
+            ddl_city.Visible = true;
+            ddl_area.Visible = true;
             tbClassAddress.Visible = true;
             rfvClassLocation.Enabled = true;
             rfvClassAddress.Enabled = true;
         }
-        else // 到府上課
+        else if (rblLocation.SelectedValue == "2")// 到府上課
         {
+            ddl_city.Visible = true;
+            ddl_area.Visible = true;
+            tbClassLocation.Visible = false;
+            tbClassAddress.Visible = false;
+            rfvClassLocation.Enabled = false;
+            rfvClassAddress.Enabled = false;
+        }
+        else
+        {
+            ddl_city.Visible = false;
+            ddl_area.Visible = false;
             tbClassLocation.Visible = false;
             tbClassAddress.Visible = false;
             rfvClassLocation.Enabled = false;
@@ -455,5 +568,9 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
         Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
     }
-
+    private void RegisterScrollScript()
+    {
+        // 註冊 JavaScript，PostBack 後自動捲動到 rblClassSize
+        ClientScript.RegisterStartupScript(this.GetType(), "scrollToClassSize", "scrollToControl();", true);
+    }
 }

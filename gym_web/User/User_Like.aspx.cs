@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -13,35 +12,64 @@ using System.Web.UI.WebControls;
 
 public partial class User_User_Like : System.Web.UI.Page
 {
-    string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-    public static int User_id;
+    string conectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
     protected void Page_Load(object sender, EventArgs e)
     {
-        User_id = Convert.ToInt32(Session["User_id"]);
-        if (Session["User_id"] == null)
+        // 驗證用戶是否登入的類別函數
+        UserHelper.CheckLogin(this);
+
+        if (!IsPostBack)
         {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
-        }
-        else
-        {
-            if (!IsPostBack)
-            {
-                Coach_Count();
-                BindCoach_Like();
-            }
+            coachdata();
         }
     }
+    private void coachdata()
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(conectionString))
+            {
+                // 只顯示用戶已收藏的教練
+                string sql = @"
+                SELECT 
+                    健身教練審核合併.健身教練圖片,
+                    健身教練審核合併.健身教練姓名,
+                    健身教練審核合併.註冊類型,
+                    健身教練審核合併.健身教練編號 
+                FROM 
+                    教練被收藏 
+                JOIN 
+                    健身教練審核合併 ON 教練被收藏.健身教練編號 = 健身教練審核合併.健身教練編號
+                WHERE 
+                    教練被收藏.使用者編號 = @userId";
+
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@userId", Convert.ToInt32(Session["User_id"]));
+
+                connection.Open();
+                SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+                lv_coachdata.DataSource = dataReader;
+                lv_coachdata.DataBind();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log or print the exception details
+            Debug.WriteLine("Error retrieving data: " + ex.Message);
+        }
+    }
+
+    protected void lv_coachdata_ItemCommand(object sender, ListViewCommandEventArgs e)
+    {
+        if (e.CommandName == "coach_detail")
+        {
+            // 取得教練編號，存入 Session，並跳轉至詳細頁面
+            Session["coach_num"] = Convert.ToInt32(e.CommandArgument);
+            Response.Redirect("coach_detail.aspx");
+        }
+    }
+
+
     protected string GetImageUrl(object imageData, int quality)
     {
         if (imageData != null && imageData != DBNull.Value)
@@ -78,74 +106,61 @@ public partial class User_User_Like : System.Web.UI.Page
             return "img/user.png"; // 替代圖片的路徑
         }
     }
-    protected void Coach_Count()
+    protected string GetLikeImageUrl(object coachId)
     {
-        using (SqlConnection connection = new SqlConnection(connectionString))
+        if (Session["User_id"] == null)
         {
-            string sql = "select count(*) from 教練被收藏 where 使用者編號=@使用者編號";
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@使用者編號", User_id);
+            return "img/dislike3.png";
+        }
+
+        int userId = Convert.ToInt32(Session["User_id"]);
+        int coachNum = Convert.ToInt32(coachId);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
+        {
             connection.Open();
+            string sql = "SELECT COUNT(*) FROM 教練被收藏 WHERE 健身教練編號 = @likecoach_id AND 使用者編號 = @likeuser_id";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@likecoach_id", coachNum);
+            command.Parameters.AddWithValue("@likeuser_id", userId);
+
             int count = (int)command.ExecuteScalar();
-            lb_count.Text = "您已收藏" + count + "個教練";
+            return count > 0 ? "img/like1.png" : "img/dislike3.png";
         }
     }
-    private void BindCoach_Like()
+    protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        using(SqlConnection connection = new SqlConnection(connectionString))
+        ImageButton btn = (ImageButton)sender;
+        int coachNum = Convert.ToInt32(btn.CommandArgument);
+        int userId = Convert.ToInt32(Session["User_id"]);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
         {
-            string sql = "SELECT * FROM [使用者收藏-教練] WHERE [使用者編號]=@user_id ";
             connection.Open();
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@user_id",User_id );
-            SqlDataAdapter adapter = new SqlDataAdapter(command);
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
-            Like_CoachRP.DataSource = dt;
-            Like_CoachRP.DataBind();
-        }
-        
-    }
-    protected void Like_CoachRP_ItemCommand(object source, RepeaterCommandEventArgs e)
-    {
-        if (e.CommandName == "Edit_LikeBtn")
-        {
-            int coach_id = Convert.ToInt32(e.CommandArgument);
-            ImageButton LikeBtn = e.Item.FindControl("LikeBtn") as ImageButton;
-            if (LikeBtn.ImageUrl == "~/page/img/like.png")
+
+            if (btn.ImageUrl == "img/dislike3.png")
             {
-                LikeBtn.ImageUrl = "~/page/img/dislike.png";
-                cancel_favorite(coach_id);//取消收藏
+                // 喜歡教練，插入收藏記錄
+                string sql = "INSERT INTO 教練被收藏 (使用者編號, 健身教練編號) VALUES (@likeuser_id, @likecoach_id)";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeuser_id", userId);
+                command.Parameters.AddWithValue("@likecoach_id", coachNum);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/like1.png";
             }
             else
             {
-                LikeBtn.ImageUrl = "~/page/img/like.png";
-                add_to_favorite(coach_id);//收藏
+                // 取消喜歡，刪除收藏記錄
+                string sql = "DELETE FROM 教練被收藏 WHERE 健身教練編號 = @dislikecoach_id AND 使用者編號 = @dislikeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@dislikecoach_id", coachNum);
+                command.Parameters.AddWithValue("@dislikeuser_id", userId);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/dislike3.png";
             }
         }
-    }
-    private void cancel_favorite(int coach_id)
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string sql = "delete from 教練被收藏 where 使用者編號=@user_id and 健身教練編號=@coach_id";
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@user_id", User_id);
-            command.Parameters.AddWithValue("@coach_id", coach_id);
-            connection.Open();
-            command.ExecuteNonQuery();
-        }
-    }
-    private void add_to_favorite(int coach_id)
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string sql = "insert into 教練被收藏(使用者編號,健身教練編號) values(@user_id,@coach_id)";
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@user_id", User_id);
-            command.Parameters.AddWithValue("@coach_id", coach_id);
-            connection.Open();
-            command.ExecuteNonQuery();
-        }
+        coachdata();
     }
 }

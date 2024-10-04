@@ -20,6 +20,13 @@
             document.getElementById('<%= btnHiddenUpload.ClientID %>').click();
         }
 
+        function scrollToControl() {
+            var element = document.getElementById('<%= tbCourseFee.ClientID %>');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
         function confirmDelete() {
             Swal.fire({
                 title: '您確定要刪除課程嗎？',
@@ -119,7 +126,23 @@
                             <asp:ListItem Value="3">其他(教練指定地點)：</asp:ListItem>
                         </asp:RadioButtonList>
                         <asp:TextBox ID="tbClassLocation" runat="server" class="form-control mt-2" placeholder="請輸入地點名稱" Visible="False"></asp:TextBox>
-                        <asp:TextBox ID="tbClassAddress" runat="server" class="form-control mt-2" placeholder="請輸入地點地址" Visible="False"></asp:TextBox>
+
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col-md-6">
+                                <asp:DropDownList ID="ddl_city" runat="server" AutoPostBack="True" class="custom-select text-muted"
+                                    OnDataBound="ddl_city_DataBound" OnSelectedIndexChanged="ddl_city_SelectedIndexChanged"
+                                    Visible="False" required="required">
+                                </asp:DropDownList>
+                            </div>
+
+                            <div class="col-md-6">
+                                <asp:DropDownList ID="ddl_area" runat="server" class="custom-select text-muted"
+                                    Visible="False" required="required">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+
+                        <asp:TextBox ID="tbClassAddress" runat="server" class="form-control mt-2" placeholder="請輸入詳細地址（不須輸入縣市行政區）" Visible="False"></asp:TextBox>
                         <asp:RequiredFieldValidator ID="rfvClassLocation" runat="server" ControlToValidate="tbClassLocation" ErrorMessage="地名不得為空" ForeColor="Red" Display="Dynamic" Enabled="false" />
                         <asp:RequiredFieldValidator ID="rfvClassAddress" runat="server" ControlToValidate="tbClassAddress" ErrorMessage="地址不得為空" ForeColor="Red" Display="Dynamic" Enabled="false" />
                     </div>

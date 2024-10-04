@@ -71,7 +71,7 @@ public partial class User_User_comment : System.Web.UI.Page
             ImageButton starButton = (ImageButton)Panel1.FindControl($"img_star{i}");
             if (starButton != null)
             {
-                starButton.ImageUrl = "images/star_click.png"; // 設定新的圖案
+                starButton.ImageUrl = "img/star_click.png"; // 設定新的圖案
             }
         }
     }
@@ -132,7 +132,7 @@ public partial class User_User_comment : System.Web.UI.Page
             ImageButton starButton = (ImageButton)Panel1.FindControl($"img_star{i}");
             if (starButton != null)
             {
-                starButton.ImageUrl = "images/star.png"; // 清空圖案
+                starButton.ImageUrl = "img/star.png"; // 清空圖案
             }
         }
 
@@ -142,7 +142,7 @@ public partial class User_User_comment : System.Web.UI.Page
             ImageButton starButton = (ImageButton)Panel1.FindControl($"img_star{i}");
             if (starButton != null)
             {
-                starButton.ImageUrl = "images/star_click.png"; // 設定新的圖案
+                starButton.ImageUrl = "img/star_click.png"; // 設定新的圖案
             }
         }
         // 在這裡您可以執行其他相關的處理，例如將選定的星號數儲存到資料庫中等等

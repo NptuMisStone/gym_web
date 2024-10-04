@@ -1,37 +1,55 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="User_Like.aspx.cs" Inherits="User_User_Like" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-      <!-- Team Start -->
-    <div class="container-xxl py-5" style="width: 850px;">
-        <div class="container" style="width: 850px; margin-right: 5px; margin-left: 5px; text-align: center;">
-            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <%-- <h6 class="section-title bg-white text-center text-primary px-3">作品集</h6>--%>
-                <h1 class="mb-5">我的收藏</h1>
-                <asp:Label ID="lb_count" runat="server" Text="Label"></asp:Label>
-            </div>
-            <div style="text-align: center">
-                <%--                <center>--%>
-                <div style="text-align: left">
-                    <asp:Repeater ID="Like_CoachRP" runat="server" OnItemCommand="Like_CoachRP_ItemCommand">
-                        <ItemTemplate>
-                            <table style="display: inline-block; margin-right: 10px;">
-                                <tr>
-                                    <td>
-                                        <asp:ImageButton ID="work_img" runat="server" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' Width="140px" Height="180px" CssClass="circular-commend" style="object-fit:cover;"/><br>
-                                        <asp:Label ID="name_coach" runat="server" Text=<%# Eval("健身教練姓名") %>></asp:Label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <asp:ImageButton ID="LikeBtn" runat="server" ImageUrl="~/page/img/like.png" Width="25px" Height="25px" style="object-fit:cover;" CommandName="Edit_LikeBtn" CommandArgument='<%# Eval("健身教練編號") %>' />
-                                    </td>
-                                </tr>
-                            </table>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </div>
-                <%--                </center>--%>
-            </div>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+            <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">我的收藏</h4>
         </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Team Start -->
+    <div class="container pt-5 team">
+        <div class="d-flex flex-column text-center mb-5">
+            <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
+            <h4 class="display-4 font-weight-bold">我的收藏教練</h4>
+        </div>
+
+        <asp:ListView ID="lv_coachdata" runat="server" OnItemCommand="lv_coachdata_ItemCommand">
+            <LayoutTemplate>
+                <div class="row gx-4">
+                    <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+                </div>
+            </LayoutTemplate>
+            <ItemTemplate>
+                <div class="col-lg-3 col-md-6 mb-5">
+                    <div class="card border-0 bg-secondary text-center text-white">
+                        <!-- 顯示圖片 -->
+                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' CssClass="card-img-top" Style="object-fit: cover; height: 250px; width: 100%;" />
+                        <!-- 愛心圖示 -->
+                        <div class="card-social d-flex align-items-center justify-content-center">
+                            <asp:ImageButton
+                                ID="LikeBtn"
+                                runat="server"
+                                CommandName="Like"
+                                CommandArgument='<%# Eval("健身教練編號") %>'
+                                OnClick="LikeBtn_Click"
+                                CssClass="like-button btn btn-outline-light rounded-circle"
+                                ImageUrl='<%# GetLikeImageUrl(Eval("健身教練編號")) %>'
+                                Style="width: 60px; height: 60px; object-fit: contain;" />
+                        </div>
+                        <!-- 點擊區域，透過 LinkButton 觸發事件 -->
+                        <asp:LinkButton ID="lb_coach" runat="server" CommandName="coach_detail" CommandArgument='<%# Eval("健身教練編號") %>' CssClass="card-body bg-secondary" Style="display: block; text-align: center; text-decoration: none; cursor: pointer;">
+                        <h4 class="card-title text-primary font-weight-bold"><%# Eval("健身教練姓名") %></h4>
+                        <p class="card-text" style="color:white"><%# Eval("註冊類型") %></p>
+                        </asp:LinkButton>
+                    </div>
+                </div>
+            </ItemTemplate>
+        </asp:ListView>
     </div>
     <!-- Team End -->
 </asp:Content>
-

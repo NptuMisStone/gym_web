@@ -12,6 +12,7 @@ using System.IO;
 
 public partial class page_coach : System.Web.UI.Page
 {
+    string conectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
     protected void Page_Load(object sender, EventArgs e)
     {
         if (!IsPostBack)
@@ -23,7 +24,6 @@ public partial class page_coach : System.Web.UI.Page
     {
         try
         {
-            string conectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(conectionString))
             {
                 string sql = "select 健身教練圖片,健身教練姓名,註冊類型,健身教練編號 from 健身教練審核合併 where 審核狀態 = 1";
@@ -85,6 +85,79 @@ public partial class page_coach : System.Web.UI.Page
         else
         {
             return "img/user.png"; // 替代圖片的路徑
+        }
+    }
+    protected string GetLikeImageUrl(object coachId)
+    {
+        if (Session["User_id"] == null)
+        {
+            return "img/dislike3.png";
+        }
+
+        int userId = Convert.ToInt32(Session["User_id"]);
+        int coachNum = Convert.ToInt32(coachId);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
+        {
+            connection.Open();
+            string sql = "SELECT COUNT(*) FROM 教練被收藏 WHERE 健身教練編號 = @likecoach_id AND 使用者編號 = @likeuser_id";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@likecoach_id", coachNum);
+            command.Parameters.AddWithValue("@likeuser_id", userId);
+
+            int count = (int)command.ExecuteScalar();
+            return count > 0 ? "img/like1.png" : "img/dislike3.png";
+        }
+    }
+    protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
+    {
+        if (Session["User_id"] == null)
+        {
+            string script = @"<script>
+            Swal.fire({
+                icon: 'error',
+                title: '請先登入！',
+                confirmButtonText: '確定',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '../User/User_login.aspx';
+                }
+            });
+            </script>";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+            return;
+        }
+
+        ImageButton btn = (ImageButton)sender;
+        int coachNum = Convert.ToInt32(btn.CommandArgument);
+        int userId = Convert.ToInt32(Session["User_id"]);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
+        {
+            connection.Open();
+
+            if (btn.ImageUrl == "img/dislike3.png")
+            {
+                // 喜歡教練，插入收藏記錄
+                string sql = "INSERT INTO 教練被收藏 (使用者編號, 健身教練編號) VALUES (@likeuser_id, @likecoach_id)";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeuser_id", userId);
+                command.Parameters.AddWithValue("@likecoach_id", coachNum);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/like1.png";
+            }
+            else
+            {
+                // 取消喜歡，刪除收藏記錄
+                string sql = "DELETE FROM 教練被收藏 WHERE 健身教練編號 = @dislikecoach_id AND 使用者編號 = @dislikeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@dislikecoach_id", coachNum);
+                command.Parameters.AddWithValue("@dislikeuser_id", userId);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/dislike3.png";
+            }
         }
     }
 }

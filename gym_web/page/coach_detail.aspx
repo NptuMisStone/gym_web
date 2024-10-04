@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="coach_detail.aspx.cs" Inherits="page_coach_detail" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="coach_detail.aspx.cs" Inherits="page_coach_detail" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
@@ -48,9 +48,6 @@
         </div>
     </div>
     <!-- Page Header End -->
-    <div style="display:flex;margin-left:20%;"><%--愛心--%>
-        <asp:ImageButton ID="LikeBtn"  runat="server" ImageUrl="~/page/img/dislike.png" style="width: 50px; height: 50px;" OnClick="LikeBtn_Click" />
-    </div>
 
     <asp:Repeater ID="rp_coach" runat="server" OnItemDataBound="rp_coach_ItemDataBound">
         <ItemTemplate>
@@ -64,6 +61,13 @@
                     </div>
                     <div class="col-md-6 pb-5">
                         <h2 class="display-4 font-weight-bold mb-4"><%# Eval("健身教練姓名") %> 教練</h2>
+                        <!-- 將愛心按鈕移到這裡 -->
+                        <div style="display: flex; margin-bottom: 20px;">
+                            <asp:ImageButton ID="LikeBtn" runat="server" ImageUrl="~/page/img/dislike2.png"
+                                Style="width: 50px; height: 50px;" OnClick="LikeBtn_Click"
+                                CommandArgument='<%# Eval("健身教練編號") %>' />
+
+                        </div>
                         <p><%# Eval("健身教練介紹") %></p>
                         <!-- 健身教練性別 -->
                         <div class="d-flex align-items-center mb-4">
@@ -275,10 +279,13 @@
                     <asp:Label ID="Label6" runat="server" Text="排序"></asp:Label><br />
                     <asp:Button ID="btn_my_comment" runat="server" Text="我的評論" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_my_comment_Click" />
                     &nbsp;&nbsp;
+                   
                     <asp:Button ID="btn_new_comment" runat="server" Text="最新評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_new_comment_Click" />
                     &nbsp;&nbsp;
+                   
                     <asp:Button ID="btn_higher_comment" runat="server" Text="最高評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_higher_comment_Click" />
                     &nbsp;&nbsp;
+                   
                     <asp:Button ID="btn_low_comment" runat="server" Text="最低評分" CssClass="btn btn-outline-primary mt-2 px-3" Font-Size="Large" Height="50px" Width="120px" OnClick="btn_low_comment_Click" />
                 </asp:Panel>
             </div>
@@ -301,6 +308,12 @@
                                     <div style="display: flex; gap: 15px;">
                                         <asp:Button ID="Button1" runat="server" Text="修改" CssClass="btn btn-outline-primary px-4 py-2" CommandName="edit" CommandArgument='<%# Eval("預約編號") %>' />
                                         <asp:Button ID="Button2" runat="server" Text="刪除" CssClass="btn btn-outline-danger px-4 py-2" CommandName="delete" CommandArgument='<%# Eval("預約編號") %>' />
+                                    </div>
+                                </asp:PlaceHolder>
+                                <!-- 檢舉按鈕 -->
+                                <asp:PlaceHolder ID="PlaceHolder1" runat="server">
+                                    <div style="display: flex; gap: 15px;">
+                                        <asp:ImageButton ID="ImageButton1" runat="server" AlternateText="檢舉" ImageUrl="~/page/img/report.png" CommandName="report" CommandArgument='<%# Eval("評論編號") %>' Width="30px" Height="30px" />
                                     </div>
                                 </asp:PlaceHolder>
                             </div>

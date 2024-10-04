@@ -14,7 +14,13 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
-
+        .close-button {
+            float: right;
+            font-size: 50px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
         /* 側邊彈窗 */
         .side-panel {
             position: fixed;
@@ -33,6 +39,9 @@
             padding: 20px;
             max-height: 100%; /* 內容的最大高度 */
             overflow-y: auto; /* 內容超出時，啟用滾動 */
+        }
+        .btn-hide {
+            display:none;
         }
     </style>
     <script>
@@ -57,7 +66,9 @@
                 document.body.style.overflow = ''; // 恢復頁面滾動
             }, 500); // 延遲
         }
-
+        function triggerPostBack() {
+            __doPostBack('overlayClicked', '');
+        }
     </script>
     <script type="text/javascript">
         function validateInput(textbox) {
@@ -100,10 +111,13 @@
     </div>
     
     <!-- 灰色覆蓋層 -->
-    <div id="overlay" class="overlay" style="display:none;"></div>
+    <div id="overlay" class="overlay" style="display:none;" onclick="hidePopup(); triggerPostBack();"><!--點灰色部分也可以關閉，但會清空篩選-->
+        
+    </div>
     <!-- 弹窗内容 -->
     <asp:Panel ID="sidePanel" runat="server" CssClass="side-panel" style="display:none;">
         <div class="panel-content">
+            <asp:Button ID="Button2" runat="server" Text="×" OnClientClick="hidePopup();return false; " CssClass="close-button"/>
             <h2>篩選</h2>
             <asp:Label ID="Label1" runat="server" Text="課程類型"></asp:Label>
             <br />
@@ -129,7 +143,34 @@
                 <asp:ListItem Value="2">團體</asp:ListItem>
             </asp:RadioButtonList>
             <asp:Label ID="Label5" runat="server" Text="課程地點"></asp:Label>
-            <asp:CheckBoxList ID="ClassPlaceCBL" runat="server"></asp:CheckBoxList>
+            <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+            <script type="text/javascript">
+                // 為所有 TreeNode 的勾選加入事件
+                function setupTreeViewCheckboxes() {
+                    var treeView = document.getElementById('<%= CityTreeView.ClientID %>');
+                    var checkboxes = treeView.getElementsByTagName('input');
+                    for (var i = 0; i < checkboxes.length; i++) {
+                        if (checkboxes[i].type === 'checkbox') {
+                            checkboxes[i].onclick = function() {
+                                __doPostBack('<%= Button1.UniqueID %>', '');
+                            };
+                        }
+                    }
+                }
+                window.onload = setupTreeViewCheckboxes;
+
+                var prm = Sys.WebForms.PageRequestManager.getInstance();
+                prm.add_endRequest(function () {
+                    setupTreeViewCheckboxes(); // 每次 UpdatePanel 更新後重新绑定事件
+                });
+            </script>
+            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                <ContentTemplate>
+                    <asp:TreeView ID="CityTreeView" runat="server" OnTreeNodeCheckChanged="CityTreeView_TreeNodeCheckChanged" ShowCheckBoxes="All" EnableViewState="true">
+                    </asp:TreeView>
+                    <asp:Button ID="Button1" runat="server" Text="" CssClass="btn-hide" OnClick="Button1_Click" />
+                </ContentTemplate>
+            </asp:UpdatePanel>
             <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="hidePopup(); " OnClick="SearchFilterBtn_Click" />
         </div>
     </asp:Panel>

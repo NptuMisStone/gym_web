@@ -50,7 +50,7 @@ public partial class Coach_Coach_login : System.Web.UI.Page
                 Session["coach_name"] = reader["健身教練姓名"].ToString();
                 Session["coach_id"] = reader["健身教練編號"].ToString();
                 int coach_id = (int)reader["健身教練編號"];
-                Debug.WriteLine("coach_id" + coach_id);
+                Debug.WriteLine("coach_id=" + coach_id);
                 sqlcn.Close();
 
                 string script = @"<script>

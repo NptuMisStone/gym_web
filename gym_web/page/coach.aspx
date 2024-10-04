@@ -3,7 +3,6 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
-
     <!-- Page Header Start -->
     <div class="container-fluid page-header mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
@@ -30,12 +29,18 @@
                     <div class="card border-0 bg-secondary text-center text-white">
                         <!-- 顯示圖片 -->
                         <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' CssClass="card-img-top" Style="object-fit: cover; height: 250px; width: 100%;" />
-
-                        <!-- 社交媒體圖示 -->
+                        <!-- 愛心圖示 -->
                         <div class="card-social d-flex align-items-center justify-content-center">
-                            <a class="btn btn-outline-light rounded-circle text-center mr-2 px-0" style="width: 40px; height: 40px;"><i class="fab fa-twitter"></i></a>
+                            <asp:ImageButton
+                                ID="LikeBtn"
+                                runat="server"
+                                CommandName="Like"
+                                CommandArgument='<%# Eval("健身教練編號") %>'
+                                OnClick="LikeBtn_Click"
+                                CssClass="like-button btn btn-outline-light rounded-circle"
+                                ImageUrl='<%# GetLikeImageUrl(Eval("健身教練編號")) %>'
+                                Style="width: 60px; height: 60px; object-fit: contain;" />
                         </div>
-
                         <!-- 點擊區域，透過 LinkButton 觸發事件 -->
                         <asp:LinkButton ID="lb_coach" runat="server" CommandName="coach_detail" CommandArgument='<%# Eval("健身教練編號") %>' CssClass="card-body bg-secondary" Style="display: block; text-align: center; text-decoration: none; cursor: pointer;">
                             <h4 class="card-title text-primary font-weight-bold"><%# Eval("健身教練姓名") %></h4>
@@ -44,9 +49,7 @@
                     </div>
                 </div>
             </ItemTemplate>
-
         </asp:ListView>
-
     </div>
     <!-- Team End -->
 </asp:Content>

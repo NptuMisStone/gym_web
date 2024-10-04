@@ -29,7 +29,11 @@ public partial class page_coach_detail : System.Web.UI.Page
             update_ProgressBar();
             bind_commend_score();
             bind_rp_comment();
-            BindLikeBtn();
+        }
+        if (Request["__EVENTTARGET"] == "ReportComment")
+        {
+            int comment_id = Convert.ToInt32(Request["__EVENTARGUMENT"]);
+            ReportComment(comment_id);
         }
     }
     private void LoadCoachDetails()
@@ -77,6 +81,18 @@ public partial class page_coach_detail : System.Web.UI.Page
                     }
                 }
             }
+
+            // 獲取教練編號
+            var coachId = DataBinder.Eval(e.Item.DataItem, "健身教練編號").ToString();
+
+            // 獲取 LikeBtn 控制項
+            ImageButton LikeBtn = (ImageButton)e.Item.FindControl("LikeBtn");
+
+            // 獲取使用者編號
+            var userId = Session["User_id"]?.ToString();
+
+            // 綁定 LikeBtn 的狀態
+            BindLikeBtn(LikeBtn, coachId, userId);
         }
     }
 
@@ -403,7 +419,44 @@ public partial class page_coach_detail : System.Web.UI.Page
             int ap_id = Convert.ToInt32(e.CommandArgument);
             DeleteComment(ap_id);
         }
-            
+        else if(e.CommandName == "report") 
+        {
+            string script = @"<script>
+              Swal.fire({
+              icon: 'warning',
+              title: '檢舉評論',
+              text: '確定要檢舉嗎？',
+              showCancelButton: true,
+              confirmButtonText: '確定',
+              cancelButtonText: '取消',
+              reverseButtons: true
+              }).then((result) => {
+                  if (result.isConfirmed) {
+                      
+                      Swal.fire({
+                          icon: 'success',
+                          title: '檢舉成功',
+                          text: '已檢舉評論',
+                          showConfirmButton: false,
+                          timer: 1500
+                      });
+                    setTimeout(function() {
+                                  __doPostBack('ReportComment', '" + e.CommandArgument.ToString() + @"');
+                              }, 1500);
+                  } else if (result.dismiss === Swal.DismissReason.cancel) {
+                      Swal.fire({
+                          icon: 'error',
+                          title: '操作取消',
+                          showConfirmButton: false,
+                          timer: 1500
+                      });
+                  }
+              });
+            </script>";
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+        }
+
     }
     protected void rp_comment_ItemDeleting(object sender, ListViewDeleteEventArgs e)
     {
@@ -597,35 +650,41 @@ public partial class page_coach_detail : System.Web.UI.Page
         ClientScript.RegisterStartupScript(this.GetType(), "ScrollToReview", script, true);
     }
 
-    private void BindLikeBtn()
+    private void BindLikeBtn(ImageButton LikeBtn, string coachId, string userId)
     {
-        if (Session["User_id"] == null)
+        if (string.IsNullOrEmpty(userId))
         {
-            LikeBtn.ImageUrl = "img/dislike.png";
+            LikeBtn.ImageUrl = "img/dislike2.png";
         }
         else
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "select count(*) from 教練被收藏 where 健身教練編號=@likecoach_id and 使用者編號=@likeuser_id";
+                string sql = "SELECT COUNT(*) FROM 教練被收藏 WHERE 健身教練編號=@likecoach_id AND 使用者編號=@likeuser_id";
                 SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@likecoach_id", coach_num);
-                command.Parameters.AddWithValue("@likeuser_id", User_id);
+                command.Parameters.AddWithValue("@likecoach_id", coachId);
+                command.Parameters.AddWithValue("@likeuser_id", userId);
                 int count = (int)command.ExecuteScalar();
                 if (count > 0)
                 {
-                    LikeBtn.ImageUrl = "img/like.png";
+                    LikeBtn.ImageUrl = "img/like1.png";
                 }
                 else
                 {
-                    LikeBtn.ImageUrl = "img/dislike.png";
+                    LikeBtn.ImageUrl = "img/dislike2.png";
                 }
             }
         }
     }
+
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
+        ImageButton LikeBtn = (ImageButton)sender;
+
+        // 獲取教練編號
+        var coachId = GetCoachIdFromLikeBtn(LikeBtn);
+
         if (Session["User_id"] == null)
         {
             string script = @"<script>
@@ -643,9 +702,9 @@ public partial class page_coach_detail : System.Web.UI.Page
         }
         else
         {
-            if (LikeBtn.ImageUrl == "img/dislike.png")
+            if (LikeBtn.ImageUrl == "img/dislike2.png")
             {
-                LikeBtn.ImageUrl = "img/like.png";
+                LikeBtn.ImageUrl = "img/like1.png";
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -659,7 +718,7 @@ public partial class page_coach_detail : System.Web.UI.Page
             }
             else
             {
-                LikeBtn.ImageUrl = "img/dislike.png";
+                LikeBtn.ImageUrl = "img/dislike2.png";
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -672,6 +731,21 @@ public partial class page_coach_detail : System.Web.UI.Page
                 }
             }
         }
+    }
+    private string GetCoachIdFromLikeBtn(ImageButton LikeBtn)
+    {
+        return LikeBtn.CommandArgument;
+    }
 
+    private void ReportComment(int comment_id)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "Insert Into [評論檢舉] (評論編號) values(@comment_id)";
+            connection.Open();
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@comment_id", comment_id);
+            command.ExecuteNonQuery();
+        }
     }
 }

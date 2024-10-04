@@ -13,20 +13,37 @@ using System.Activities.Statements;
 using System.Text;
 using System.Windows.Input;
 using System.Activities.Expressions;
+using System.Net.NetworkInformation;
+using static System.Net.Mime.MediaTypeNames;
 
 public partial class page_class : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-    static bool HomeId;
     static string SearchTxT;
+    private List<string> selectedCity = new List<string>();
+    private List<string> selectedArea = new List<string>();
+    private string[] selectCity;
+    private string[] selectArea;
     protected void Page_Load(object sender, EventArgs e)
     {
-        HomeId = true;
         SearchTxT = "";
         if (!IsPostBack)
         {
             BindClass();
             BindFilter();
+        }
+        else {
+            string eventTarget = Request["__EVENTTARGET"];
+            if (eventTarget == "overlayClicked")
+            {
+                CoachGenderRB.SelectedIndex= 0;
+                MinMoney.Text=string.Empty;
+                MaxMoney.Text=string.Empty;
+                ClassPeopleRBL.SelectedIndex= 0;
+                CityTreeView.Nodes.Clear();
+                BindFilter();
+                BindClass();
+            }
         }
     }
     private void BindClass()
@@ -90,22 +107,13 @@ public partial class page_class : System.Web.UI.Page
 
     protected void SearchBtn_Click(object sender, ImageClickEventArgs e)
     {
-        using (SqlConnection connection = new SqlConnection(connectionString)) 
-        {
-            string sql = "SELECT * FROM [健身教練課程-有排課的] WHERE [課程名稱] LIKE '%' + @SearchTxT + '%' ";
-            connection.Open();
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@SearchTxT", SearchText.Text);
-            SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
-            SearchTxT = SearchText.Text;
-            lv_class.DataSource = dataReader;
-            lv_class.DataBind();
-        }
+        FinishSearch();
     }
     private void BindFilter()
     {
         BindTypeDDL();
-        BindClassPlaceCBL();
+        BindTreeView();// 縣市、行政區
+        CollapseAllNodes(CityTreeView.Nodes); // 讓他預設是摺疊起來的
     }
     private void BindTypeDDL()
     {
@@ -124,22 +132,6 @@ public partial class page_class : System.Web.UI.Page
            
         }
     }
-    private void BindClassPlaceCBL()
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string sql = "SELECT * FROM 縣市";
-            connection.Open();
-            SqlDataAdapter da = new SqlDataAdapter(sql, connection);
-            DataTable dataTable = new DataTable();
-            da.Fill(dataTable);
-            ClassPlaceCBL.DataSource = dataTable;
-            ClassPlaceCBL.DataTextField = "縣市";  // 要顯示文字
-            ClassPlaceCBL.DataValueField = "縣市";  // 值
-            ClassPlaceCBL.DataBind();
-            connection.Close();
-        }
-    }
 
     protected void FilterBtn_Click(object sender, EventArgs e)
     {
@@ -147,16 +139,12 @@ public partial class page_class : System.Web.UI.Page
 
     protected void SearchFilterBtn_Click(object sender, EventArgs e)
     {
-        List<string> selectedItems = new List<string>();
-        foreach (ListItem item in ClassPlaceCBL.Items)
-        {
-            if (item.Selected)
-            {
-                selectedItems.Add(item.Value);
-            }
-        }
-        string[] selectedPlace = selectedItems.ToArray();
-        string[] selectedPlaceHome = CheckHomeServicePlace(selectedPlace).ToArray();//客戶到府
+        FinishSearch();
+    }
+    private void FinishSearch() 
+    {
+        selectCity = Session["selectCity"] as string[];
+        selectArea= Session["selectArea"] as string[];
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             StringBuilder sqlBuilder = new StringBuilder();
@@ -179,164 +167,217 @@ public partial class page_class : System.Web.UI.Page
                     sqlBuilder.Append("[上課人數] > 1 AND ");
                     break;
             }
-            if (HomeId == false) { sqlBuilder.Append(" ( [課程編號] =0 "); }
-            else {
-                if (selectedPlaceHome == null || selectedPlaceHome.Length == 0) //客戶到府
-                {
-                    selectedPlaceHome = new string[0];
-                    sqlBuilder.Append(" ( [課程編號] LIKE @HomePlace");
-                }
-                else
-                {
-                    sqlBuilder.Append("( ");
-                    for (int i = 0; i < selectedPlaceHome.Length; i++)
-                    {
-                        if (i > 0)
-                        {
-                            sqlBuilder.Append(" OR ");
-                        }
-                        sqlBuilder.Append("[課程編號] LIKE @HomePlace" + i);
-                    }
-                }
-            }
-            if (selectedPlace == null || selectedPlace.Length == 0)
-            {   // 課程地點沒選
-                sqlBuilder.Append(" OR ");
-                selectedPlace = new string[0];
-                sqlBuilder.Append("[顯示地點地址] LIKE @Place )");
+            if (selectCity == null || selectCity.Length == 0)
+            {
+                selectCity = new string[0];
+                sqlBuilder.Append("  (( [縣市] LIKE @City )");
             }
             else
-            {   // 課程地點有選
-                sqlBuilder.Append(" OR ");
-                for (int i = 0; i < selectedPlace.Length; i++)
+            {
+                sqlBuilder.Append("(( ");
+                for (int i = 0; i < selectCity.Length; i++)
                 {
                     if (i > 0)
                     {
                         sqlBuilder.Append(" OR ");
                     }
-                    sqlBuilder.Append("[顯示地點地址] LIKE @Place" + i);
+                    sqlBuilder.Append("[縣市] LIKE @City" + i);
                 }
                 sqlBuilder.Append(" ) ");
+            }
+            if (selectArea == null || selectArea.Length == 0)
+            {
+                sqlBuilder.Append(" AND ( ");
+                selectArea = new string[0];
+                sqlBuilder.Append(" [行政區] LIKE @Area )) ");
+            }
+            else
+            {
+                sqlBuilder.Append(" AND ( ");
+                for (int i = 0; i < selectArea.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sqlBuilder.Append(" OR ");
+                    }
+                    sqlBuilder.Append("[行政區] LIKE @Area" + i);
+                }
+                sqlBuilder.Append(" )) ");
             }
             string sql = sqlBuilder.ToString();
 
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@SearchTxT", SearchText.Text);
-                command.Parameters.AddWithValue("@Type",ClassTypeDDL.SelectedValue);
-                command.Parameters.AddWithValue("@Gender",CoachGenderRB.SelectedValue);
-                string min,max;
+                command.Parameters.AddWithValue("@Type", ClassTypeDDL.SelectedValue);
+                command.Parameters.AddWithValue("@Gender", CoachGenderRB.SelectedValue);
+                string min, max;
                 if (MinMoney.Text.ToString().Trim() == string.Empty) { min = "0"; } else { min = MinMoney.Text.ToString().Trim(); }
                 if (MaxMoney.Text.ToString().Trim() == string.Empty) { max = "9999"; } else { max = MaxMoney.Text.ToString().Trim(); }
-                command.Parameters.AddWithValue("@Min",min);
-                command.Parameters.AddWithValue("@Max",max);
+                command.Parameters.AddWithValue("@Min", min);
+                command.Parameters.AddWithValue("@Max", max);
                 switch (ClassPeopleRBL.SelectedValue)
                 {
                     case "0":
                         command.Parameters.AddWithValue("@People", "");
                         break;
                 }
-                
-                if (selectedPlaceHome == null || selectedPlaceHome.Length == 0)//客戶到府
+
+                if (selectCity == null || selectCity.Length == 0)
                 {
-                    command.Parameters.AddWithValue("@HomePlace", "%" + "" + "%");
-                }
-                else 
-                {
-                    for (int i = 0; i < selectedPlaceHome.Length; i++)
-                    {
-                        command.Parameters.AddWithValue("@HomePlace" + i, "%" + selectedPlaceHome[i] + "%");
-                    }
-                }
-                // 課程地點沒選
-                if (selectedPlace == null || selectedPlace.Length == 0)
-                {
-                    command.Parameters.AddWithValue("@Place", "%"+""+"%");
+                    command.Parameters.AddWithValue("@City", "%" + "" + "%");
                 }
                 else
                 {
-                    // 課程地點有選
-                    for (int i = 0; i < selectedPlace.Length; i++)
+                    for (int i = 0; i < selectCity.Length; i++)
                     {
-                        command.Parameters.AddWithValue("@Place" + i, "%" + selectedPlace[i] + "%");
+                        command.Parameters.AddWithValue("@City" + i, "%" + selectCity[i] + "%");
+                    }
+                }
+                if (selectArea == null || selectArea.Length == 0)
+                {
+                    command.Parameters.AddWithValue("@Area", "%" + "" + "%");
+                }
+                else
+                {
+                    for (int i = 0; i < selectArea.Length; i++)
+                    {
+                        command.Parameters.AddWithValue("@Area" + i, "%" + selectArea[i] + "%");
                     }
                 }
                 connection.Open();
-
                 SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
                 lv_class.DataSource = dataReader;
                 lv_class.DataBind();
             }
         }
     }
-    private List<string> CheckHomeServicePlace(string[] selectedPlace)
+    protected void CityTreeView_TreeNodeCheckChanged(object sender, TreeNodeEventArgs e)
     {
-        List<string> coachIds = new List<string>();
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.Append(
-            "SELECT DISTINCT [課程編號] FROM [教練到府偏好] " +
-            "WHERE ");
-        if (selectedPlace == null || selectedPlace.Length == 0)
-        {   // 課程地點沒選
-            selectedPlace = new string[0];
-            sqlBuilder.Append("[縣市] LIKE @Place ");
+        if (e.Node.Checked)
+        {
+            CheckAllChildNodes(e.Node, true);
         }
         else
-        {   // 課程地點有選
-            for (int i = 0; i < selectedPlace.Length; i++)
-            {
-                if (i > 0)
-                {
-                    sqlBuilder.Append(" OR ");
-                }
-                sqlBuilder.Append("[縣市] LIKE @Place" + i);
-            }
-        }
-        using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = sqlBuilder.ToString();
-            using (SqlCommand command = new SqlCommand(sql, connection))
-            {
-                if (selectedPlace == null || selectedPlace.Length == 0)
-                {
-                    command.Parameters.AddWithValue("@Place", "%" + "" + "%");
-                    connection.Open();
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string coachId = reader["課程編號"].ToString();
-                            if (!string.IsNullOrEmpty(coachId))
-                            {
-                                coachIds.Add(coachId); // 添加課程編號到結果列表
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // 課程地點有選
-                    for (int i = 0; i < selectedPlace.Length; i++)
-                    {
-                        command.Parameters.AddWithValue("@Place" + i, "%" + selectedPlace[i] + "%");
-                    }
-                    connection.Open();
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string coachId = reader["課程編號"].ToString();
-                            if (!string.IsNullOrEmpty(coachId))
-                            {
-                                coachIds.Add(coachId); // 添加課程編號到結果列表
-                            }
-                        }
-                    }
-                    if (coachIds.Count == 0) { HomeId = false; }
-                }
+            CheckAllChildNodes(e.Node, false);
+        }
 
+        // 更新
+        UpdateParentNodes(e.Node);
+        //更新選重的值
+        UpdateSelectedValues();
+    }
+    private void CheckAllChildNodes(TreeNode parentNode, bool isChecked)
+    {
+        foreach (TreeNode childNode in parentNode.ChildNodes)
+        {
+            childNode.Checked = isChecked;
+        }
+    }
+
+    private void UpdateParentNodes(TreeNode node)
+    {
+        TreeNode parentNode = node.Parent;
+        if (parentNode == null) return;
+
+        bool hasCheckedChild = false;
+        foreach (TreeNode siblingNode in parentNode.ChildNodes)
+        {
+            if (siblingNode.Checked)
+            {
+                hasCheckedChild = true;
+                break;
             }
         }
-        return coachIds;
+
+        parentNode.Checked = hasCheckedChild;
+
+        UpdateParentNodes(parentNode);
+    }
+    private void UpdateSelectedValues()
+    {
+        selectedCity.Clear();
+        selectedArea.Clear();
+
+        foreach (TreeNode parentNode in CityTreeView.Nodes)
+        {
+            if (parentNode.Checked)
+            {
+                selectedCity.Add(parentNode.Value);
+            }
+
+            foreach (TreeNode childNode in parentNode.ChildNodes)
+            {
+                if (childNode.Checked)
+                {
+                    selectedArea.Add(childNode.Value);
+                }
+            }
+        }
+        Session["selectCity"]  = selectedCity.ToArray();
+        Session["selectArea"] = selectedArea.ToArray();
+    }
+    private DataTable GetParentData()
+    {
+        DataTable cityTable = new DataTable();
+        using (SqlConnection conn= new SqlConnection(connectionString))
+        {
+            string sql = "SELECT 縣市id,縣市 FROM 縣市";
+            conn.Open();
+            SqlCommand cmd =new SqlCommand(sql,conn);
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(cityTable);
+        }
+        return cityTable;
+    }
+
+    private DataTable GetChildData()
+    {
+        DataTable areaTable = new DataTable();
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT 縣市id,行政區id,行政區 FROM 行政區";
+            conn.Open();
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(areaTable);
+        }
+        return areaTable;
+    }
+    private void BindTreeView()
+    {
+        DataTable parentTable = GetParentData();
+        DataTable childTable = GetChildData();
+        //parent是父結點(縣市) child是子結點(行政區)
+        foreach (DataRow parentRow in parentTable.Rows)
+        {
+            TreeNode parentNode = new TreeNode(parentRow["縣市"].ToString(), parentRow["縣市"].ToString());
+            parentNode.ShowCheckBox = true; // 顯示checkbox
+            parentNode.SelectAction = TreeNodeSelectAction.None; // 禁用文字觸發
+            DataRow[] childRows = childTable.Select("縣市id = " + parentRow["縣市id"].ToString());
+
+            foreach (DataRow childRow in childRows)
+            {
+                TreeNode childNode = new TreeNode(childRow["行政區"].ToString(), childRow["行政區"].ToString());
+                childNode.ShowCheckBox = true; // 顯示checkbox
+                childNode.SelectAction = TreeNodeSelectAction.None; // 禁用文字觸發
+                parentNode.ChildNodes.Add(childNode);
+            }
+
+            CityTreeView.Nodes.Add(parentNode);
+        }
+    }
+    private void CollapseAllNodes(TreeNodeCollection nodes)
+    {
+        foreach (TreeNode node in nodes)
+        {
+            node.Collapse(); // 摺疊
+            CollapseAllNodes(node.ChildNodes); // 行政區折疊
+        }
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
     }
 }

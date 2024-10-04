@@ -30,11 +30,11 @@
             <tr>
                 <td style="height: 26px">
                     <asp:Panel ID="Panel1" runat="server">
-                    <asp:ImageButton ID="img_star1" runat="server" Height="20px" Width="20px" ImageUrl="images/star.png" OnClick="img_star_Click" CommandArgument="1" />&nbsp;&nbsp;
-                    <asp:ImageButton ID="img_star2" runat="server" Height="20px" Width="20px" ImageUrl="images/star.png" OnClick="img_star_Click" CommandArgument="2" />&nbsp;&nbsp;
-                    <asp:ImageButton ID="img_star3" runat="server" Height="20px" Width="20px" ImageUrl="images/star.png" OnClick="img_star_Click" CommandArgument="3" />&nbsp;&nbsp;
-                    <asp:ImageButton ID="img_star4" runat="server" Height="20px" Width="20px" ImageUrl="images/star.png" OnClick="img_star_Click" CommandArgument="4" />&nbsp;&nbsp;
-                    <asp:ImageButton ID="img_star5" runat="server" Height="20px" Width="20px" ImageUrl="images/star.png" OnClick="img_star_Click" CommandArgument="5" />&nbsp;&nbsp;
+                    <asp:ImageButton ID="img_star1" runat="server" Height="20px" Width="20px" ImageUrl="img/star.png" OnClick="img_star_Click" CommandArgument="1" />&nbsp;&nbsp;
+                    <asp:ImageButton ID="img_star2" runat="server" Height="20px" Width="20px" ImageUrl="img/star.png" OnClick="img_star_Click" CommandArgument="2" />&nbsp;&nbsp;
+                    <asp:ImageButton ID="img_star3" runat="server" Height="20px" Width="20px" ImageUrl="img/star.png" OnClick="img_star_Click" CommandArgument="3" />&nbsp;&nbsp;
+                    <asp:ImageButton ID="img_star4" runat="server" Height="20px" Width="20px" ImageUrl="img/star.png" OnClick="img_star_Click" CommandArgument="4" />&nbsp;&nbsp;
+                    <asp:ImageButton ID="img_star5" runat="server" Height="20px" Width="20px" ImageUrl="img/star.png" OnClick="img_star_Click" CommandArgument="5" />&nbsp;&nbsp;
                     </asp:Panel>
                 </td>
             </tr>
