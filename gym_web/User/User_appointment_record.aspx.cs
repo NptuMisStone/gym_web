@@ -37,159 +37,173 @@ public partial class User_User_appointment_record : System.Web.UI.Page
         {
             if (!IsPostBack)
             {
+                Update_Pass();
                 User_id = Convert.ToString(Session["User_id"]);
-                ddl_status.SelectedIndex = 0;
                 show_record();
             }
+        }
+    }
+    private void Update_Pass()//逾時
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString)) {
+            string sql = "SELECT 預約編號 FROM [使用者預約-有預約的] WHERE [日期] < @today AND [預約狀態] = 1 ";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@today", DateTime.Now.Date);
+            connection.Open();
+            List<int> reservationIds = new List<int>();
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                reservationIds.Add(reader.GetInt32(0)); // 假設 預約編號 是整數型別
+            }
+            reader.Close();
+            string updateSql = "UPDATE [使用者預約] SET 預約狀態 = @status WHERE 預約編號 = @reservationId";
+            SqlCommand updateCommand = new SqlCommand(updateSql, connection);
+            updateCommand.Parameters.AddWithValue("@status", 4); // 假設更新狀態為逾時
+
+            // 逐一更新預約狀態
+            foreach (int reservationId in reservationIds)
+            {
+                updateCommand.Parameters.AddWithValue("@reservationId", reservationId);
+                updateCommand.ExecuteNonQuery();
+                updateCommand.Parameters.Clear(); // 清空參數以便下次使用
+                updateCommand.Parameters.AddWithValue("@status", 4); // 再次設置預約狀態
+            }
+            connection.Close();
         }
     }
     public void show_record()
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id ORDER BY [日期] , [開始時間]";
+            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id ORDER BY [日期], [開始時間]";
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@User_id", User_id);
             connection.Open();
             SqlDataReader reader = command.ExecuteReader();
 
-            if (reader.HasRows)
+            // 分别绑定
+            var inProgress = new List<AppointmentRecord>();
+            var completed = new List<AppointmentRecord>();
+            var cancelled = new List<AppointmentRecord>();
+            var overtime = new List<AppointmentRecord>();
+            var coachCancelled = new List<AppointmentRecord>();
+
+            while (reader.Read())
             {
-                lb_norecord.Visible = false;
-                dl_record.Visible = true;
-                lb_count.Visible = true;
-                dl_record.DataSource = reader;
-                dl_record.DataBind();
+                var record = new AppointmentRecord
+                {
+                    預約編號 = Convert.ToInt32(reader["預約編號"]),
+                    健身教練姓名 = reader["健身教練姓名"].ToString(),
+                    課程名稱 = reader["課程名稱"].ToString(),
+                    日期 = Convert.ToDateTime(reader["日期"]),
+                    開始時間 = reader["開始時間"].ToString(),
+                    預約狀態 = Convert.ToInt32(reader["預約狀態"]),
+                    課程費用 = Convert.ToInt32(reader["課程費用"]),
+                    備註 = reader["備註"].ToString()
+                };
+
+                int status = Convert.ToInt32(reader["預約狀態"]);
+                switch (status)
+                {
+                    case 1:
+                        inProgress.Add(record);
+                        break;
+                    case 2:
+                        completed.Add(record);
+                        break;
+                    case 3:
+                        cancelled.Add(record);
+                        break;
+                    case 4:
+                        overtime.Add(record);
+                        break;
+                    case 5:
+                        coachCancelled.Add(record);
+                        break;
+                }
             }
-            else
-            {
-                lb_norecord.Visible = true;
-                dl_record.Visible = false;
-                lb_count.Visible = false;
-            }
+            // 分别绑定 DataList
+            dl_inProgress.DataSource = inProgress;
+            dl_inProgress.DataBind();
+
+            dl_completed.DataSource = completed;
+            dl_completed.DataBind();
+
+            dl_cancelled.DataSource = cancelled;
+            dl_cancelled.DataBind();
+
+            dl_overtime.DataSource = overtime;
+            dl_overtime.DataBind();
+
+            dl_coachCancelled.DataSource = coachCancelled;
+            dl_coachCancelled.DataBind();
+
             connection.Close();
         }
-        record_count();//共有幾筆預約紀錄
+    }
+    public class AppointmentRecord
+    {
+        public int 預約編號 { get; set; }
+        public string 健身教練姓名 { get; set; }
+        public string 課程名稱 { get; set; }
+        public DateTime 日期 { get; set; }
+        public string 開始時間 { get; set; }
+        public int 預約狀態 { get; set; }
+        public int 課程費用 { get; set; }
+        public string 備註 { get; set; }
     }
 
-    private void record_count()
+    protected bool HasCommented(object ap_id)
     {
+        bool exists = false;
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "select count(*) from [使用者預約-有預約的] where [使用者編號] = @User_id" ;
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@User_id", User_id);
-            connection.Open();
-            int count = (int)command.ExecuteScalar();
-            lb_count.Text = "共有" + count + "筆記錄";
-            connection.Close();
-        }
-    }
-
-    protected string GetStatusText(object status)//顯示預約狀態文字
-    {
-        int statusValue = Convert.ToInt32(status);
-        switch (statusValue)
-        {
-            case 1:
-                return "預約中";
-            case 2:
-                return "已完成";
-            case 3:
-                return "已取消";
-            case 4:
-                return "逾時";
-            case 5:
-                return "教練取消";
-            default:
-                return ""; // 或回傳預設的狀態文字
-        }
-    }
-    protected string GetBorderColor(object status)
-    {
-        if (status != null)
-        {
-            string statusString = status.ToString();
-            switch (statusString)
+            string sql = "IF EXISTS (SELECT 1 FROM 完成預約評論表 WHERE 預約編號 = @預約編號) SELECT 'TRUE' AS Result ELSE SELECT 'FALSE' AS Result";
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                case "1":
-                    return "#475766"; 
-                case "2":
-                    return "#86B817"; 
-                case "3":
-                    return "#B6B6B6"; 
-                case "4":
-                    return "#CF808B";
-                case "5":
-                    return "#E5B76A";
-                default:
-                    return "#000000"; 
-            }
-        }
-        else
-        {
-            return "#000000"; 
-        }
-    }
-    protected void ddl_status_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        int se_status = int.Parse(ddl_status.SelectedValue);
-        serch_status(se_status);
-    }
-    private void serch_status(int se_status)
-    {
-        if (se_status == 0)
-        {
-            lb_norecord.Visible = false;
-            dl_record.Visible = true;
-            lb_count.Visible = true;
-            show_record();
-        }
-        else
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                string sql = "select * from [使用者預約-有預約的] where [使用者編號] = @User_id AND [預約狀態] = @Status ORDER BY [日期] , [開始時間]";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@User_id", User_id);
-                command.Parameters.AddWithValue("@Status", se_status);
+                command.Parameters.AddWithValue("@預約編號", ap_id);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    lb_norecord.Visible = false;
-                    dl_record.Visible = true;
-                    dl_record.DataSource = reader;
-                    dl_record.DataBind();
-                    lb_count.Visible = true;
-                }
-                else
-                {
-                    lb_norecord.Visible = true;
-                    lb_count.Visible = false;
-                    dl_record.Visible = false;
-                }
-                connection.Close();
+                exists = Convert.ToBoolean(command.ExecuteScalar()); // 執行查詢並轉換結果為布林值
             }
-            search_status_count(se_status);
+            connection.Close();
         }
+        return exists;
     }
-
-    private void search_status_count(int se_status)
+    private void UpdatePeople()
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "select count(*) from [使用者預約-有預約的] where [使用者編號] = @User_id AND [預約狀態] = @Status" ;
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@User_id", User_id);
-            command.Parameters.AddWithValue("@Status", se_status);
+            string query = "UPDATE 健身教練課表 SET 預約人數 = @ap_people WHERE 課表編號 = @Schedule_id";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                Search_ap_people();
+                command.Parameters.AddWithValue("@ap_people", Ap_people - 1);
+                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            connection.Close();
+        }
+    }
+    private void Search_ap_people()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string query = "SELECT 預約人數 FROM 健身教練課表 WHERE 課表編號 = @Schedule_id ";
             connection.Open();
-            int count = (int)command.ExecuteScalar();
-            lb_count.Text = "共有" + count + "筆記錄";
+            SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+            SqlDataReader reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                Ap_people = int.Parse(reader["預約人數"].ToString().Trim());
+            }
+            connection.Close();
         }
     }
 
-    protected void dl_record_ItemCommand(object source, DataListCommandEventArgs e)
+    protected void dl_inProgress_ItemCommand(object source, DataListCommandEventArgs e)
     {
         if (e.CommandName == "cancel")
         {
@@ -241,58 +255,15 @@ public partial class User_User_appointment_record : System.Web.UI.Page
             sqlcn.Close();
             show_record();
         }
-        else if (e.CommandName == "comment")
+    }
+
+    protected void dl_completed_ItemCommand(object source, DataListCommandEventArgs e)
+    {
+        if (e.CommandName == "comment")
         {
             Session["User_id"] = User_id;
             Session["ap_id"] = e.CommandArgument;
             Response.Redirect("User_comment.aspx");
-        }
-    }
-
-    protected bool HasCommented(object ap_id)
-    {
-        bool exists = false;
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string sql = "IF EXISTS (SELECT 1 FROM 完成預約評論表 WHERE 預約編號 = @預約編號) SELECT 'TRUE' AS Result ELSE SELECT 'FALSE' AS Result";
-            using (SqlCommand command = new SqlCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@預約編號", ap_id);
-                connection.Open();
-                exists = Convert.ToBoolean(command.ExecuteScalar()); // 執行查詢並轉換結果為布林值
-            }
-        }
-        return exists;
-    }
-    private void UpdatePeople()
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string query = "UPDATE 健身教練課表 SET 預約人數 = @ap_people WHERE 課表編號 = @Schedule_id";
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                Search_ap_people();
-                command.Parameters.AddWithValue("@ap_people", Ap_people - 1);
-                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
-    }
-    private void Search_ap_people()
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string query = "SELECT 預約人數 FROM 健身教練課表 WHERE 課表編號 = @Schedule_id ";
-            connection.Open();
-            SqlCommand command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
-            SqlDataReader reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                Ap_people = int.Parse(reader["預約人數"].ToString().Trim());
-            }
-            connection.Close();
         }
     }
 }
