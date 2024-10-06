@@ -59,7 +59,7 @@
                         <asp:Label ID="lb_course" runat="server" Text='<%# "課程名稱："+ Eval("課程名稱") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_date" runat="server" Text='<%# "預約日期：" + Eval("日期","{0:yyyy/MM/dd }") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_time" runat="server" Text='<%# "預約時間：" + Eval("開始時間") %>' Font-Size="16px"></asp:Label>
-                        <asp:Label ID="lb_ap_status" runat="server" Text="預約中" Font-Size="16px"></asp:Label>
+                        <asp:Label ID="lb_ap_status" runat="server" Text="預約狀態：預約中" Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_fee" runat="server" Text='<%# "費用："+ Eval("課程費用","{0:f0}") +"元"%>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_text" runat="server" Text='<%# "備註："+ Eval("備註") %>' Font-Size="16px"></asp:Label><br />
                         <asp:Button ID="btm_cancel_appointment" CommandName="cancel" runat="server" Text="取消預約"  CommandArgument='<%# Eval("預約編號") %>' Visible='<%# Eval("預約狀態").ToString() == "1" ? true : false %>' Width="100px" Style="border-color:#475766; Font-Size:16px; background-color:#475766;border-radius:8px;color:white;" />
@@ -76,7 +76,7 @@
                         <asp:Label ID="lb_course" runat="server" Text='<%# "課程名稱："+ Eval("課程名稱") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_date" runat="server" Text='<%# "預約日期：" + Eval("日期","{0:yyyy/MM/dd }") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_time" runat="server" Text='<%# "預約時間：" + Eval("開始時間") %>' Font-Size="16px"></asp:Label>
-                        <asp:Label ID="lb_ap_status" runat="server" Text="已完成" Font-Size="16px"></asp:Label>
+                        <asp:Label ID="lb_ap_status" runat="server" Text="預約狀態：已完成" Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_fee" runat="server" Text='<%# "費用："+ Eval("課程費用","{0:f0}") +"元"%>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_text" runat="server" Text='<%# "備註："+ Eval("備註") %>' Font-Size="16px"></asp:Label><br />
                         <asp:Button ID="btn_comment" runat="server" CommandName="comment" Text="對健身教練留下評論"  Visible='<%# !HasCommented(Eval("預約編號")) && Eval("預約狀態").ToString() == "2" %>' CommandArgument='<%# Eval("預約編號") %>' Width="180px" Style="border-color:#86B817; Font-Size:16px; background-color:#86B817;border-radius:8px;color:white;" />
@@ -95,7 +95,7 @@
                         <asp:Label ID="lb_course" runat="server" Text='<%# "課程名稱："+ Eval("課程名稱") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_date" runat="server" Text='<%# "預約日期：" + Eval("日期","{0:yyyy/MM/dd }") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_time" runat="server" Text='<%# "預約時間：" + Eval("開始時間") %>' Font-Size="16px"></asp:Label>
-                        <asp:Label ID="lb_ap_status" runat="server" Text="已取消" Font-Size="16px"></asp:Label>
+                        <asp:Label ID="lb_ap_status" runat="server" Text="預約狀態：已取消" Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_fee" runat="server" Text='<%# "費用："+ Eval("課程費用","{0:f0}") +"元"%>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_text" runat="server" Text='<%# "備註："+ Eval("備註") %>' Font-Size="16px"></asp:Label><br />
                     </div>
@@ -111,7 +111,7 @@
                         <asp:Label ID="lb_course" runat="server" Text='<%# "課程名稱："+ Eval("課程名稱") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_date" runat="server" Text='<%# "預約日期：" + Eval("日期","{0:yyyy/MM/dd }") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_time" runat="server" Text='<%# "預約時間：" + Eval("開始時間") %>' Font-Size="16px"></asp:Label>
-                        <asp:Label ID="lb_ap_status" runat="server" Text="逾時" Font-Size="16px"></asp:Label>
+                        <asp:Label ID="lb_ap_status" runat="server" Text="預約狀態：逾時" Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_fee" runat="server" Text='<%# "費用："+ Eval("課程費用","{0:f0}") +"元"%>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_text" runat="server" Text='<%# "備註："+ Eval("備註") %>' Font-Size="16px"></asp:Label><br />
                     </div>
@@ -127,7 +127,7 @@
                         <asp:Label ID="lb_course" runat="server" Text='<%# "課程名稱："+ Eval("課程名稱") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_date" runat="server" Text='<%# "預約日期：" + Eval("日期","{0:yyyy/MM/dd }") %>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_time" runat="server" Text='<%# "預約時間：" + Eval("開始時間") %>' Font-Size="16px"></asp:Label>
-                        <asp:Label ID="lb_ap_status" runat="server" Text="教練取消" Font-Size="16px"></asp:Label>
+                        <asp:Label ID="lb_ap_status" runat="server" Text="預約狀態：教練取消" Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_fee" runat="server" Text='<%# "費用："+ Eval("課程費用","{0:f0}") +"元"%>' Font-Size="16px"></asp:Label>
                         <asp:Label ID="lb_ap_text" runat="server" Text='<%# "備註："+ Eval("備註") %>' Font-Size="16px"></asp:Label><br />
                     </div>
