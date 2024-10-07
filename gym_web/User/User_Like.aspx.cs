@@ -21,6 +21,7 @@ public partial class User_User_Like : System.Web.UI.Page
         if (!IsPostBack)
         {
             coachdata();
+            classdata();
         }
     }
     private void coachdata()
@@ -58,14 +59,37 @@ public partial class User_User_Like : System.Web.UI.Page
             Debug.WriteLine("Error retrieving data: " + ex.Message);
         }
     }
+    private void classdata()
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(conectionString))
+            {
+                // 只顯示用戶已收藏的有排課的課程
+                string sql = @"SELECT * FROM 收藏課程 WHERE 使用者編號=@userId";
 
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@userId", Convert.ToInt32(Session["User_id"]));
+
+                connection.Open();
+                SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+                lv_classdata.DataSource = dataReader;
+                lv_classdata.DataBind();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log or print the exception details
+            Debug.WriteLine("Error retrieving data: " + ex.Message);
+        }
+    }
     protected void lv_coachdata_ItemCommand(object sender, ListViewCommandEventArgs e)
     {
         if (e.CommandName == "coach_detail")
         {
             // 取得教練編號，存入 Session，並跳轉至詳細頁面
             Session["coach_num"] = Convert.ToInt32(e.CommandArgument);
-            Response.Redirect("coach_detail.aspx");
+            Response.Redirect("~/page/coach_detail.aspx");
         }
     }
 
@@ -128,6 +152,28 @@ public partial class User_User_Like : System.Web.UI.Page
             return count > 0 ? "img/like1.png" : "img/dislike3.png";
         }
     }
+    protected string GetClassLikeImageUrl(object classID)
+    {
+        if (Session["User_id"] == null)
+        {
+            return "img/dislike2.png";
+        }
+
+        int userId = Convert.ToInt32(Session["User_id"]);
+        int classId = Convert.ToInt32(classID);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
+        {
+            connection.Open();
+            string sql = "SELECT COUNT(*) FROM 課程被收藏 WHERE 課程編號 = @likeclass_id AND 使用者編號 = @likeuser_id";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@likeclass_id", classId);
+            command.Parameters.AddWithValue("@likeuser_id", userId);
+
+            int count = (int)command.ExecuteScalar();
+            return count > 0 ? "img/like1.png" : "img/dislike2.png";
+        }
+    }
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
         ImageButton btn = (ImageButton)sender;
@@ -162,5 +208,67 @@ public partial class User_User_Like : System.Web.UI.Page
             }
         }
         coachdata();
+    }
+
+    protected void ClassLikeBtn_Click(object sender, ImageClickEventArgs e)
+    {
+        if (Session["User_id"] == null)
+        {
+            string script = @"<script>
+            Swal.fire({
+                icon: 'error',
+                title: '請先登入！',
+                confirmButtonText: '確定',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '../User/User_login.aspx';
+                }
+            });
+            </script>";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+            return;
+        }
+        ImageButton btn = (ImageButton)sender;
+        int classId = Convert.ToInt32(btn.CommandArgument);
+        int userId = Convert.ToInt32(Session["User_id"]);
+
+        using (SqlConnection connection = new SqlConnection(conectionString))
+        {
+            connection.Open();
+
+            if (btn.ImageUrl == "img/dislike2.png")
+            {
+                // 喜歡課程，插入收藏記錄
+                string sql = "INSERT INTO 課程被收藏 (使用者編號, 課程編號) VALUES (@likeuser_id, @likeclass_id)";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeuser_id", userId);
+                command.Parameters.AddWithValue("@likeclass_id", classId);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/like1.png";
+            }
+            else
+            {
+                // 取消喜歡，刪除收藏記錄
+                string sql = "DELETE FROM 課程被收藏 WHERE 課程編號 = @dislikeclass_id AND 使用者編號 = @dislikeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@dislikeclass_id", classId);
+                command.Parameters.AddWithValue("@dislikeuser_id", userId);
+                command.ExecuteNonQuery();
+
+                btn.ImageUrl = "img/dislike2.png";
+            }
+        }
+        classdata();
+    }
+
+    protected void lv_classdata_ItemCommand(object sender, ListViewCommandEventArgs e)
+    {
+        if (e.CommandName == "see_detail")
+        {
+            // 取得課程編號，存入 Session，並跳轉至詳細頁面
+            Session["Class_id"] = Convert.ToInt32(e.CommandArgument);
+            Response.Redirect("~/page/class_detail.aspx");
+        }
     }
 }

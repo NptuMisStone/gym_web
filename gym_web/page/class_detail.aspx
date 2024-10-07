@@ -102,7 +102,7 @@
     </div>
     <!-- Page Header End -->
 
-    <asp:Repeater ID="rp_class" runat="server" OnItemCommand="rp_class_ItemCommand">
+    <asp:Repeater ID="rp_class" runat="server" OnItemCommand="rp_class_ItemCommand" OnItemDataBound="rp_class_ItemDataBound">
         <ItemTemplate>
             <!-- Class Start -->
             <div class="container py-5">
@@ -112,6 +112,13 @@
                     </div>
                     <div class="col-lg-6">
                         <h2 class="display-4 font-weight-bold mb-4"><%# Eval("課程名稱") %></h2>
+                        <!-- 將愛心按鈕移到這裡 -->
+                        <div style="display: flex; margin-bottom: 20px;">
+                            <asp:ImageButton ID="LikeBtn" runat="server" ImageUrl="~/page/img/dislike2.png"
+                                Style="width: 50px; height: 50px;" OnClick="LikeBtn_Click"
+                                CommandArgument='<%# Eval("課程編號") %>' />
+
+                        </div>
                         <p><%# Eval("課程內容介紹") %></p>
                         <h3 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h3>
 

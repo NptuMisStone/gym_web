@@ -192,7 +192,7 @@
                             <!-- 將背景色過渡效果與懸停效果直接加在 style 和事件屬性中 -->
                             <asp:LinkButton ID="lb_class" runat="server" CommandName="see_detail" CommandArgument='<%# Eval("課程編號") %>'
                                 CssClass="unstyled-link"
-                                Style="display: block; text-align: left; text-decoration: none; cursor: pointer;">
+                                Style="position:relative; display: block; text-align: left; text-decoration: none; cursor: pointer;">
                                 <div class="row align-items-center" style="padding: 20px;">
                                     <div class="col-sm-6" style="padding: 10px 15px;">
                                         <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
@@ -202,6 +202,7 @@
                                     </div>
                                     <div class="col-sm-6" style="padding: 10px 15px;">
                                         <h4 class="font-weight-bold"><%# Eval("課程名稱") %></h4>
+                                        
                                         <h4 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h4>
                                         <p><%# Eval("健身教練姓名") + " 教練" %></p>
                                         <p><%# Eval("課程內容介紹") %></p>
@@ -209,6 +210,17 @@
                                     </div>
                                 </div>
                             </asp:LinkButton>
+                            <!-- 愛心圖示 -->
+                            <div style="position: absolute; top: 4%; right: 4%;">
+                                <asp:ImageButton 
+                                    ID="LikeBtn"
+                                    runat="server"
+                                    CommandArgument='<%# Eval("課程編號") %>'
+                                    OnClick="LikeBtn_Click"
+                                    CssClass="like-button btn btn-outline-light rounded-circle"
+                                    ImageUrl='<%# GetLikeImageUrl(Eval("課程編號")) %>'
+                                    Style="width: 60px; height: 60px; object-fit: contain;" />
+                            </div>
                         </div>
                     </div>
                 </itemtemplate>

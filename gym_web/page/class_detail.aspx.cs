@@ -24,7 +24,8 @@ public partial class page_class_detail : System.Web.UI.Page
         Class_id = Convert.ToString(Session["Class_id"]);
         if (!IsPostBack)
         {
-            Date_change=DateTime.Today;
+            User_id = Convert.ToString(Session["User_id"]);
+            Date_change = DateTime.Today;
             BindClass();
             Bind_Time_Info();
             GetAddress();
@@ -427,6 +428,111 @@ public partial class page_class_detail : System.Web.UI.Page
                 }
             }
             return true;
+        }
+    }
+    private string GetClassIdFromLikeBtn(ImageButton LikeBtn)
+    {
+        return LikeBtn.CommandArgument;
+    }
+    private void BindLikeBtn(ImageButton LikeBtn, string classId, string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            LikeBtn.ImageUrl = "img/dislike2.png";
+        }
+        else
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "SELECT COUNT(*) FROM 課程被收藏 WHERE 課程編號=@likeclass_id AND 使用者編號=@likeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeclass_id", classId);
+                command.Parameters.AddWithValue("@likeuser_id", userId);
+                int count = (int)command.ExecuteScalar();
+                if (count > 0)
+                {
+                    LikeBtn.ImageUrl = "img/like1.png";
+                }
+                else
+                {
+                    LikeBtn.ImageUrl = "img/dislike2.png";
+                }
+            }
+        }
+    }
+
+    protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton LikeBtn = (ImageButton)sender;
+
+        // 獲取課程編號
+        var classId = GetClassIdFromLikeBtn(LikeBtn);
+
+        if (Session["User_id"] == null)
+        {
+            string script = @"<script>
+                Swal.fire({
+                  icon: 'error',
+                  title: '請先登入！',
+                  confirmButtonText: '確定',
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                     window.location.href = '../User/User_login.aspx';
+                  }
+                });
+                </script>";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+        }
+        else
+        {
+            if (LikeBtn.ImageUrl == "img/dislike2.png")
+            {
+                LikeBtn.ImageUrl = "img/like1.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "insert into 課程被收藏 (使用者編號,課程編號) values(@likeuser_id,@likeclass_id)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@likeuser_id", User_id);
+                    command.Parameters.AddWithValue("@likeclass_id", classId);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            else
+            {
+                LikeBtn.ImageUrl = "img/dislike2.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "delete from 課程被收藏 where 課程編號=@dislikeclass_id and 使用者編號=@dislikeuser_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@dislikeclass_id", classId);
+                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+        }
+    }
+
+    protected void rp_class_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+
+            // 獲取教練編號
+            var classId = DataBinder.Eval(e.Item.DataItem, "課程編號").ToString();
+
+            // 獲取 LikeBtn 控制項
+            ImageButton LikeBtn = (ImageButton)e.Item.FindControl("LikeBtn");
+
+            // 獲取使用者編號
+            var userId = Session["User_id"]?.ToString();
+
+            // 綁定 LikeBtn 的狀態
+            BindLikeBtn(LikeBtn, classId, userId);
         }
     }
 }
