@@ -11,11 +11,24 @@ public partial class Coach_Coach_register : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-
+        if (!Page.IsPostBack)
+        {
+            CaptchaHelper.CreateImageText(Session);
+        }
     }
-    
     protected void btn_coach_login_Click(object sender, EventArgs e)
     {
+        string randomString = Session["ImgText"] as string;
+        if (randomString != txtAnswer.Text.Trim())
+        {
+            ShowAlert("error", "驗證錯誤", "請重新輸入", 1500); ;
+            CaptchaHelper.CreateImageText(Session);
+            return;
+        }
+        else
+        {
+            //ShowAlert("success", "驗證成功","繼續進行註冊", 1500);
+        }
         if (IsValid)
         {
             string phone = tb_phone.Text;

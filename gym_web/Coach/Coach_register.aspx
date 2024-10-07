@@ -113,6 +113,12 @@
             .main a:hover {
                 color: #ff80ff; /* 改為更亮的紫紅色 */
             }
+
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* 控制驗證碼圖片和輸入框之間的間距 */
+        }
     </style>
 </head>
 <body>
@@ -158,7 +164,11 @@
                 <asp:ListItem Value="3">不願透露</asp:ListItem>
             </asp:RadioButtonList>
 
-
+            <div class="captcha-container">
+                <asp:Image runat="server" ID="image" ImageUrl="~/Captcha.ashx" />
+                <asp:TextBox runat="server" ID="txtAnswer" />
+            </div>
+            
             <asp:Button ID="btn_coach_login" runat="server" Text="註冊" OnClick="btn_coach_login_Click" CssClass="btn" />
 
             <div class="extra-links">
