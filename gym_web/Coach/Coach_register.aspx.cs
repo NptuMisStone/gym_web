@@ -14,7 +14,18 @@ public partial class Coach_Coach_register : System.Web.UI.Page
         if (!Page.IsPostBack)
         {
             CaptchaHelper.CreateImageText(Session);
+            UpdateCaptchaImage();
         }
+    }
+    protected void imgCaptcha_Click(object sender, EventArgs e)
+    {
+        CaptchaHelper.CreateImageText(Session);
+        UpdateCaptchaImage();
+    }
+    private void UpdateCaptchaImage()
+    {
+        // 加上時間戳以避免瀏覽器快取
+        imgCaptcha.ImageUrl = "~/Captcha.ashx?t=" + DateTime.Now.Ticks;
     }
     protected void btn_coach_login_Click(object sender, EventArgs e)
     {

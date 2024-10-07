@@ -165,7 +165,7 @@
             </asp:RadioButtonList>
 
             <div class="captcha-container">
-                <asp:Image runat="server" ID="image" ImageUrl="~/Captcha.ashx" />
+                <asp:ImageButton runat="server" ID="imgCaptcha" ImageUrl="~/Captcha.ashx" onclick="imgCaptcha_Click"/>
                 <asp:TextBox runat="server" ID="txtAnswer" />
             </div>
             
