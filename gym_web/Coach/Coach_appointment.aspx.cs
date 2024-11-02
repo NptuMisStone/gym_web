@@ -19,14 +19,39 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         Coach_id = Convert.ToString(Session["Coach_id"]);
         //驗證教練是否登入的類別函數
-        CoachHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "Coach");
         TD = DateTime.Now.ToString("yyyy-MM-dd");
         if (!IsPostBack)
         {
             BindTdData();
-            BindFTData();
-            BindPSData();
         }
+    }
+    protected void btnToday_Click(object sender, EventArgs e)
+    {
+        BindTdData();
+        ResetButtonClasses();
+        btnToday.CssClass = "course-btn active";
+    }
+
+    protected void btnFuture_Click(object sender, EventArgs e)
+    {
+        BindFTData();
+        ResetButtonClasses();
+        btnFuture.CssClass = "course-btn active";
+    }
+
+    protected void btnPast_Click(object sender, EventArgs e)
+    {
+        BindPSData();
+        ResetButtonClasses();
+        btnPast.CssClass = "course-btn active";
+    }
+    // 用來重置按鈕的 CssClass
+    private void ResetButtonClasses()
+    {
+        btnToday.CssClass = "course-btn";
+        btnFuture.CssClass = "course-btn";
+        btnPast.CssClass = "course-btn";
     }
     private void BindTdData() 
     {
@@ -38,8 +63,20 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             command.Parameters.AddWithValue("@CoachID", Coach_id);
             command.Parameters.AddWithValue("@TD", TD);
             SqlDataReader dataReader = command.ExecuteReader();
-            TodayRP.DataSource = dataReader;
-            TodayRP.DataBind();
+            RP.DataSource = null;
+            if (dataReader.HasRows)
+            {
+                RP.DataSource = dataReader;
+                RP.DataBind();
+                lblNoCourses.Visible = false;
+            }
+            else
+            {
+                lblNoCourses.Visible = true;
+                lblNoCourses.Text = "今日無安排課程";
+                RP.DataSource = null; // 清空 Repeater
+                RP.DataBind(); // 重新綁定空的資料來源，防止顯示舊資料
+            }
             connection.Close();
         }
     }
@@ -53,8 +90,20 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             command.Parameters.AddWithValue("@CoachID", Coach_id);
             command.Parameters.AddWithValue("@TD", TD);
             SqlDataReader dataReader = command.ExecuteReader();
-            FutureRP.DataSource = dataReader;
-            FutureRP.DataBind();
+            RP.DataSource = null;
+            if (dataReader.HasRows)
+            {
+                RP.DataSource = dataReader;
+                RP.DataBind();
+                lblNoCourses.Visible = false;
+            }
+            else
+            {
+                lblNoCourses.Visible = true;
+                lblNoCourses.Text = "未來無安排課程";
+                RP.DataSource = null; // 清空 Repeater
+                RP.DataBind(); // 重新綁定空的資料來源，防止顯示舊資料
+            }
             connection.Close();
         }
     }
@@ -62,21 +111,33 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "Select * From 健身教練課表課程合併 Where 健身教練編號=@CoachID AND 日期 < @TD ORDER BY 日期 , 開始時間 ";
+            string sql = "Select * From 健身教練課表課程合併 Where 健身教練編號=@CoachID AND 日期 < @TD ORDER BY 日期 DESC, 開始時間 ASC";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@CoachID", Coach_id);
             command.Parameters.AddWithValue("@TD", TD);
             SqlDataReader dataReader = command.ExecuteReader();
-            PastRP.DataSource = dataReader;
-            PastRP.DataBind();
+            RP.DataSource = null;
+            if (dataReader.HasRows)
+            {
+                RP.DataSource = dataReader;
+                RP.DataBind();
+                lblNoCourses.Visible = false;
+            }
+            else
+            {
+                lblNoCourses.Visible = true;
+                lblNoCourses.Text = "過去無安排課程";
+                RP.DataSource = null; // 清空 Repeater
+                RP.DataBind(); // 重新綁定空的資料來源，防止顯示舊資料
+            }
             connection.Close();
         }
     }
 
-    protected void TodayRP_ItemCommand(object source, RepeaterCommandEventArgs e)
+    protected void RP_ItemCommand(object source, RepeaterCommandEventArgs e)
     {
-        if (e.CommandName == "TD_AP")
+        if (e.CommandName == "AP")
         {
             Schedule_id =Convert.ToInt32(e.CommandArgument);
             ShowAP(Schedule_id);
@@ -85,27 +146,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         }
     }
 
-    protected void FutureRP_ItemCommand(object source, RepeaterCommandEventArgs e)
-    {
-        if (e.CommandName == "FT_AP")
-        {
-            Schedule_id = Convert.ToInt32(e.CommandArgument);
-            ShowAP(Schedule_id);
-            Panel1.Visible = true;
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
-        }
-    }
-
-    protected void PastRP_ItemCommand(object source, RepeaterCommandEventArgs e)
-    {
-        if (e.CommandName == "PS_AP")
-        {
-            Schedule_id = Convert.ToInt32(e.CommandArgument);
-            ShowAP(Schedule_id);
-            Panel1.Visible = true;
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
-        }
-    }
     private void ShowAP(int schedule_id)
     {
         using (SqlConnection connection = new SqlConnection(connectionString)) 

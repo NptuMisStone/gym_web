@@ -42,7 +42,7 @@ public class UserManager
                 connection.Close();
             }
         }
-        return "Hi," + u_name;
+        return "Hi, " + u_name;
     }
 
     public string GetCoachName()
@@ -63,6 +63,6 @@ public class UserManager
                 connection.Close();
             }
         }
-        return "Hi," + c_name + " 教練";
+        return "Hi, " + c_name + " 教練";
     }
 }

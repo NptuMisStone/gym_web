@@ -16,7 +16,7 @@ public partial class User_User_Like : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         // 驗證用戶是否登入的類別函數
-        UserHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
 
         if (!IsPostBack)
         {

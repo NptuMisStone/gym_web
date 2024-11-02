@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Web.Services;
+using System.Web;
 
 /// <summary>
 /// CaptchaHelper 的摘要描述
@@ -22,4 +24,5 @@ public static class CaptchaHelper
             sb.Append(chars[r.Next(chars.Length)]);
         return sb.ToString();
     }
+
 }

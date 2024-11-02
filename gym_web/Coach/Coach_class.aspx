@@ -3,19 +3,50 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <style>
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e31c25;
+            border-bottom: 2px solid #e31c25;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
 
+        .btn-back-home {
+            background-color: #007bff; /* 背景顏色 */
+            color: white; /* 文字顏色設為白色 */
+            border-radius: 50px; /* 圓角邊框 */
+            padding: 10px 20px; /* 調整內邊距 */
+            font-size: 1rem; /* 調整字體大小 */
+            font-weight: bold; /* 使字體加粗 */
+            border: none; /* 去掉預設邊框 */
+            display: inline-block;
+            text-align: center;
+            transition: background-color 0.3s ease; /* 增加過渡效果 */
+        }
+
+            .btn-back-home:hover,
+            .btn-back-home:focus {
+                background-color: #28a745; /* 懸停或選取時的顏色 */
+                text-decoration: none; /* 去掉下劃線 */
+                outline: none; /* 去掉選取時的外框 */
+            }
+    </style>
     <!-- Page Header Start -->
-    <div class="container-fluid page-header mb-5">
-        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-            <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">課程維護</h4>
+    <div class="container-fluid page-header mb-1">
+        <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px">
+            <h4 class="display-4 mb-3 mt-0 text-white text-uppercase font-weight-bold">課程維護</h4>
         </div>
     </div>
 
     <!-- GYM Class Start -->
-    <div class="container feature pt-5">
-        <div class="d-flex flex-column text-center mb-5">
-            <h4 class="display-4 font-weight-bold">我的所有課程</h4>
+    <div class="container feature py-2">
+        <div class="mb-3">
+            <asp:Button ID="BtnBack" runat="server" Text="←返回首頁" CssClass="btn-back-home px-4 py-2" PostBackUrl="~/Coach/Coach_index.aspx" />
         </div>
+        <h5 class="mb-4 step-title">我的所有課程</h5>
         <div class="row">
     <asp:ListView ID="lv_class" runat="server" OnItemCommand="lv_class_ItemCommand">
         <LayoutTemplate>

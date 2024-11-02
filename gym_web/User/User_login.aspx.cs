@@ -13,6 +13,7 @@ public partial class User_User_login : System.Web.UI.Page
     {
         Session["user_id"] = null;
         Session["coach_id"] = null;
+        user_acc.Focus();
     }
     protected void btn_user_login_Click(object sender, EventArgs e)
     {

@@ -18,26 +18,29 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
 
-    public static string Coach_id;
-    public static int Course_time,NewCourse_time;
-    public static string Course_id, Course_starttime, Course_endtime, Course_week, Schedule_id, NewStarttime, NewEndtime, NewCourse_id;
+    public static string Coach_id, Course_id, Course_starttime, Course_endtime, Course_week, tbCourseWeek, Schedule_id;
     public static DateTime Course_date;
+    public static int Location_type;
     private const string SelectedDatesKey = "SelectedDates";
-    public static string tbCourseWeek;
 
     protected void Page_Load(object sender, EventArgs e)
     {
         Coach_id = Convert.ToString(Session["Coach_id"]);
         //驗證教練是否登入的類別函數
-        CoachHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "Coach");
 
         if (!IsPostBack)
         {
             Session["SelectedDate"] = DateTime.Today;
+            CourseContainer.InnerHtml = @"
+                        <p class='text-center' style='border: 2px dashed black; border-radius: 8px; padding: 15px; height: 100px;'>
+                            尚未選擇課程
+                        </p>";
+            Course_id = null;
+            ClearCalendar();
             BindCourseData();
-            BindCourseListview();
         }
-        
+        BindCourseListview();
     }
     private void BindCourseData()
     {// 使用 Session 中存儲的日期
@@ -77,7 +80,6 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         }
 
 
-        bool hasData = false;
 
         foreach (string week in weeklist)
         {
@@ -103,16 +105,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
 
                         weekCoursesMap[week].Add(($"{courseName} ({startTime} - {endTime})", locationType, scheduleId));
 
-                        hasData = true;
                     }
 
                 }
             }
-        }
-
-        if (!hasData)
-        {
-            lblMessage.Text = "無課表";
         }
 
         // 在這裡將 weekCoursesMap 的數據綁定到前端 HTML 表格
@@ -250,38 +246,18 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                     conn.Open();
                     command.ExecuteNonQuery();
                     conn.Close();
-                    BindCourseData(); // 更新課程資料
-                    string successScript = @"<script>
-                            Swal.fire({
-                            icon: 'success',
-                            title: '刪除成功',
-                            text: '班表已刪除',
-                            showConfirmButton: false,
-                            timer: 1500
-                            });
-                          </script>";
+                    BindCourseData();
+                    BindCourseListview();
 
-                    // 顯示刪除成功的提示
-                    Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertSuccess", successScript, false);
+                    ShowAlert("success", "刪除成功", "班表已刪除", 1500);
                 }
             }
-            RegisterScrollScript();
+            RegisterScrollScript(btnCurrentWeek.ClientID);
         }
         else
         {
             // 如果 Schedule_id 為 null，顯示錯誤訊息
-            string errorScript = @"<script>
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: '刪除失敗',
-                                    text: '課表編號無效',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                });
-                              </script>";
-
-            // 顯示錯誤提示
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertError", errorScript, false);
+            ShowAlert("error", "刪除失敗", "課表編號無效", 1500);
         }
     }
 
@@ -315,13 +291,393 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
     }
     protected void lv_class_ItemCommand(object sender, ListViewCommandEventArgs e)
     {
-        if (e.CommandName == "see_detail")
+        if (e.CommandName == "show")
         {
-            // 取得課程編號，存入 Session，並跳轉至詳細頁面
-            Session["Class_id"] = Convert.ToInt32(e.CommandArgument);
-            //Response.Redirect("class_detail.aspx");
+            string[] args = e.CommandArgument.ToString().Split(',');
+            Course_id = args[0];
+            Location_type = Convert.ToInt32(args[1]);
+            Bind_selectclass(Course_id);
+            RegisterScrollScript(Addclass.ClientID);
+        }
+        BindCourseListview();
+    }
+    private void Bind_selectclass(string Course_id)
+    {
+        if (!string.IsNullOrEmpty(Course_id))
+        {
+            // 清空課程容器的內容，避免重複顯示
+            CourseContainer.InnerHtml = "";
+
+            string query = @"SELECT [課程名稱], [課程圖片], [課程時間長度], [上課人數]
+             FROM [健身教練課程]
+             WHERE [課程編號] = @CourseId AND [健身教練編號] = @CoachId";
+
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    // 設定參數
+                    cmd.Parameters.AddWithValue("@CourseId", Course_id);
+                    cmd.Parameters.AddWithValue("@CoachId", Coach_id);
+
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                // 取得查詢結果的各個欄位
+                                string courseName = reader["課程名稱"].ToString();
+                                byte[] courseImageData = reader["課程圖片"] as byte[];  // 課程圖片是二進位資料
+                                string courseImage = GetImageUrl(courseImageData, 60);  // 使用 GetImageUrl 方法處理圖片
+                                int courseDuration = Convert.ToInt32(reader["課程時間長度"]);
+                                int classSize = Convert.ToInt32(reader["上課人數"]);
+                                string classType = classSize == 1 ? "一對一" : "團體";
+
+                                // 動態生成 HTML 內容
+                                string courseHtml = $@"
+    <div style='width: 100%; transition: background-color 0.3s ease; border: 2px solid black; border-radius: 8px; overflow: hidden;'
+        onmouseover='this.style.backgroundColor=""#f0f0f0""'
+        onmouseout='this.style.backgroundColor=""""'>
+        <div class='row align-items-center' style='padding: 5px;'>
+            <div class='col-sm-5 text-center' style='padding: 5px;'>
+                <img src='{courseImage}' alt='課程圖片' style='object-fit: cover; height: 60px; width: 60px;' class='img-fluid rounded-circle' />
+                <br />
+                <i style='font-size:14px; font-weight: bold; color:#e31c25;'>{classType}</i>
+            </div>
+            <div class='col-sm-7'>
+                <h4 class='font-weight-bold' style='font-size: 16px; margin: 0;'>{courseName}</h4>
+                <p style='font-size: 14px; margin: 0;'>時長：{courseDuration}分鐘</p>
+                <p style='font-size: 14px; margin: 0;'>人數：{classSize}人</p>
+                <!-- 隱藏的 input 用來存儲課程時間長度，方便前端獲取 -->
+                <input type='hidden' class='course-duration' value='{courseDuration}' />
+            </div>
+        </div>
+    </div>
+    <br />";
+
+
+                                // 將生成的 HTML 內容添加到頁面的容器中
+                                CourseContainer.InnerHtml += courseHtml; // 注意這裡使用 "+=" 來追加內容
+                            }
+                        }
+                        else
+                        {
+                            // 處理沒有找到課程的情況
+                            CourseContainer.InnerHtml = "<p>未找到相關課程</p>";
+                        }
+                    }
+                }
+            }
         }
     }
+    protected void Calendar1_SelectionChanged(object sender, EventArgs e)
+    {
+        // 獲取已選擇的日期
+        List<DateTime> selectedDates = GetSelectedDates();
+
+        // 獲取新的選擇日期
+        DateTime[] newSelection = Calendar1.SelectedDates.Cast<DateTime>().ToArray();
+
+        // 更新選擇的日期
+        foreach (var date in newSelection)
+        {
+            if (selectedDates.Contains(date))
+            {
+                // 如果日期已被選擇，則移除
+                selectedDates.Remove(date);
+            }
+            else
+            {
+                // 如果日期未被選擇，則添加
+                selectedDates.Add(date);
+            }
+        }
+
+        // 更新 Session
+        Session[SelectedDatesKey] = selectedDates;
+        UpdateSelectedDatesLabel();
+        RegisterScrollScript(Addclass.ClientID);
+    }
+
+    private void UpdateSelectedDatesLabel()
+    {
+        // 獲取當前已選擇的日期
+        List<DateTime> selectedDates = GetSelectedDates();
+
+        if (selectedDates.Any())
+        {
+            // 每個日期用一個 <span> 包裝
+            string datesHtml = string.Join("", selectedDates.Select(d => $"<span class='date-badge'>{d.ToShortDateString()}</span>"));
+
+            // 設置 Label 的 HTML 內容
+            SelectedDatesLabel.Text = "選擇的日期：" + datesHtml;
+        }
+        else
+        {
+            SelectedDatesLabel.Text = "選擇的日期：未選擇";
+        }
+
+        // 清除所有已選擇的日期樣式
+        Calendar1.SelectedDates.Clear();
+    }
+
+
+    private List<DateTime> GetSelectedDates()
+    {
+        // 獲取 Session 中的選擇日期
+        if (Session[SelectedDatesKey] is List<DateTime> dates)
+        {
+            return dates;
+        }
+        else
+        {
+            return new List<DateTime>();
+        }
+    }
+
+    private void ClearCalendar()
+    {
+        // 清除日曆中的所有選擇日期
+        Calendar1.SelectedDates.Clear();
+        Session[SelectedDatesKey] = new List<DateTime>();
+    }
+
+    protected void Calendar1_DayRender(object sender, DayRenderEventArgs e)
+    {
+        // 獲取已選擇的日期
+        List<DateTime> selectedDates = GetSelectedDates();
+        DateTime today = DateTime.Today;
+
+        // 禁用今天之前的日期
+        if (e.Day.Date < today)
+        {
+            e.Cell.ForeColor = System.Drawing.Color.Gray; // 文字顏色
+            e.Cell.BackColor = System.Drawing.Color.LightGray; // 背景顏色
+            e.Cell.Attributes.Add("onclick", "return false;"); // 禁用
+        }
+        else
+        {
+            // 如果該日期已選擇，則更改樣式
+            if (selectedDates.Contains(e.Day.Date))
+            {
+                e.Cell.BackColor = System.Drawing.Color.Green; // 背景顏色
+                e.Cell.ForeColor = System.Drawing.Color.White; // 文字顏色
+            }
+        }
+    }
+
+    protected void btnQueryWeek_Click(object sender, EventArgs e)
+    {
+        // 獲取選擇的日期，從 TextBox 獲取文本
+        DateTime selectedDate;
+        if (DateTime.TryParse(txtSelectedDate.Text, out selectedDate)) // 使用 txtSelectedDate.Text
+        {
+            // 更新 Session 中的日期
+            Session["SelectedDate"] = selectedDate;
+
+            // 重新綁定課程資料
+            BindCourseData();
+            BindCourseListview();
+            RegisterScrollScript(Week.ClientID);
+        }
+        else
+        {
+            ShowAlert("error", "請選擇有效的日期", "請選擇有效的日期", 1500);
+        }
+    }
+    protected void btnAddSchedule_Click(object sender, EventArgs e)
+    {
+        // 已選擇的日期
+        List<DateTime> selectedDates = GetSelectedDates();
+
+        Course_starttime = tbCourseStartTime.Text;
+        Course_endtime = hiddenCourseEndTime.Value;
+
+        if (Course_id == null)
+        {
+            // 顯示未選擇課程訊息
+            ShowAlert("error", "請選擇課程", "請先選擇課程再進行操作", 1500);
+        }
+        else
+        {
+            // 檢查是否有選擇日期
+            if (selectedDates.Count > 0)
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    foreach (DateTime date in selectedDates)
+                    {
+                        string queryCheck = @"
+                        SELECT 課程編號, 開始時間, 結束時間
+                        FROM [健身教練課表課程-判斷課程衝突用] 
+                        WHERE 日期 = @course_date
+                        AND 健身教練編號 = @coach_id ";
+
+                        using (SqlCommand checkCommand = new SqlCommand(queryCheck, connection))
+                        {
+                            checkCommand.Parameters.AddWithValue("@course_date", date);
+                            checkCommand.Parameters.AddWithValue("@coach_id", Coach_id);
+                            bool hasConflict = false;
+
+                            using (SqlDataReader reader = checkCommand.ExecuteReader())
+                            {
+                                TimeSpan selectedStartTime = TimeSpan.Parse(Course_starttime);
+                                TimeSpan selectedEndTime = TimeSpan.Parse(Course_endtime);
+
+                                TimeSpan? previousEndTime = null;
+                                TimeSpan? nextStartTime = null;
+
+                                string currentCourseId = Course_id;  // 當前選擇的課程ID
+                                string previousCourseId = null;      // 前一堂課的課程ID
+                                string nextCourseId = null;
+
+                                while (reader.Read())
+                                {
+                                    TimeSpan scheduledStartTime = TimeSpan.Parse(reader["開始時間"].ToString());
+                                    TimeSpan scheduledEndTime = TimeSpan.Parse(reader["結束時間"].ToString());
+                                    string scheduledCourseId = reader["課程編號"].ToString();
+
+                                    // 時間衝突判斷
+                                    if ((selectedStartTime >= scheduledStartTime && selectedStartTime < scheduledEndTime) ||
+                                        (selectedEndTime > scheduledStartTime && selectedEndTime <= scheduledEndTime) ||
+                                        (selectedStartTime <= scheduledStartTime && selectedEndTime >= scheduledEndTime))
+                                    {
+                                        ShowAlert("error", "時間衝突", "所選時間與現有時間重疊", 0, true, "確定");
+                                        return;
+                                    }
+
+
+                                    // 找到前一堂課的結束時間
+                                    if (scheduledEndTime <= selectedStartTime && (previousEndTime == null || scheduledEndTime > previousEndTime))
+                                    {
+                                        previousEndTime = scheduledEndTime;
+                                        previousCourseId = scheduledCourseId;
+                                    }
+
+                                    // 找到下一堂課的開始時間
+                                    if (scheduledStartTime >= selectedEndTime && (nextStartTime == null || scheduledStartTime < nextStartTime))
+                                    {
+                                        nextStartTime = scheduledStartTime;
+                                        nextCourseId = scheduledCourseId;
+                                    }
+                                }
+                                // 檢查是否與前一堂課留有30分鐘的間隔，但若前一堂課ID相同則跳過
+                                if (previousEndTime.HasValue && previousCourseId != currentCourseId && selectedStartTime < previousEndTime.Value.Add(TimeSpan.FromMinutes(30)))
+                                {
+                                    ShowAlert("error", "課程時間過度密集", "請與前課程預留至少30分鐘交通時間", 0, true, "確定");
+                                    hasConflict = true;
+                                }
+
+                                // 檢查是否與下一堂課留有30分鐘的間隔，但若下一堂課ID相同則跳過
+                                if (nextStartTime.HasValue && nextCourseId != currentCourseId && selectedEndTime > nextStartTime.Value.Subtract(TimeSpan.FromMinutes(30)))
+                                {
+                                    ShowAlert("error", "課程時間過度密集", "請與後課程預留至少30分鐘交通時間", 0, true, "確定");
+                                    hasConflict = true;
+                                }
+
+                                if (hasConflict)
+                                {
+                                    return;  // 如果有衝突，停止執行
+                                }
+                            }
+                        }
+                    }
+
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+
+                        foreach (DateTime date in selectedDates)
+                        {
+                            Course_date = date;
+                            CultureInfo cultureInfo = new CultureInfo("zh-TW");
+                            string dayOfWeek = date.ToString("dddd", cultureInfo);
+                            tbCourseWeek = dayOfWeek;
+                            Course_week = tbCourseWeek;
+
+                            string query = "insert into 健身教練課表 (課程編號, 日期, 開始時間, 結束時間, 星期幾, 預約人數 )" +
+                                           "values (@course_id, @course_date, @course_starttime, @course_endtime, @course_week, @ap_people)";
+                            command.CommandText = query;
+                            command.Parameters.Clear();
+                            command.Parameters.AddWithValue("@course_id", Course_id);
+                            command.Parameters.AddWithValue("@course_date", Course_date);
+                            command.Parameters.AddWithValue("@course_starttime", Course_starttime);
+                            command.Parameters.AddWithValue("@course_endtime", Course_endtime);
+                            command.Parameters.AddWithValue("@course_week", Course_week);
+                            command.Parameters.AddWithValue("@ap_people", 0);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                // 恢復 CourseContainer 的內容為預設文字 "尚未選擇課程"
+                CourseContainer.InnerHtml = @"
+                    <p class='text-center' style='border: 2px dashed black; border-radius: 8px; padding: 15px; height: 100px;'>
+                        尚未選擇課程
+                    </p>";
+
+                // 清空 Course_id
+                Course_id = null;
+                tbCourseWeek = string.Empty;
+                ClearCalendar();
+                UpdateSelectedDatesLabel();
+                BindCourseData();
+                BindCourseListview();
+
+                // 顯示成功訊息
+                ShowAlert("success", "新增成功", "班表已新增", 1500);
+
+                RegisterScrollScript(Week.ClientID);
+            }
+            else
+            {
+                // 顯示未選擇日期錯誤訊息
+                ShowAlert("error", "請選擇日期", "請先選擇日期再進行操作", 1500);
+            }
+        }
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        // 恢復 CourseContainer 的內容為預設文字 "尚未選擇課程"
+        CourseContainer.InnerHtml = @"
+        <p class='text-center' style='border: 2px dashed black; border-radius: 8px; padding: 15px; height: 100px;'>
+            尚未選擇課程
+        </p>";
+
+        // 清空 Course_id
+        Course_id = null;
+        ClearCalendar();
+        UpdateSelectedDatesLabel();
+        tbCourseWeek = string.Empty;
+
+    }
+    private void ShowAlert(string icon, string title, string text, int timer = 1500, bool showConfirmButton = false, string confirmButtonText = "", bool redirect = false, string redirectUrl = null)
+    {
+        string script = $@"<script>
+Swal.fire({{
+    icon: '{icon}',
+    title: '{title}',
+    text: '{text}',
+    showConfirmButton: {showConfirmButton.ToString().ToLower()},
+    confirmButtonText: '{confirmButtonText}',
+    timer: {timer}
+}});";
+
+        if (redirect && !string.IsNullOrEmpty(redirectUrl))
+        {
+            script += $"setTimeout(function () {{ window.location.href = '{redirectUrl}'; }}, {timer});";
+        }
+
+        script += "</script>";
+
+        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+    }
+
 
     private void CheckAndSetTodayColor(Label lbl, DateTime date)
     {
@@ -335,8 +691,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         // 設置為本週，即當前日期
         Session["SelectedDate"] = DateTime.Today;
 
+        RegisterScrollScript(Week.ClientID);
         // 重新綁定課程資料
         BindCourseData();
+        BindCourseListview();
     }
     protected void btnPreviousWeek_Click(object sender, EventArgs e)
     {
@@ -349,8 +707,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         // 更新 Session 中的日期
         Session["SelectedDate"] = selectedDate;
 
+        RegisterScrollScript(Week.ClientID);
         // 重新綁定課程資料
         BindCourseData();
+        BindCourseListview();
     }
     protected void btnNextWeek_Click(object sender, EventArgs e)
     {
@@ -363,25 +723,10 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         // 更新 Session 中的日期
         Session["SelectedDate"] = selectedDate;
 
+        RegisterScrollScript(Week.ClientID);
         // 重新綁定課程資料
         BindCourseData();
-    }
-    protected void btnQueryWeek_Click(object sender, EventArgs e)
-    {
-        // 獲取選擇的日期，從 TextBox 獲取文本
-        DateTime selectedDate;
-        if (DateTime.TryParse(txtSelectedDate.Text, out selectedDate)) // 使用 txtSelectedDate.Text
-        {
-            // 更新 Session 中的日期
-            Session["SelectedDate"] = selectedDate;
-
-            // 重新綁定課程資料
-            BindCourseData();
-        }
-        else
-        {
-            lblMessage.Text = "請選擇有效的日期。";
-        }
+        BindCourseListview();
     }
     protected string GetImageUrl(object imageData, int quality)
     {
@@ -418,10 +763,51 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             return "img/null.png"; // 替代圖片的路徑
         }
     }
-    private void RegisterScrollScript()
+    protected string GetLocation(object Class_id)
     {
-        // 註冊 JavaScript，PostBack 後自動捲動到 rblClassSize
-        ClientScript.RegisterStartupScript(this.GetType(), "scrollToClassSize", "scrollToControl();", true);
+        string location = string.Empty;
+        string query = @"
+        SELECT 地點類型, 地點名稱, 縣市, 行政區
+        FROM [健身教練課程-完全整合]
+        WHERE 課程編號 = @class_id";
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@class_id", Class_id);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int courseType = Convert.ToInt32(reader["地點類型"]);
+                        string locationName = reader["地點名稱"].ToString();
+                        string city = reader["縣市"].ToString();
+                        string district = reader["行政區"].ToString();
+
+                        if (courseType == 2)
+                        {
+                            // 當課程類型為 2 時，顯示 "到府" + 縣市 + 行政區
+                            location = city + district;
+                        }
+                        else
+                        {
+                            // 否則顯示地點名稱
+                            location = locationName;
+                        }
+                    }
+                }
+            }
+        }
+
+        return location;
     }
 
+    private void RegisterScrollScript(string controlId)
+    {
+        // 使用 controlId 傳遞 ClientID 而不是靜態 ID
+        ClientScript.RegisterStartupScript(this.GetType(), "scrollToControl", $"scrollToControl('{controlId}');", true);
+    }
 }

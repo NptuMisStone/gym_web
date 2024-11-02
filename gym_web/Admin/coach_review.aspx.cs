@@ -8,6 +8,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Net;
 using System.Net.Mail;
+using System.Diagnostics;
 
 
 public partial class system_administrator_Registration_Approval : System.Web.UI.Page
@@ -38,6 +39,7 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
         int registrationID = Convert.ToInt32(dvDesignerApproval.SelectedValue);
         // 將審核狀態更改為1
         UpdateReviewStatus(registrationID, 1);
+        UpdateReviewDate(registrationID);
         // 重新綁定DetailsView以更新數據
         dvDesignerApproval.DataBind();
         string script = @"<script type='text/javascript'>
@@ -115,6 +117,40 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
         }
     }
 
+    private void UpdateReviewDate(int registrationID)
+    {
+        DateTime contractEndDate = DateTime.Now.AddYears(1); // 設定合約到期日為一年後的今天
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            // 直接更新該筆資料的合約到期日
+            string query = "UPDATE 健身教練審核 SET 合約到期日 = @ContractEndDate WHERE 編號 = @RegistrationID";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@ContractEndDate", contractEndDate);
+                command.Parameters.AddWithValue("@RegistrationID", registrationID);
+
+                // 執行更新操作
+                int rowsAffected = command.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    Debug.WriteLine("更新日期成功");
+                }
+                else
+                {
+                    Debug.WriteLine("更新日期失敗");
+                }
+            }
+
+            connection.Close(); // 確保連線被關閉
+        }
+    }
+
+
+
+
     protected void btncancel_Click(object sender, EventArgs e)
     {
         // 獲取DetailsView中選定的行的RegistrationID
@@ -136,6 +172,8 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
         ClientScript.RegisterStartupScript(this.GetType(), "SweetAlert", script);
     }
 
+
+    //需重新叫回使用
     public void SendMail(string emails, string title, string content)
     {
         var mail = new MailMessage();

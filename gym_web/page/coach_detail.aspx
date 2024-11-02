@@ -14,6 +14,15 @@
 
 
     <style>
+        .step-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e31c25;
+            border-bottom: 2px solid #e31c25;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
         .progress-container div {
             width: 0%;
             height: 20px;
@@ -155,16 +164,16 @@
         </ItemTemplate>
     </asp:Repeater>
 
-    <div class="col-md-12 bg-secondary d-flex align-items-center justify-content-center" style="min-height: 100px;">
-        <!-- 教練課程標題，直接居中對齊 -->
-        <h2 class="font-weight-bold mb-0" style="color: white; white-space: nowrap;">教練課程</h2>
+    <div class="container feature">
+        <h5 class="step-title">教練課程</h5>
     </div>
+
     <!-- 教練尚未安排課程訊息 -->
     <div class="d-flex align-items-center justify-content-center py-3 w-100">
         <asp:Label ID="lb_noClasses" runat="server" Text="教練尚未安排課程" ForeColor="Red" Font-Bold="True" Visible="False" Font-Size="36px"></asp:Label>
     </div>
     <!-- 課程列表 -->
-    <div class="container feature pt-5 w-100">
+    <div class="container feature pt-1 w-100">
         <div class="row">
             <asp:ListView ID="lv_classes" runat="server" OnItemCommand="lv_classes_ItemCommand">
                 <LayoutTemplate>
@@ -207,9 +216,9 @@
     </div>
 
 
-    <div id="reviewSection" class="col-md-12 bg-secondary d-flex align-items-center justify-content-center" style="min-height: 100px;">
-        <!--評分與評論標題，直接居中對齊 -->
-        <h2 class="font-weight-bold mb-0" style="color: white; white-space: nowrap;">評分與評論</h2>
+
+    <div class="container feature mt-3">
+        <h5 class="step-title">評分與評論</h5>
     </div>
 
     <center>
@@ -339,8 +348,6 @@
                     </ItemTemplate>
                 </asp:ListView>
             </div>
-
-
             <!-- 分頁控制 -->
             <div style="margin-top: 20px;">
                 <asp:DataPager ID="DataPager2" runat="server" PagedControlID="rp_comment" PageSize="3">
@@ -350,7 +357,6 @@
                 </asp:DataPager>
             </div>
         </div>
-
     </center>
     <br />
 </asp:Content>

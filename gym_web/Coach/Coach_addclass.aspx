@@ -3,7 +3,28 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <style>
+        .btn-back-home {
+            background-color: #007bff; /* 背景顏色 */
+            color: white; /* 文字顏色設為白色 */
+            border-radius: 50px; /* 圓角邊框 */
+            padding: 10px 20px; /* 調整內邊距 */
+            font-size: 1rem; /* 調整字體大小 */
+            font-weight: bold; /* 使字體加粗 */
+            border: none; /* 去掉預設邊框 */
+            display: inline-block;
+            text-align: center;
+            transition: background-color 0.3s ease; /* 增加過渡效果 */
+        }
 
+            .btn-back-home:hover,
+            .btn-back-home:focus {
+                background-color: #28a745; /* 懸停或選取時的顏色 */
+                color: white; /* 文字顏色設為白色 */
+                text-decoration: none; /* 去掉下劃線 */
+                outline: none; /* 去掉選取時的外框 */
+            }
+    </style>
     <script type="text/javascript">
         function previewImage() {
             var fileInput = document.getElementById('<%= fuCourseImage.ClientID %>');
@@ -20,8 +41,8 @@
             // 當上傳圖片後，觸發隱藏的按鈕
             document.getElementById('<%= btnHiddenUpload.ClientID %>').click();
         }
-        function scrollToControl() {
-            var element = document.getElementById('<%= tbCourseFee.ClientID %>');
+        function scrollToControl(controlId) {
+            var element = document.getElementById(controlId);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -30,13 +51,16 @@
 
 
     <!-- Page Header Start -->
-    <div class="container-fluid page-header mb-5">
+    <div class="container-fluid page-header mb-1">
         <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
             <h4 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase font-weight-bold">新增課程</h4>
         </div>
     </div>
 
-    <div class="container pt-5">
+    <div class="container gym-feature py-2">
+        <div class="mb-3">
+            <a class="btn-back-home px-4 py-2" href="<%= ResolveUrl("~/Coach/Coach_class.aspx") %>">←返回前頁</a>
+        </div>
         <div class="row">
             <div class="col-md-6 pb-5 d-flex flex-column align-items-center">
                 <h4 class="font-weight-boder">課程圖片</h4>
@@ -101,7 +125,7 @@
                     </div>
 
                     <!-- 新增上課地點選擇 -->
-                    <div class="control-group mb-2">
+                    <div class="control-group mb-5">
                         <h4 class="font-weight-boder">上課地點</h4>
                         <asp:RadioButtonList ID="rblLocation" runat="server" RepeatDirection="Horizontal" OnSelectedIndexChanged="rdlLocation_SelectedIndexChanged" AutoPostBack="True">
                             <asp:ListItem Value="2" Selected="True">到府(客戶指定地點)</asp:ListItem>
@@ -129,9 +153,9 @@
                         <asp:RequiredFieldValidator ID="rfvClassAddress" runat="server" ControlToValidate="tbClassAddress" ErrorMessage="地址不得為空" ForeColor="Red" Display="Dynamic" Enabled="false" />
                     </div>
 
-                    <div class="d-flex justify-content-between">
+                    <div class="container text-center">
+                        <button type="button" class="btn btn-outline-secondary mr-5" style="font-size: 20px;" onclick="window.location.href='Coach_class.aspx';">取消</button>
                         <asp:Button ID="btnAddCourse" runat="server" Text="新增課程" OnClick="btnAddCourse_Click" class="btn btn-outline-primary" Style="font-size: 20px" />
-                        <button type="button" class="btn btn-outline-secondary" style="font-size: 20px;" onclick="window.location.href='Coach_class.aspx';">取消</button>
                     </div>
                 </div>
             </div>

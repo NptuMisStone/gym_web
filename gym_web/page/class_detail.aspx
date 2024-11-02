@@ -177,47 +177,45 @@
             </div>
             <!-- Class End -->
 
-            <div class="col-md-12 bg-secondary">
-                <div class="d-flex align-items-center px-3" style="min-height: 100px;">
-                    <!-- 調整 min-height -->
-                    <div class="container py-3 w-100">
-                        <!-- 使用 d-flex 將所有內容放置在同一排 -->
-                        <div class="d-flex align-items-center text-white w-100">
-                            <!-- 教練圖片及資訊 -->
-                            <div class="d-flex align-items-center">
-                                <asp:LinkButton ID="lb_image" runat="server" CommandName="select_coach" CommandArgument='<%# Eval("健身教練編號") %>'>
-                                    <asp:Image ID="Image2" runat="server" Style="object-fit: cover" Height="200px" Width="200px" class="rounded-circle bg-dark p-1" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' />
-                                </asp:LinkButton>
-                                <div class="pl-4 d-flex flex-column justify-content-center">
-                                    <h4 class="text-primary mb-3" style="font-weight: bold;"><%# Eval("健身教練姓名") %> 教練</h4>
-                                    <p class="m-0 mb-3"><%# Eval("健身教練介紹") %></p>
-                                </div>
-                            </div>
-                            <!-- 新增的電話和 Email 區塊 -->
-                            <div class="ml-auto d-flex">
-                                <div class="text-center mx-5">
-                                    <!-- 調整 mx-3 為 mx-5 -->
-                                    <img src="img/gender-fluid.png" alt="Barbell Icon" class="display-2 text-primary" style="height: 50px" draggable="false">
-                                    <h4 class="font-weight-bold" style="color: #e31c25">性別</h4>
-                                    <p><%# GetGenderDescription(Eval("健身教練性別")) %></p>
-                                </div>
-                                <div class="text-center mx-5">
-                                    <!-- 調整 mx-3 為 mx-5 -->
-                                    <img src="img/telephone.png" alt="Barbell Icon" class="display-2 text-primary" style="height: 50px" draggable="false">
-                                    <h4 class="font-weight-bold" style="color: #e31c25">電話</h4>
-                                    <p><%# Eval("健身教練電話") %></p>
-                                </div>
-                                <div class="text-center mx-5">
-                                    <!-- 調整 mx-3 為 mx-5 -->
-                                    <img src="img/email.png" alt="Barbell Icon" class="display-2 text-primary" style="height: 50px" draggable="false">
-                                    <h4 class="font-weight-bold" style="color: #e31c25">Email</h4>
-                                    <p><%# Eval("健身教練郵件") %></p>
-                                </div>
-                            </div>
-                        </div>
+            <div class="col-md-12 bg-light">
+    <div class="d-flex align-items-center p-4" style="min-height: 100px; background-color: #f8f9fa;">
+        <!-- 調整背景顏色及間距 -->
+        <div class="container w-100">
+            <!-- 使用 d-flex 將所有內容放置在同一排 -->
+            <div class="d-flex align-items-center w-100">
+                <!-- 教練圖片及資訊 -->
+                <div class="d-flex align-items-center">
+                    <asp:LinkButton ID="lb_image" runat="server" CommandName="select_coach" CommandArgument='<%# Eval("健身教練編號") %>'>
+                        <asp:Image ID="Image2" runat="server" Style="object-fit: cover" Height="150px" Width="150px" class="rounded-circle shadow-sm" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' />
+                    </asp:LinkButton>
+                    <div class="pl-4">
+                        <h4 class="text-dark font-weight-bold mb-2"><%# Eval("健身教練姓名") %> 教練</h4>
+                        <p class="text-muted mb-3"><%# Eval("健身教練介紹") %></p>
+                    </div>
+                </div>
+                <!-- 新增的電話和 Email 區塊 -->
+                <div class="ml-auto d-flex justify-content-end align-items-center">
+                    <div class="text-center mx-4">
+                        <img src="img/gender-fluid.png" alt="Gender Icon" class="icon-size" style="height: 40px;" draggable="false">
+                        <h5 class="text-dark font-weight-bold mt-2">性別</h5>
+                        <p class="text-muted"><%# GetGenderDescription(Eval("健身教練性別")) %></p>
+                    </div>
+                    <div class="text-center mx-4">
+                        <img src="img/telephone.png" alt="Phone Icon" class="icon-size" style="height: 40px;" draggable="false">
+                        <h5 class="text-dark font-weight-bold mt-2">電話</h5>
+                        <p class="text-muted"><%# Eval("健身教練電話") %></p>
+                    </div>
+                    <div class="text-center mx-4">
+                        <img src="img/email.png" alt="Email Icon" class="icon-size" style="height: 40px;" draggable="false">
+                        <h5 class="text-dark font-weight-bold mt-2">Email</h5>
+                        <p class="text-muted"><%# Eval("健身教練郵件") %></p>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
         </ItemTemplate>
     </asp:Repeater>
 
@@ -322,6 +320,5 @@
     </div>
 </div>
 </asp:Panel>
-
 </asp:Content>
 

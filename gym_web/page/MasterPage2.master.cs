@@ -19,6 +19,10 @@ public partial class page_MasterPage2 : System.Web.UI.MasterPage
             panel_login.Visible = false;
             panel_register.Visible = false;
             Label_username.Text = userManager.GetUserName();
+            Main_LOGO.HRef = "/page/Home.aspx";
+            navbarCollapse.Visible = true;
+            URL.Visible = true;
+            Join.Visible = true;
         }
         else if (Session["coach_id"] != null)
         {
@@ -27,11 +31,23 @@ public partial class page_MasterPage2 : System.Web.UI.MasterPage
             panel_login.Visible = false;
             panel_register.Visible = false;
             Label_coachname.Text = userManager.GetCoachName();
+            Main_LOGO.HRef = "/Coach/Coach_index.aspx";
+            navbarCollapse.Visible = false;
+            URL.Visible = false;
+            Join.Visible = false;
+        }
+        else
+        {
+            Main_LOGO.HRef = "/page/Home.aspx";
+            navbarCollapse.Visible = true;
+            URL.Visible = true;
+            Join.Visible = true;
         }
         //頁首name-end
     }
     protected void Btn_logout_Click(object sender, EventArgs e)
     {
+        // 清空 Session
         Session["user_id"] = null;
         Session["coach_id"] = null;
         panel_username.Visible = false;
@@ -39,6 +55,20 @@ public partial class page_MasterPage2 : System.Web.UI.MasterPage
         panel_logout.Visible = false;
         panel_login.Visible = true;
         panel_register.Visible = true;
-        Response.Redirect("/page/home.aspx");
+
+        // 取得當前路徑
+        string currentPath = Request.Url.AbsolutePath;
+
+        // 如果當前路徑包含 "/User"，則導向首頁
+        if (currentPath.Contains("/User"))
+        {
+            Response.Redirect("~/page/Home.aspx");  // 導向首頁
+        }
+        else
+        {
+            // 否則保持在當前頁面並重整
+            Response.Redirect(Request.Url.ToString());
+        }
     }
+
 }

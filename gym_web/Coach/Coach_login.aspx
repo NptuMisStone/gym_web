@@ -116,7 +116,20 @@
         <asp:ScriptManager runat="server" ID="ScriptManager" />
         <div class="main">
             <label for="chk" aria-hidden="true">教練登入</label>
-            <asp:TextBox ID="coach_acc" placeholder="請輸入帳號" runat="server" required="required"></asp:TextBox>
+            <asp:TextBox ID="coach_acc" placeholder="請輸入帳號" runat="server" required="required" 
+    onfocus="disableIME(this);" onblur="enableIME(this);"></asp:TextBox>
+
+<script>
+    function disableIME(textBox) {
+        textBox.setAttribute("ime-mode", "disabled"); // 禁用 IME
+        textBox.focus(); // 將焦點設置回輸入框
+    }
+
+    function enableIME(textBox) {
+        textBox.removeAttribute("ime-mode"); // 可選的，移除 IME 設定
+    }
+</script>
+
             <asp:TextBox ID="coach_pwd" placeholder="請輸入密碼" runat="server" TextMode="Password" required="required"></asp:TextBox>
             <asp:Button ID="btn_coach_login" runat="server" Text="登入" CssClass="btn" OnClick="btn_coach_login_Click" />
 

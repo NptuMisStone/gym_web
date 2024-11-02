@@ -38,6 +38,7 @@ public partial class page_coach_detail : System.Web.UI.Page
     }
     private void LoadCoachDetails()
     {
+        Debug.WriteLine("健身教練編號： " + coach_num);
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             string query = "SELECT * FROM [健身教練審核合併] WHERE [健身教練編號] = @coach_num";
@@ -192,7 +193,7 @@ public partial class page_coach_detail : System.Web.UI.Page
         }
         else
         {
-            return "img/user.png"; // 替代圖片的路徑
+            return "img/coach_default.jpg"; // 替代圖片的路徑
         }
     }
 
@@ -685,50 +686,34 @@ public partial class page_coach_detail : System.Web.UI.Page
         // 獲取教練編號
         var coachId = GetCoachIdFromLikeBtn(LikeBtn);
 
-        if (Session["User_id"] == null)
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+
+        if (LikeBtn.ImageUrl == "img/dislike2.png")
         {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+            LikeBtn.ImageUrl = "img/like1.png";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "insert into 教練被收藏 (使用者編號,健身教練編號) values(@likeuser_id,@likecoach_id)";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeuser_id", User_id);
+                command.Parameters.AddWithValue("@likecoach_id", coach_num);
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
         }
         else
         {
-            if (LikeBtn.ImageUrl == "img/dislike2.png")
+            LikeBtn.ImageUrl = "img/dislike2.png";
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                LikeBtn.ImageUrl = "img/like1.png";
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string sql = "insert into 教練被收藏 (使用者編號,健身教練編號) values(@likeuser_id,@likecoach_id)";
-                    SqlCommand command = new SqlCommand(sql, connection);
-                    command.Parameters.AddWithValue("@likeuser_id", User_id);
-                    command.Parameters.AddWithValue("@likecoach_id", coach_num);
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-            else
-            {
-                LikeBtn.ImageUrl = "img/dislike2.png";
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string sql = "delete from 教練被收藏 where 健身教練編號=@dislikecoach_id and 使用者編號=@dislikeuser_id";
-                    SqlCommand command = new SqlCommand(sql, connection);
-                    command.Parameters.AddWithValue("@dislikecoach_id", coach_num);
-                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
+                connection.Open();
+                string sql = "delete from 教練被收藏 where 健身教練編號=@dislikecoach_id and 使用者編號=@dislikeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@dislikecoach_id", coach_num);
+                command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                command.ExecuteNonQuery();
+                connection.Close();
             }
         }
     }

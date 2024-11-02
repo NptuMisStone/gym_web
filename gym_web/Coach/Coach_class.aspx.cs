@@ -18,7 +18,7 @@ public partial class Coach_Coach_class : System.Web.UI.Page
         Coach_id = Convert.ToString(Session["Coach_id"]);
 
         //驗證教練是否登入的類別函數
-        CoachHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "Coach");
 
         if (!IsPostBack)
         {

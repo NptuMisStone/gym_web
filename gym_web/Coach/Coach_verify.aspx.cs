@@ -16,7 +16,6 @@ using System.Xml.Linq;
 public partial class Coach_Coach_verify : System.Web.UI.Page
 {
     private static string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
-    private string area;
     public static string city;
     public static string Coach_id;
     protected void Page_Load(object sender, EventArgs e)
@@ -24,7 +23,7 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
         Coach_id = Convert.ToString(Session["Coach_id"]);
 
         //驗證教練是否登入的類別函數
-        CoachHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "Coach");
 
         if (!IsPostBack)
         {
@@ -67,6 +66,7 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
         string area = ddl_area1.SelectedValue;
         string address = txtAddress.Text;
         byte[] data = null;
+
         if (fuVerificationData.HasFile)
         {
             using (BinaryReader reader = new BinaryReader(fuVerificationData.PostedFile.InputStream))
@@ -89,56 +89,56 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
                 if (status != null)
                 {
                     string reviewStatus = status.ToString();
-                    if (reviewStatus == "2" || reviewStatus == "1")
+                    if (reviewStatus == "0")
+                    {
+                        ShowAlert("error", "您已提出申請", "請靜待審核，請勿重複申請", 3000, true, "Coach_index.aspx");
+                    }
+                    else
                     {
                         string updateQuery = "UPDATE 健身教練審核 SET 註冊類型 = @Type, 服務地點名稱 = @Name, 服務地點電話 = @Phone, 服務地點郵件 = @Email, 縣市id = @City_id, 行政區id = @Area_id, 服務地點地址 = @Address, 審核資料 = @Data, 審核狀態 = @Status WHERE 健身教練編號 = @CoachId";
+
                         using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
                         {
+                            updateCommand.Parameters.AddWithValue("@CoachId", Coach_id);
                             updateCommand.Parameters.AddWithValue("@Type", type);
-                            updateCommand.Parameters.AddWithValue("@Name", name);
-                            updateCommand.Parameters.AddWithValue("@Phone", phone);
-                            updateCommand.Parameters.AddWithValue("@Email", email);
-                            updateCommand.Parameters.AddWithValue("@City_id", city);
-                            updateCommand.Parameters.AddWithValue("@Area_id", area);
-                            updateCommand.Parameters.AddWithValue("@Address", address);
+
+                            updateCommand.Parameters.AddWithValue("@Name", type == "店家健身教練" ? name : (object)DBNull.Value);
+                            updateCommand.Parameters.AddWithValue("@Phone", type == "店家健身教練" ? phone : (object)DBNull.Value);
+                            updateCommand.Parameters.AddWithValue("@Email", type == "店家健身教練" ? email : (object)DBNull.Value);
+                            updateCommand.Parameters.AddWithValue("@City_id", type == "店家健身教練" ? city : (object)DBNull.Value);
+                            updateCommand.Parameters.AddWithValue("@Area_id", type == "店家健身教練" ? area : (object)DBNull.Value);
+                            updateCommand.Parameters.AddWithValue("@Address", type == "店家健身教練" ? address : (object)DBNull.Value);
+
                             updateCommand.Parameters.AddWithValue("@Data", data);
                             updateCommand.Parameters.AddWithValue("@Status", "0");
-                            updateCommand.Parameters.AddWithValue("@CoachId", Coach_id);
 
                             updateCommand.ExecuteNonQuery();
                         }
                     }
-                    else if (reviewStatus == "0")
-                    {
-                        string successScript1 = @"<script>
-                            Swal.fire({
-                                icon: 'error',
-                                title: '您已提出申請',
-                                text: '請靜待審核，請勿重複申請。',
-                                onClose: function() {
-                                window.location.href = '../Coach/Coach_info.aspx'; // 跳轉到 index.aspx
-                                }
-                            });
-                        </script>";
-
-                        ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertSuccess", successScript1);
-                    }
                 }
                 else
                 {
-                    string insertQuery = "INSERT INTO 健身教練審核 (健身教練編號, 註冊類型, 服務地點名稱, 服務地點電話, 服務地點郵件, 縣市id, 行政區id, 服務地點地址, 審核資料, 審核狀態) " +
-                        "VALUES (@CoachId, @Type, @Name, @Phone, @Email, @City_id, @Area_id, @Address, @Data, @Status)";
+                    string insertQuery = type == "店家健身教練"
+                        ? "INSERT INTO 健身教練審核 (健身教練編號, 註冊類型, 服務地點名稱, 服務地點電話, 服務地點郵件, 縣市id, 行政區id, 服務地點地址, 審核資料, 審核狀態) " +
+                          "VALUES (@CoachId, @Type, @Name, @Phone, @Email, @City_id, @Area_id, @Address, @Data, @Status)"
+                        : "INSERT INTO 健身教練審核 (健身教練編號, 註冊類型, 審核資料, 審核狀態) " +
+                          "VALUES (@CoachId, @Type, @Data, @Status)";
 
                     using (SqlCommand command = new SqlCommand(insertQuery, connection))
                     {
                         command.Parameters.AddWithValue("@CoachId", Coach_id);
                         command.Parameters.AddWithValue("@Type", type);
-                        command.Parameters.AddWithValue("@Name", name);
-                        command.Parameters.AddWithValue("@Phone", phone);
-                        command.Parameters.AddWithValue("@Email", email);
-                        command.Parameters.AddWithValue("@City_id", city);
-                        command.Parameters.AddWithValue("@Area_id", area);
-                        command.Parameters.AddWithValue("@Address", address);
+
+                        if (type == "店家健身教練")
+                        {
+                            command.Parameters.AddWithValue("@Name", name);
+                            command.Parameters.AddWithValue("@Phone", phone);
+                            command.Parameters.AddWithValue("@Email", email);
+                            command.Parameters.AddWithValue("@City_id", city);
+                            command.Parameters.AddWithValue("@Area_id", area);
+                            command.Parameters.AddWithValue("@Address", address);
+                        }
+
                         command.Parameters.AddWithValue("@Data", data);
                         command.Parameters.AddWithValue("@Status", "0");
 
@@ -147,26 +147,66 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
                 }
             }
         }
-
-
-        // 成功提交的 SweetAlert 脚本
-        string successScript = @"<script>
-    Swal.fire({
-        icon: 'success',
-        title: '已成功送出您的申請',
-        text: '請靜待審核，並留意您的信箱是否通過申請。',
-        onClose: function() {
-            window.location.href = '../Coach/Coach_info.aspx'; // 跳轉到 index.aspx
-        }
-    });
-</script>";
-
-        ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertSuccess", successScript);
-
-
+        ShowAlert("success", "已成功送出您的申請", "請靜待審核，並留意您的信箱是否通過申請", 3000, true, "Coach_index.aspx");
     }
-
     protected void ddl_city_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        Bind_city();
+        RegisterScrollScript(Shop.ClientID);
+    }
+    protected void ddl_area_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string city = ddl_city.SelectedItem.Text;
+        string area = ddl_area.SelectedItem.Text;
+        string fullAddress = city + area;
+
+        int select_city_id = Convert.ToInt32(ddl_city.SelectedValue); // 使用選擇的縣市 ID
+        int select_area_id = Convert.ToInt32(ddl_area.SelectedValue); // 使用選擇的行政區 ID
+
+        Debug.WriteLine("selected=" + fullAddress);
+
+        if (select_area_id == 0)
+        {
+            Bind_city();
+        }
+        else
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                string sql = @"
+                SELECT DISTINCT 服務地點名稱, 服務地點地址, 服務地點郵件, 服務地點電話, 縣市id, 行政區id, 縣市, 行政區 
+                FROM 健身教練審核合併 
+                WHERE 縣市id = @City_id AND 行政區id = @Area_id AND 審核狀態 = 1";
+
+                connection.Open();
+                SqlCommand command = new SqlCommand(sql, connection);
+
+                // 使用縣市和行政區ID來查詢
+                command.Parameters.AddWithValue("@City_id", select_city_id);
+                command.Parameters.AddWithValue("@Area_id", select_area_id);
+
+                SqlDataReader dataReader = command.ExecuteReader();
+
+                if (dataReader.HasRows)
+                {
+                    lb_no_result.Visible = false;
+                    dl_shop.Visible = true;
+                    dl_shop.DataSource = dataReader;
+                    dl_shop.DataBind();
+                }
+                else
+                {
+                    lb_no_result.Visible = true;
+                    dl_shop.Visible = false;
+                }
+
+                dataReader.Close();
+                connection.Close();
+            }
+        }
+        RegisterScrollScript(Shop.ClientID);
+    }
+    private void Bind_city()
     {
         // 根據選擇的類型進行過濾
         string type = rdtype.SelectedValue;
@@ -184,8 +224,8 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 string sql = @"
-                SELECT DISTINCT 服務地點名稱, 服務地點地址, 服務地點郵件, 服務地點電話, 縣市id, 行政區id 
-                FROM 健身教練審核 
+                SELECT DISTINCT 服務地點名稱, 服務地點地址, 服務地點郵件, 服務地點電話, 縣市id, 行政區id, 縣市, 行政區 
+                FROM 健身教練審核合併 
                 WHERE 縣市id = @City_id AND 審核狀態 = 1";
 
                 connection.Open();
@@ -234,7 +274,7 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
                 connection.Close();
             }
         }
-        else if(type == "私人健身教練") 
+        else if (type == "私人健身教練")
         {
             // 如果選擇私人教練，隱藏查詢相關元素
             lb_no_result.Visible = false;
@@ -243,63 +283,15 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
             ddl_city.Visible = false;
         }
     }
-
-    protected void ddl_area_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        string city = ddl_city.SelectedItem.Text;
-        string area = ddl_area.SelectedItem.Text;
-        string fullAddress = city + area;
-
-        int select_city_id = Convert.ToInt32(ddl_city.SelectedValue); // 使用選擇的縣市 ID
-        int select_area_id = Convert.ToInt32(ddl_area.SelectedValue); // 使用選擇的行政區 ID
-
-        Debug.WriteLine("selected=" + fullAddress);
-
-        using (SqlConnection connection = new SqlConnection(connectionString))
-        {
-            string sql = @"
-                SELECT DISTINCT 服務地點名稱, 服務地點地址, 服務地點郵件, 服務地點電話, 縣市id, 行政區id 
-                FROM 健身教練審核 
-                WHERE 縣市id = @City_id AND 行政區id = @Area_id AND 審核狀態 = 1";
-
-            connection.Open();
-            SqlCommand command = new SqlCommand(sql, connection);
-
-            // 使用縣市和行政區ID來查詢
-            command.Parameters.AddWithValue("@City_id", select_city_id);
-            command.Parameters.AddWithValue("@Area_id", select_area_id);
-
-            SqlDataReader dataReader = command.ExecuteReader();
-
-            if (dataReader.HasRows)
-            {
-                lb_no_result.Visible = false;
-                dl_shop.Visible = true;
-                dl_shop.DataSource = dataReader;
-                dl_shop.DataBind();
-            }
-            else
-            {
-                lb_no_result.Visible = true;
-                dl_shop.Visible = false;
-            }
-
-            dataReader.Close();
-            connection.Close();
-        }
-    }
-
-
     protected void ddl_area_DataBound(object sender, EventArgs e)
     {
         ddl_area.Items.Insert(0, new ListItem("全部", "0"));
     }
-    
     protected void rdVerifyMode_SelectedIndexChanged(object sender, EventArgs e)
     {
         rd_set();
+        RegisterScrollScript(home.ClientID);
     }
-
     protected void dl_shop_ItemCommand(object source, DataListCommandEventArgs e)
     {
         if (e.CommandName == "select_shop")
@@ -318,6 +310,7 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
                 ddl_area1.SelectedValue = shopDetails[5]; // 設定行政區
             }
         }
+        RegisterScrollScript(Shop_data.ClientID);
     }
     private void LoadAreaDropdown(string cityId)
     {
@@ -349,61 +342,43 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
 
         if (type == "店家健身教練")
         {
-            Name.Visible = true;
-            Phone.Visible = true;
-            Email.Visible = true;
-            Address.Visible = true;
-            txtName.Enabled = false;
-            txtPhone.Enabled = false;
-            txtEmail.Enabled = false;
-            txtAddress.Enabled = false;
-            ddl_city1.Enabled = false;
-            ddl_area1.Enabled = false;
-            search_type.Visible = true;
-            search_form.Visible = true;
-            search_form_detail.Visible = true;
-            ddl_city.Visible = true;
-            ddl_area.Visible = true;
-            ddl_city1.Visible = true;
-            ddl_area1.Visible = true;
+            Shop.Visible = true;
 
             if (rdVerifyMode.SelectedValue == "search")
             {
                 // 顯示地區查詢形式
                 search_form.Visible = true;
-                search_form_detail.Visible = true;
-                BindDropDownList();
-                ddl_area1.Items.Clear();
+                txtName.Enabled = false;
+                txtPhone.Enabled = false;
+                txtEmail.Enabled = false;
+                txtAddress.Enabled = false;
+                ddl_city1.Enabled = false;
+                ddl_area1.Enabled = false;
             }
             else if (rdVerifyMode.SelectedValue == "manual")
             {
                 // 顯示手動輸入形式
+                search_form.Visible = false;
                 txtName.Enabled = true;
                 txtPhone.Enabled = true;
                 txtEmail.Enabled = true;
                 txtAddress.Enabled = true;
                 ddl_city1.Enabled = true;
                 ddl_area1.Enabled = true;
-                search_form.Visible = false;
-                search_form_detail.Visible = false;
             }
         }
         else if (type == "私人健身教練")
         {
-            // 隱藏查詢相關元素
-            Name.Visible = false;
-            Phone.Visible = false;
-            Email.Visible = false;
-            Address.Visible = false;
-            search_type.Visible = false;
-            search_form.Visible = false;
-            search_form_detail.Visible = false;
-            ddl_city.Visible = false;
-            ddl_area.Visible = false;
-            ddl_city1.Visible = false;
-            ddl_area1.Visible = false;
-            BindDropDownList();
+            Shop.Visible = false;
         }
+        BindDropDownList();
+        ddl_area1.Items.Clear();
+        txtName.Text = "";
+        txtPhone.Text = "";
+        txtEmail.Text = "";
+        txtAddress.Text = "";
+        dl_shop.DataSource = null;
+        dl_shop.DataBind();
     }
     private void BindDropDownList()
     {
@@ -435,10 +410,6 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
         }
     }
 
-    //protected void ddl_city1_DataBound(object sender, EventArgs e)
-    //{
-     //   ddl_city.Items.Insert(0, new ListItem("請選擇縣市", ""));
-    //}
     protected void ddl_city1_SelectedIndexChanged(object sender, EventArgs e)
     {
         int city_id = Convert.ToInt32(ddl_city1.SelectedValue);
@@ -471,6 +442,25 @@ public partial class Coach_Coach_verify : System.Web.UI.Page
         // 使用 controlId 傳遞 ClientID 而不是靜態 ID
         ClientScript.RegisterStartupScript(this.GetType(), "scrollToControl", $"scrollToControl('{controlId}');", true);
     }
+    private void ShowAlert(string icon, string title, string text, int timer = 1500, bool redirect = false, string redirectUrl = null)
+    {
+        string script = $@"<script>
+        Swal.fire({{
+            icon: '{icon}',
+            title: '{title}',
+            text: '{text}',
+            showConfirmButton: false,
+            timer: {timer}
+        }});
+    ";
 
+        if (redirect && !string.IsNullOrEmpty(redirectUrl))
+        {
+            script += $"setTimeout(function () {{ window.location.href = '{redirectUrl}'; }}, {timer});";
+        }
 
+        script += "</script>";
+
+        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+    }
 }

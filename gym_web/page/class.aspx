@@ -211,15 +211,14 @@
                                 </div>
                             </asp:LinkButton>
                             <!-- 愛心圖示 -->
-                            <div style="position: absolute; top: 4%; right: 4%;">
+                            <div style="position: absolute; top: 5%; left: 5%;">
                                 <asp:ImageButton 
                                     ID="LikeBtn"
                                     runat="server"
                                     CommandArgument='<%# Eval("課程編號") %>'
                                     OnClick="LikeBtn_Click"
-                                    CssClass="like-button btn btn-outline-light rounded-circle"
                                     ImageUrl='<%# GetLikeImageUrl(Eval("課程編號")) %>'
-                                    Style="width: 60px; height: 60px; object-fit: contain;" />
+                                    Style="width: 40px; height: 40px; object-fit: contain;" />
                             </div>
                         </div>
                     </div>

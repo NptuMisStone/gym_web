@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Security.Policy;
+using System.Diagnostics;
 
 public partial class page_class_detail : System.Web.UI.Page
 {
@@ -70,7 +71,6 @@ public partial class page_class_detail : System.Web.UI.Page
         {
             // 取得教練編號並存入 Session
             Session["coach_num"] = Convert.ToInt32(e.CommandArgument);
-
             // 跳轉至教練詳細頁面
             Response.Redirect("coach_detail.aspx");
         }
@@ -110,7 +110,7 @@ public partial class page_class_detail : System.Web.UI.Page
         }
         else
         {
-            return "img/user.png"; // 替代圖片的路徑
+            return "img/coach_default.jpg"; // 替代圖片的路徑
         }
     }
     public void GetAddress()
@@ -231,20 +231,9 @@ public partial class page_class_detail : System.Web.UI.Page
         {
             if (Session["User_id"] == null)
             {
-                string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+               CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
             }
-            else 
+            else
             {
                 Schedule_id = Convert.ToString(e.CommandArgument);
                 User_id = Convert.ToString(Session["User_id"]);
@@ -253,7 +242,6 @@ public partial class page_class_detail : System.Web.UI.Page
                 ShowDetail();
                 GetId();
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "ShowModal", "$('#" + AP_Panel.ClientID + "').modal('show');", true);
-
             }
         }
     }
@@ -469,50 +457,34 @@ public partial class page_class_detail : System.Web.UI.Page
         // 獲取課程編號
         var classId = GetClassIdFromLikeBtn(LikeBtn);
 
-        if (Session["User_id"] == null)
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+
+        if (LikeBtn.ImageUrl == "img/dislike2.png")
         {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+            LikeBtn.ImageUrl = "img/like1.png";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "insert into 課程被收藏 (使用者編號,課程編號) values(@likeuser_id,@likeclass_id)";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@likeuser_id", User_id);
+                command.Parameters.AddWithValue("@likeclass_id", classId);
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
         }
         else
         {
-            if (LikeBtn.ImageUrl == "img/dislike2.png")
+            LikeBtn.ImageUrl = "img/dislike2.png";
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                LikeBtn.ImageUrl = "img/like1.png";
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string sql = "insert into 課程被收藏 (使用者編號,課程編號) values(@likeuser_id,@likeclass_id)";
-                    SqlCommand command = new SqlCommand(sql, connection);
-                    command.Parameters.AddWithValue("@likeuser_id", User_id);
-                    command.Parameters.AddWithValue("@likeclass_id", classId);
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-            else
-            {
-                LikeBtn.ImageUrl = "img/dislike2.png";
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string sql = "delete from 課程被收藏 where 課程編號=@dislikeclass_id and 使用者編號=@dislikeuser_id";
-                    SqlCommand command = new SqlCommand(sql, connection);
-                    command.Parameters.AddWithValue("@dislikeclass_id", classId);
-                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
+                connection.Open();
+                string sql = "delete from 課程被收藏 where 課程編號=@dislikeclass_id and 使用者編號=@dislikeuser_id";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@dislikeclass_id", classId);
+                command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                command.ExecuteNonQuery();
+                connection.Close();
             }
         }
     }

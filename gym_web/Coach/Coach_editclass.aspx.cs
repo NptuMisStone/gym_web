@@ -19,7 +19,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
         Class_id = Convert.ToString(Session["Class_id"]);
 
         //驗證教練是否登入的類別函數
-        CoachHelper.CheckLogin(this);
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "Coach");
 
         if (!IsPostBack)
         {
@@ -367,7 +367,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
             dataReader.Close();
             connection.Close();
-            RegisterScrollScript();
+            RegisterScrollScript(tbCourseFee.ClientID);
         }
     }
     protected void ddl_city_DataBound(object sender, EventArgs e)
@@ -378,7 +378,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
     protected void rdlLocation_SelectedIndexChanged(object sender, EventArgs e)
     {
         rbReset();
-        RegisterScrollScript();
+        RegisterScrollScript(tbCourseFee.ClientID);
     }
     private void rbReset()
     {
@@ -443,7 +443,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
             rblLocation.Items.FindByValue("2").Enabled = true; // 啟用到府選項
         }
-        RegisterScrollScript();
+        RegisterScrollScript(tbCourseFee.ClientID);
     }
     protected void cvClassSize_ServerValidate(object source, ServerValidateEventArgs args)
     {
@@ -568,9 +568,9 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
         Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
     }
-    private void RegisterScrollScript()
+    private void RegisterScrollScript(string controlId)
     {
-        // 註冊 JavaScript，PostBack 後自動捲動到 rblClassSize
-        ClientScript.RegisterStartupScript(this.GetType(), "scrollToClassSize", "scrollToControl();", true);
+        // 使用 controlId 傳遞 ClientID 而不是靜態 ID
+        ClientScript.RegisterStartupScript(this.GetType(), "scrollToControl", $"scrollToControl('{controlId}');", true);
     }
 }

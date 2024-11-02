@@ -84,7 +84,7 @@ public partial class page_coach : System.Web.UI.Page
         }
         else
         {
-            return "img/user.png"; // 替代圖片的路徑
+            return "img/coach_default.jpg"; // 替代圖片的路徑
         }
     }
     protected string GetLikeImageUrl(object coachId)
@@ -111,22 +111,7 @@ public partial class page_coach : System.Web.UI.Page
     }
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        if (Session["User_id"] == null)
-        {
-            string script = @"<script>
-            Swal.fire({
-                icon: 'error',
-                title: '請先登入！',
-                confirmButtonText: '確定',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '../User/User_login.aspx';
-                }
-            });
-            </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
-            return;
-        }
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
 
         ImageButton btn = (ImageButton)sender;
         int coachNum = Convert.ToInt32(btn.CommandArgument);

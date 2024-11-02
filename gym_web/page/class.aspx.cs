@@ -406,22 +406,9 @@ public partial class page_class : System.Web.UI.Page
 
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        if (Session["User_id"] == null)
-        {
-            string script = @"<script>
-            Swal.fire({
-                icon: 'error',
-                title: '請先登入！',
-                confirmButtonText: '確定',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '../User/User_login.aspx';
-                }
-            });
-            </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
-            return;
-        }
+        // 驗證用戶是否登入的類別函數
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+
         ImageButton btn = (ImageButton)sender;
         int classId = Convert.ToInt32(btn.CommandArgument);
         int userId = Convert.ToInt32(Session["User_id"]);
