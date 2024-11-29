@@ -27,6 +27,7 @@
                     <asp:BoundField DataField="評分" HeaderText="評分" />
                     <asp:BoundField DataField="評論日期" HeaderText="評論日期"/>
                     <asp:BoundField DataField="評論內容" HeaderText="評論內容" />
+                    <asp:BoundField DataField="檢舉原因" HeaderText="檢舉原因" />
 
                     <asp:ButtonField ButtonType="Button" CommandName="Delete" Text="刪除評論" />
                     <asp:ButtonField ButtonType="Button" CommandName="Cancel" Text="撤銷檢舉" />

@@ -70,10 +70,29 @@
             __doPostBack('overlayClicked', '');
         }
     </script>
+    <script>
+        function validateAndHidePopup() {
+            var minMoney = document.getElementById('<%= MinMoney.ClientID %>').value;
+            var maxMoney = document.getElementById('<%= MaxMoney.ClientID %>').value;
+            if (minMoney !== "" && maxMoney !== "") {
+                var min = parseInt(minMoney, 10);
+                var max = parseInt(maxMoney, 10);
+
+                if (min > max) {
+                    alert('最小值不能大於最大值');
+                    return false;
+                }
+            }
+
+            // 如果验证通过，隐藏弹窗
+            hidePopup();
+            return true;
+        }
+    </script>
     <script type="text/javascript">
         function validateInput(textbox) {
             var value = parseInt(textbox.value, 10);
-
+            
             // 如果輸入不是數字或為空，直接返回，不修改值
             if (isNaN(value) || textbox.value === "") {
                 return;
@@ -132,9 +151,9 @@
             </asp:RadioButtonList>
             <asp:Label ID="Label3" runat="server" Text="課程費用"></asp:Label>
             <br />
-            <asp:TextBox ID="MinMoney" runat="server" placeholder="最小值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)"  ></asp:TextBox>
+            <asp:TextBox ID="MinMoney" runat="server" placeholder="最小值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)" ></asp:TextBox>
             <span>~</span>
-            <asp:TextBox ID="MaxMoney" runat="server" placeholder="最大值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)"  ></asp:TextBox>
+            <asp:TextBox ID="MaxMoney" runat="server" placeholder="最大值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)" ></asp:TextBox>
             <br />
             <asp:Label ID="Label4" runat="server" Text="課程人數"></asp:Label>
             <asp:RadioButtonList ID="ClassPeopleRBL" runat="server" RepeatDirection="Horizontal">
@@ -171,7 +190,7 @@
                     <asp:Button ID="Button1" runat="server" Text="" CssClass="btn-hide" OnClick="Button1_Click" />
                 </ContentTemplate>
             </asp:UpdatePanel>
-            <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="hidePopup(); " OnClick="SearchFilterBtn_Click" />
+            <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="return validateAndHidePopup(); " OnClick="SearchFilterBtn_Click" ValidationGroup="FilterValidation" />
         </div>
     </asp:Panel>
 

@@ -32,8 +32,26 @@ public partial class page_coach_detail : System.Web.UI.Page
         }
         if (Request["__EVENTTARGET"] == "ReportComment")
         {
-            int comment_id = Convert.ToInt32(Request["__EVENTARGUMENT"]);
-            ReportComment(comment_id);
+            string[] args = Request["__EVENTARGUMENT"].Split('|');
+            int commentId = Convert.ToInt32(args[0]);
+            string reason = args[1]; // 理由
+
+            ReportComment(commentId, reason);
+            string script = @"<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: '檢舉成功',
+                    text: '檢舉內容已提交管理員',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            </script>";
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertSuccess", script, false);
+            LoadCoachDetails();
+            BindClass();
+            update_ProgressBar();
+            bind_commend_score();
+            bind_rp_comment();
         }
     }
     private void LoadCoachDetails()
@@ -420,42 +438,85 @@ public partial class page_coach_detail : System.Web.UI.Page
             int ap_id = Convert.ToInt32(e.CommandArgument);
             DeleteComment(ap_id);
         }
-        else if(e.CommandName == "report") 
+        else if (e.CommandName == "report")
         {
-            string script = @"<script>
-              Swal.fire({
-              icon: 'warning',
-              title: '檢舉評論',
-              text: '確定要檢舉嗎？',
-              showCancelButton: true,
-              confirmButtonText: '確定',
-              cancelButtonText: '取消',
-              reverseButtons: true
-              }).then((result) => {
+            if (Session["User_id"] == null)
+            {
+                string script = @"<script>
+                Swal.fire({
+                  icon: 'error',
+                  title: '請先登入！',
+                  confirmButtonText: '確定',
+                }).then((result) => {
                   if (result.isConfirmed) {
-                      
-                      Swal.fire({
-                          icon: 'success',
-                          title: '檢舉成功',
-                          text: '已檢舉評論',
-                          showConfirmButton: false,
-                          timer: 1500
-                      });
-                    setTimeout(function() {
-                                  __doPostBack('ReportComment', '" + e.CommandArgument.ToString() + @"');
-                              }, 1500);
-                  } else if (result.dismiss === Swal.DismissReason.cancel) {
-                      Swal.fire({
-                          icon: 'error',
-                          title: '操作取消',
-                          showConfirmButton: false,
-                          timer: 1500
-                      });
+                     window.location.href = '../User/User_login.aspx';
                   }
-              });
-            </script>";
+                });
+                </script>";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+            }
+            else
+            {
+                int commentId = Convert.ToInt32(e.CommandArgument);
+                string script = $@"
+                <script>
+                Swal.fire({{
+                    title: '檢舉評論',
+                    text: '請選擇檢舉的理由',
+                    input: 'select',
+                    inputOptions: {{
+                        '發表仇恨、歧視、具有攻擊性言論': '發表仇恨、歧視、具有攻擊性言論',
+                        '成人色情、性騷擾內容': '成人色情、性騷擾內容',
+                        '血腥、暴力、有害或危險內容': '血腥、暴力、有害或危險內容',
+                        '違反廣告、或商業內容等定義': '違反廣告、或商業內容等定義',
+                        '賭博、或博弈內容': '賭博、或博弈內容',
+                        'other': '其他'
+                    }},
+                    inputPlaceholder: '選擇理由...',
+                    showCancelButton: true,
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    reverseButtons: true,
+                    preConfirm: () => {{
+                        const selectedReason = Swal.getPopup().querySelector('select').value;
+                        if (!selectedReason) {{
+                            Swal.showValidationMessage('請選擇檢舉理由');
+                            return false;
+                        }}
+                        return selectedReason;
+                    }}
+                }}).then((result) => {{
+                    if (result.isConfirmed) {{
+                        let reportReason = result.value;
+                        if (reportReason === 'other') {{
+                            Swal.fire({{
+                                title: '請輸入檢舉原因',
+                                input: 'textarea',
+                                inputPlaceholder: '請輸入理由...',
+                                showCancelButton: true,
+                                confirmButtonText: '提交',
+                                cancelButtonText: '取消',
+                                inputValidator: (value) => {{
+                                    if (!value) {{
+                                        return '檢舉原因不能為空!';
+                                    }}
+                                }}
+                            }}).then((reasonResult) => {{
+                                if (reasonResult.isConfirmed) {{
+                                    let detailedReason = reasonResult.value;
+                                    __doPostBack('ReportComment', '{commentId}|' + detailedReason);
+                                }}
+                            }});
+                        }} else {{
+                            __doPostBack('ReportComment', '{commentId}|' + reportReason);
+                        }}
+                    }}
+                }});
+                </script>";
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
 
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+            }
+
         }
 
     }
@@ -722,14 +783,15 @@ public partial class page_coach_detail : System.Web.UI.Page
         return LikeBtn.CommandArgument;
     }
 
-    private void ReportComment(int comment_id)
+    private void ReportComment(int comment_id,string reason)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "Insert Into [評論檢舉] (評論編號) values(@comment_id)";
+            string sql = "Insert Into [評論檢舉] (評論編號,檢舉原因) values(@comment_id,@reason)";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@comment_id", comment_id);
+            command.Parameters.AddWithValue("@reason", reason);
             command.ExecuteNonQuery();
         }
     }

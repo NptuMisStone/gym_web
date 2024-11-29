@@ -94,7 +94,7 @@
                                 <a href='<%# ((Tuple<string, string>)Container.DataItem).Item2 %>' target="_blank">
                                     <img src='<%# ((Tuple<string, string>)Container.DataItem).Item1 %>' class="d-block w-100" alt="Slide <%# Container.ItemIndex + 1 %>" style="height: 720px; object-fit: cover;">
                                 </a>
-                            </div>
+                            &nbsp;</div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
@@ -263,16 +263,16 @@
         <div class="container py-5">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <img class="img-fluid mb-4 mb-lg-0" src="/page/img/NPTU-GYM.png" alt="Image">
+                    <img class="img-fluid mb-4 mb-lg-0" src="img/NPTU_GYM.png" alt="Image" >
                 </div>
                 <div class="col-lg-6">
                     <h2 class="display-4 font-weight-bold mb-4">我們團隊</h2>
-                    <p>致力於為所有使用者提供良好的環境來預約，xxxxxxxxxxxxxxxxxxxxxxxxx</p>
+                    <p>致力於為所有使用者提供良好且資訊透明的環境來預約、提高教練被發現的機會。</p>
                     <div class="row py-2">
                         <div class="col-sm-6">
                             <i class="flaticon-barbell display-2 text-primary"></i>
                             <h4 class="font-weight-bold">關於我們</h4>
-                            <p>我們是由一群xxxxxxx</p>
+                            <p>我們是由一群熱愛健身及運動的大學生組成</p>
                         </div>
                         <div class="col-sm-6" style="align-content: center;">
                             <a href="contact.aspx" class="btn btn-lg px-4 btn-outline-primary">了解更多</a>

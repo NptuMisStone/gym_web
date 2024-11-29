@@ -61,7 +61,7 @@ public partial class Admin_comment_review : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string query = "SELECT DISTINCT 評論編號,使用者圖片,使用者姓名,評分,評論日期,評論內容  FROM [系統管理員-評論檢舉] ";
+            string query = "SELECT DISTINCT 評論編號,使用者圖片,使用者姓名,評分,評論日期,評論內容,檢舉原因  FROM [系統管理員-評論檢舉] ";
             SqlCommand command = new SqlCommand(query, connection);
             connection.Open();
             SqlDataReader dataReader = command.ExecuteReader(CommandBehavior.SequentialAccess);
@@ -100,11 +100,16 @@ public partial class Admin_comment_review : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "DELETE FROM 完成預約評論表 where 評論編號=@comment_id";
             connection.Open();
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("comment_id", comment_id);
-            int rowsAffected = command.ExecuteNonQuery();
+            string deleteReportSql = "DELETE FROM 評論檢舉 WHERE 評論編號=@comment_id";
+            SqlCommand deleteReportCommand = new SqlCommand(deleteReportSql, connection);
+            deleteReportCommand.Parameters.AddWithValue("comment_id", comment_id);
+            deleteReportCommand.ExecuteNonQuery();
+            
+            string deleteCommentSql = "DELETE FROM 完成預約評論表 WHERE 評論編號=@comment_id";
+            SqlCommand deleteCommentCommand = new SqlCommand(deleteCommentSql, connection);
+            deleteCommentCommand.Parameters.AddWithValue("comment_id", comment_id);
+            int rowsAffected = deleteCommentCommand.ExecuteNonQuery();
             if (rowsAffected > 0)
             {
                 string script = @"<script>

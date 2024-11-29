@@ -23,7 +23,8 @@
         summary::after{
             content:'＞';
             margin-left:30px;
-            color:#5b8f8f;
+            font-weight:bold;
+            color:#FF0000;
             font-size:21px;
             transition:transform .5s;
         }
@@ -50,33 +51,33 @@
         <h4 class="display-4 font-weight-bold">常見問題Q&A</h4>
     </div>
     <details>
-        <summary>這是什麼平台？</summary><!--問題-->
+        <summary>如何知道健身教練的詳細資訊及安排的課程？</summary><!--問題-->
         <div class="answer">
-            <p>我也不知道</p><!--答案-->
+            <p>在<a href="coach.aspx">健身教練</a>頁面，點擊任何一個教練即可查看教練詳細資訊及他所有安排的課程。</p><!--答案-->
         </div>
         </details>
         <details>
-        <summary></summary>
+        <summary>想知道如何預約課程？</summary>
         <div class="answer">
-            <p></p>
+            <p>在<a href="class.aspx">尋找課程</a>中會有各個教練安排的課程供你們選擇，課程點擊後，即可依照課程日期、時間進行預約。</p>
         </div>
     </details>
         <details>
-        <summary></summary>
+            <summary>如何查找特定課程？</summary>
+            <div class="answer">
+                <p>在<a href="class.aspx">尋找課程</a>中，搜尋列表旁，有個"篩選按鈕<span><img src="img/filter.png" style="width:25px;height:25px;" /></span>"，可進行選取想查詢的課程。</p>
+            </div>
+        </details>
+        <details>
+        <summary>想知道如何取消預約？</summary>
         <div class="answer">
-            <p></p>
+            <p>在<a href="../User/User_appointment_record.aspx">預約紀錄</a>中，可以查看所有預約紀錄，並進行取消。</p>
         </div>
     </details>
         <details>
-        <summary></summary>
+        <summary>如何查看目前所收藏的教練及課程？</summary>
         <div class="answer">
-            <p></p>
-        </div>
-    </details>
-        <details>
-        <summary></summary>
-        <div class="answer">
-            <p></p>
+            <p>在<a href="../User/User_Like.aspx">我的收藏</a>中，即可看到所收藏的教練及課程。</p>
         </div>
     </details>
 </div>
