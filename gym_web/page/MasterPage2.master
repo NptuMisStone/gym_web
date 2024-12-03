@@ -38,8 +38,9 @@
         <div class="container-fluid p-0 nav-bar">
             <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
                 <a id="Main_LOGO" runat="server" class="navbar-brand">
-                    <h1 class="m-0 display-4 font-weight-bold text-uppercase text-white">屏大Fit</h1>
+                    <img src="img/main_logo.png" alt="屏大Fit" class="m-0 display-4 font-weight-bold text-uppercase text-white" width="350">
                 </a>
+
                 <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse" runat="server">
                     <div class="navbar-nav ml-auto p-4 bg-secondary">
                         <a href="/page/Home.aspx" class="nav-item nav-link">首頁</a>
