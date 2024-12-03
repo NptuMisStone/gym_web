@@ -38,7 +38,7 @@
         <div class="container-fluid p-0 nav-bar">
             <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
                 <a id="Main_LOGO" runat="server" class="navbar-brand">
-                    <img src="img/main_logo.png" alt="屏大Fit" class="m-0 display-4 font-weight-bold text-uppercase text-white" width="350">
+                    <img src="/page/img/main_logo.png" alt="屏大Fit" class="m-0 display-4 font-weight-bold text-uppercase text-white" width="350">
                 </a>
 
                 <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse" runat="server">

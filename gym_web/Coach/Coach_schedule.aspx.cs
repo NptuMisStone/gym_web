@@ -760,7 +760,7 @@ Swal.fire({{
         }
         else
         {
-            return "img/null.png"; // 替代圖片的路徑
+            return "img/class_default.png"; // 替代圖片的路徑
         }
     }
     protected string GetLocation(object Class_id)

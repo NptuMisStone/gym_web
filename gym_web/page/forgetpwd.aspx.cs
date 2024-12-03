@@ -120,13 +120,13 @@ public partial class page_forgetpwd : System.Web.UI.Page
         int SmtpPort = 587;
         MailMessage mms = new MailMessage();
         mms.From = new MailAddress(GoogleID);
-        mms.Subject = "【NPTU GYM】密碼重設通知信";
+        mms.Subject = "【屏大Fit-健身預約系統】密碼重設通知信";
         mms.Body = "<p>我們收到您重設密碼的請求。" +
                    $"<p>您的驗證碼為：{verificationCode}</p>" +
                    "<p>有效期限為3分鐘，請妥善保管驗證碼，勿將其告知他人。</p>" +
                    "<p>如果這不是您的操作，請忽略這封郵件。</p>" +
                    "<p>（本郵件是由系統自動寄發，請勿直接回覆，謝謝。）</p>" +
-                   "<p>NPTU GYM 團隊<br>NptuMisStone@gmail.com</p>";
+                   "<p>屏大Fit 團隊<br>NptuMisStone@gmail.com</p>";
         mms.IsBodyHtml = true; // 確保內容使用 HTML 格式
         mms.SubjectEncoding = System.Text.Encoding.UTF8;
         mms.To.Add(new MailAddress(email));

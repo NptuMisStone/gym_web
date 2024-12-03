@@ -95,7 +95,7 @@ public partial class Coach_Coach_class : System.Web.UI.Page
         }
         else
         {
-            return "img/null.png"; // 替代圖片的路徑
+            return "img/class_default.png"; // 替代圖片的路徑
         }
     }
 }
