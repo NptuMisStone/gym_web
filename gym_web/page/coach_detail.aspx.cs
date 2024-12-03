@@ -442,18 +442,8 @@ public partial class page_coach_detail : System.Web.UI.Page
         {
             if (Session["User_id"] == null)
             {
-                string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
+                // 驗證用戶是否登入的類別函數
+                CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
             }
             else
             {

@@ -121,7 +121,26 @@ public partial class Coach_Coach_home1 : System.Web.UI.Page
 
                 if (reader.Read())
                 {
-                    DateTime endDate = DateTime.Parse(reader["合約到期日"].ToString());
+                    DateTime endDate;
+
+                    if (reader["合約到期日"] != DBNull.Value && !string.IsNullOrWhiteSpace(reader["合約到期日"].ToString()))
+                    {
+                        if (DateTime.TryParse(reader["合約到期日"].ToString(), out endDate))
+                        {
+                            Console.WriteLine("成功解析日期: " + endDate.ToString("yyyy-MM-dd"));
+                        }
+                        else
+                        {
+                            Console.WriteLine("日期格式無效，使用預設值");
+                            endDate = DateTime.MinValue.Date; // 或其他適當的預設值
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("合約到期日為空，使用預設值");
+                        endDate = DateTime.MinValue.Date; // 或其他適當的預設值
+                    }
+
                     string registrationType = reader["註冊類型"].ToString();
                     string reviewStatus = reader["審核狀態"].ToString();
 

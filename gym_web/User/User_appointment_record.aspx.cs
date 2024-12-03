@@ -18,29 +18,14 @@ public partial class User_User_appointment_record : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (Session["User_id"] == null)
+        // 驗證用戶是否登入的類別函數
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+
+        if (!IsPostBack)
         {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SweetAlertScript", script, false);
-        }
-        else 
-        {
-            if (!IsPostBack)
-            {
-                Update_Pass();
-                User_id = Convert.ToString(Session["User_id"]);
-                show_record();
-            }
+            Update_Pass();
+            User_id = Convert.ToString(Session["User_id"]);
+            show_record();
         }
     }
     private void Update_Pass()//逾時

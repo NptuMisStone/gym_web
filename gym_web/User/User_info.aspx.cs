@@ -19,29 +19,13 @@ public partial class User_User_info : System.Web.UI.Page
     {
         User_id = Convert.ToString(Session["User_id"]);
 
-        if (Session["User_id"] == null)
-        {
-            string script = @"<script>
-                Swal.fire({
-                  icon: 'error',
-                  title: '請先登入！',
-                  confirmButtonText: '確定',
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                     window.location.href = '../User/User_login.aspx';
-                  }
-                });
-                </script>";
+        // 驗證用戶是否登入的類別函數
+        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
 
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
-        }
-        else
+        if (!IsPostBack)
         {
-            if (!IsPostBack)
-            {
-                BindUserData();
-                DisplayUserImage();
-            }
+            BindUserData();
+            DisplayUserImage();
         }
     }
 

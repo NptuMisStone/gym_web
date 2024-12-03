@@ -378,11 +378,12 @@ public partial class page_class_detail : System.Web.UI.Page
                 SELECT 開始時間, 結束時間 
                 FROM [使用者預約-有預約的] 
                 WHERE 日期 = @Ap_date  
-                AND 預約狀態 = 1 ";
+                AND 預約狀態 = 1 AND 使用者編號 = @User_id";
 
             using (SqlCommand checkCommand = new SqlCommand(queryCheck, connection))
             {
                 checkCommand.Parameters.AddWithValue("Ap_date", Ap_date);
+                checkCommand.Parameters.AddWithValue("@User_id", User_id);
                 using (SqlDataReader reader = checkCommand.ExecuteReader())
                 {
                     while (reader.Read())
