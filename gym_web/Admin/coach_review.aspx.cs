@@ -42,6 +42,8 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
         UpdateReviewDate(registrationID);
         // 重新綁定DetailsView以更新數據
         dvDesignerApproval.DataBind();
+        //寄信
+        FindCoach(registrationID);
         string script = @"<script type='text/javascript'>
                         Swal.fire({
                             title: '審核成功！',
@@ -147,7 +149,30 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
             connection.Close(); // 確保連線被關閉
         }
     }
+    private void FindCoach(int registrationID)
+    {
 
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            // 直接更新該筆資料的合約到期日
+            string query = "SELECT 健身教練姓名,健身教練郵件,合約到期日 FROM [健身教練審核合併] WHERE 編號=@RegistrationID";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@RegistrationID", registrationID);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        SendMail(reader["健身教練郵件"].ToString(), reader["健身教練姓名"].ToString(), reader["合約到期日"].ToString());
+                    }
+                }
+            }
+
+            connection.Close(); // 確保連線被關閉
+        }
+    }
 
 
 
@@ -174,39 +199,33 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
 
 
     //需重新叫回使用
-    public void SendMail(string emails, string title, string content)
+    public void SendMail(string emails, string coach_name, string EDdate)
     {
-        var mail = new MailMessage();
+        string GoogleID = "NptuMisStone@gmail.com"; // Google 發信帳號
+        string TempPwd = "lgtb rhoq irjc flyi"; // 應用程式密碼
 
-        // 收件人 Email 地址
-        foreach (var email in emails.Split(','))
+        string SmtpServer = "smtp.gmail.com";
+        int SmtpPort = 587;
+        MailMessage mms = new MailMessage();
+        mms.From = new MailAddress(GoogleID);
+        mms.Subject = "【屏大Fit-健身預約系統】教練審核結果通知信";
+        mms.Body = $"<p>親愛的用戶{coach_name}您好：</p>" +
+                   "<p>我們收到您註冊成為健身教練的請求。" +
+                   $"<p>您的審核已通過，合約到期日為{EDdate}。</p>" +
+                   "<p>祝您使用愉快，謝謝！" +
+                   "<p>如果這不是您的操作，請忽略這封郵件。</p>" +
+                   "<p>（本郵件是由系統自動寄發，請勿直接回覆，謝謝。）</p>" +
+                   "<p>屏大Fit 團隊<br>NptuMisStone@gmail.com</p>";
+        mms.IsBodyHtml = true; // 確保內容使用 HTML 格式
+        mms.SubjectEncoding = System.Text.Encoding.UTF8;
+        mms.To.Add(new MailAddress(emails));
+        using (SmtpClient client = new SmtpClient(SmtpServer, SmtpPort))
         {
-            mail.To.Add(email);
+            client.EnableSsl = true;
+            client.Credentials = new NetworkCredential(GoogleID, TempPwd); // 寄信帳密 
+            client.Send(mms); // 寄出信件
         }
-        // 主旨
-        mail.Subject = title;
-        // 內文
-        mail.Body = content;
-        // 內文是否為 HTML
-        mail.IsBodyHtml = true;
-        // 優先權
-        mail.Priority = MailPriority.Normal;
-
-        // 發信來源,最好與你發送信箱相同,否則容易被其他的信箱判定為垃圾郵件.
-        mail.From = new MailAddress("hairdressing.info.cutsy@gmail.com", "cutsy_123");
-
-
-        // Gmail 的 SMTP 設定
-        var smtp = new SmtpClient("smtp.gmail.com", 587)
-        {
-            Credentials = new System.Net.NetworkCredential("hairdressing.info.cutsy@gmail.com", "nycl qdvd olge hcyt"),
-            EnableSsl = true
-        };
-
-        // 投遞出去
-        smtp.Send(mail);
-
-        mail.Dispose();
+        Debug.WriteLine("已寄出審核通知至信箱");
     }
 }
 

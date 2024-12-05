@@ -135,7 +135,7 @@
 
             <a href="Admin_index.aspx" class="home-link"><span class="arrow">&larr;</span> 返回首頁</a>
 
-            <h1>設計師註冊核准</h1>
+            <h1>健身教練註冊核准</h1>
             <asp:DetailsView ID="dvDesignerApproval" runat="server" AutoGenerateRows="False" CssClass="details-view" DataKeyNames="編號" DataSourceID="SqlDataSource1" AllowPaging="True">
                 <Fields>
 
