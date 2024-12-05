@@ -412,7 +412,6 @@ public partial class page_class : System.Web.UI.Page
         ImageButton btn = (ImageButton)sender;
         int classId = Convert.ToInt32(btn.CommandArgument);
         int userId = Convert.ToInt32(Session["User_id"]);
-
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();

@@ -208,6 +208,7 @@ public partial class User_User_Like : System.Web.UI.Page
             }
         }
         coachdata();
+        classdata();
     }
 
     protected void ClassLikeBtn_Click(object sender, ImageClickEventArgs e)
@@ -246,6 +247,7 @@ public partial class User_User_Like : System.Web.UI.Page
                 btn.ImageUrl = "img/dislike2.png";
             }
         }
+        coachdata();
         classdata();
     }
 
