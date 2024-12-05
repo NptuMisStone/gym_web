@@ -28,6 +28,12 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
             BindCoachData();
             DisplayCoachImage();
         }
+        // 判斷是否為刪除帳號的回傳
+        if (Request["__EVENTTARGET"] == "DeleteAccount")
+        {
+            string password = Request["__EVENTARGUMENT"];
+            DeleteAccount(password);
+        }
     }
 
     protected void BtnEdit_Click(object sender, EventArgs e)
@@ -38,11 +44,14 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         lb_phone.Visible = false;
         lb_email.Visible = false;
         lb_about.Visible = false;
+        lb_gender.Visible = false;
         tb_name.Visible = true;
         tb_phone.Visible = true;
         tb_email.Visible = true;
         tb_about.Visible = true;
+        tb_gender.Visible =true;
         FileUpload1.Visible = true;
+        
     }
 
     protected void BtnSave_Click(object sender, EventArgs e)
@@ -53,10 +62,12 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         lb_phone.Visible = true;
         lb_email.Visible = true;
         lb_about.Visible = true;
+        lb_gender.Visible = true;
         tb_name.Visible = false;
         tb_phone.Visible = false;
         tb_email.Visible = false;
         tb_about.Visible = false;
+        tb_gender.Visible =false;
         FileUpload1.Visible = false;
 
         int coachId = int.Parse(Session["Coach_id"].ToString());
@@ -64,6 +75,7 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         string editedPhone = tb_phone.Text;
         string editedEmail = tb_email.Text;
         string editedAbout = tb_about.Text;
+        string editedGender = tb_gender.SelectedValue;
 
         if (FileUpload1.HasFile)
         {
@@ -75,7 +87,8 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         {
             string updateQuery = "UPDATE 健身教練資料 SET " +
                                  "[健身教練姓名] = @Name, [健身教練電話] = @Phone, " +
-                                 "[健身教練郵件] = @Email, [健身教練介紹] = @Introduction " +
+                                 "[健身教練郵件] = @Email, [健身教練介紹] = @Introduction, " +
+                                 "[健身教練性別] = @Gender " +
                                  "WHERE [健身教練編號] = @CoachId";
 
             using (SqlCommand command = new SqlCommand(updateQuery, connection))
@@ -83,6 +96,7 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                 command.Parameters.AddWithValue("@Name", editedName);
                 command.Parameters.AddWithValue("@Phone", editedPhone);
                 command.Parameters.AddWithValue("@Email", editedEmail);
+                command.Parameters.AddWithValue("@Gender", editedGender);
                 command.Parameters.AddWithValue("@Introduction", editedAbout);
                 command.Parameters.AddWithValue("@CoachId", coachId);
 
@@ -107,16 +121,20 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         lb_phone.Visible = true;
         lb_email.Visible = true;
         lb_about.Visible = true;
+        lb_gender.Visible = true;
         tb_name.Visible = false;
         tb_phone.Visible = false;
         tb_email.Visible = false;
         tb_about.Visible = false;
+        tb_gender.Visible = false;
         FileUpload1.Visible = false;
         tb_name.Text = lb_name.Text;
         tb_phone.Text = lb_phone.Text;
         tb_email.Text = lb_email.Text;
         tb_about.Text = lb_about.Text;
-
+        if (lb_gender.Text == "男生") { tb_gender.SelectedValue = "1"; }
+        else if (lb_gender.Text == "女生") { tb_gender.SelectedValue = "2"; }
+        else if (lb_gender.Text == "無性別") { tb_gender.SelectedValue = "3"; }
         DisplayCoachImage();
     }
 
@@ -142,6 +160,22 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
                     tb_email.Text = reader["健身教練郵件"].ToString();
                     lb_about.Text = reader["健身教練介紹"].ToString();
                     tb_about.Text = reader["健身教練介紹"].ToString();
+                    string gender = reader["健身教練性別"].ToString();
+                    if (gender == "1")
+                    {
+                        lb_gender.Text = "男生";
+                        tb_gender.SelectedValue = gender;
+                    }
+                    if (gender == "2")
+                    {
+                        lb_gender.Text = "女生";
+                        tb_gender.SelectedValue = gender;
+                    }
+                    if (gender == "3")
+                    {
+                        lb_gender.Text = "無性別";
+                        tb_gender.SelectedValue = gender;
+                    }
                 }
                 reader.Close();
             }
@@ -307,5 +341,107 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
         script += "</script>";
 
         Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+    }
+
+    protected void Btn_delete_Click(object sender, EventArgs e)
+    {
+        string script = @"<script>
+    Swal.fire({
+        title: '確定刪除帳號嗎？',
+        text: '刪除後將無法復原！',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 顯示密碼輸入框
+            Swal.fire({
+                title: '請輸入密碼以確認刪除',
+                input: 'password',
+                inputPlaceholder: '請輸入密碼',
+                showCancelButton: true,
+                confirmButtonText: '確認刪除',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 使用 __doPostBack 觸發後端邏輯
+                    var password = result.value;
+                    __doPostBack('DeleteAccount', password);
+                }
+            });
+        }
+    });
+    </script>";
+
+        Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertDelete", script, false);
+    }
+    private void DeleteAccount(string password)
+    {
+        string dbPassword;
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string query = "SELECT  健身教練密碼 FROM  健身教練資料 WHERE  健身教練編號 = @Coach_id";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Coach_id", Coach_id);
+                connection.Open();
+                dbPassword = command.ExecuteScalar() as string;
+            }
+        }
+
+        if (dbPassword == password)
+        {
+            // 刪除帳號，關聯未做
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "DELETE FROM 健身教練審核 WHERE 健身教練編號 = @Coach_id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Coach_id", Coach_id);
+                    command.ExecuteNonQuery();
+                }
+                string query2 = "DELETE FROM 健身教練資料 WHERE 健身教練編號 = @Coach_id";
+                using (SqlCommand command = new SqlCommand(query2, connection))
+                {
+                    command.Parameters.AddWithValue("@Coach_id", Coach_id);
+                    command.ExecuteNonQuery();
+                }
+            }
+            Session["Coach_id"] = null;
+
+            // 刪除成功的 SweetAlert
+            string script = @"<script>
+            Swal.fire({
+                icon: 'success',
+                title: '刪除成功',
+                text: '帳號已刪除',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = '../page/Home.aspx';
+            });
+            </script>";
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertSuccess", script, false);
+        }
+        else
+        {
+            // 密碼錯誤的 SweetAlert
+            string script = @"<script>
+            Swal.fire({
+                icon: 'error',
+                title: '刪除失敗',
+                text: '密碼錯誤，請重新確認',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            </script>";
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertError", script, false);
+        }
     }
 }

@@ -155,6 +155,10 @@
                 text-decoration: none; /* 去掉下劃線 */
                 outline: none; /* 去掉選取時的外框 */
             }
+        .modal-dialog {
+            max-width: 50%; /* 設定模態視窗寬度為 80% 視窗寬度 */
+            margin: 200px auto;   /* 保持水平置中 */
+        }
     </style>
 
     <!-- Page Header Start -->

@@ -96,7 +96,7 @@
                     </div>
 
                     <div>
-                        <asp:Button ID="Btn_delete" runat="server" Text="刪除帳號" CssClass="btn sent-butnn form-control" Style="width: 100%;" PostBackUrl="User_delete.aspx"/>
+                        <asp:Button ID="Btn_delete" runat="server" Text="刪除帳號" CssClass="btn sent-butnn form-control" Style="width: 100%;" OnClick="Btn_delete_Click"/>
                     </div>
 
                     

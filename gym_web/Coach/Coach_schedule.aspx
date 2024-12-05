@@ -97,7 +97,7 @@
 
         $(document).ready(function () {
             // 自動設置初始值為 6:30
-            var initialStartTime = '06:30';
+            var initialStartTime = '06:00';
             $('#<%= tbCourseStartTime.ClientID %>').val(initialStartTime);
 
             // 初始化 datetimepicker
@@ -115,7 +115,7 @@
                 },
                 useCurrent: false, // 不自動填入當前時間
                 stepping: 30, // 每次按鍵跳30分鐘
-                minDate: moment({ hour: 6, minute: 30 }), // 設定最早時間 6:30
+                minDate: moment({ hour: 6, minute: 00 }), // 設定最早時間 6:00
             });
 
             // 獲取課程時長，並設置預設結束時間
@@ -129,8 +129,8 @@
 
             // 當點擊文本框時顯示時間選擇器
             $('#<%= tbCourseStartTime.ClientID %>').on('focus', function () {
-                // 計算最大開始時間（22:30 減去課程時長）
-                var maxStartTime = moment({ hour: 22, minute: 30 }).subtract(courseDuration, 'minutes');
+                // 計算最大開始時間（23:00 減去課程時長）
+                var maxStartTime = moment({ hour: 23, minute: 00 }).subtract(courseDuration, 'minutes');
                 $('#<%= tbCourseStartTime.ClientID %>').datetimepicker('maxDate', maxStartTime);
                 $(this).datetimepicker('show');
             });
