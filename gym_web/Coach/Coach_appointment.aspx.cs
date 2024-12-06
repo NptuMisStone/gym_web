@@ -8,12 +8,14 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 public partial class Coach_Coach_appointment : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
 
-    public static string Coach_id, TD,Ap_People,Coach_Time;
+    public static string Coach_id, TD, Ap_People, Coach_Time;
     public static int Schedule_id;
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -31,6 +33,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         BindTdData();
         ResetButtonClasses();
         btnToday.CssClass = "course-btn active";
+        Session["whatdata"] = "Today";
     }
 
     protected void btnFuture_Click(object sender, EventArgs e)
@@ -38,6 +41,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         BindFTData();
         ResetButtonClasses();
         btnFuture.CssClass = "course-btn active";
+        Session["whatdata"] = "Future";
     }
 
     protected void btnPast_Click(object sender, EventArgs e)
@@ -45,6 +49,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         BindPSData();
         ResetButtonClasses();
         btnPast.CssClass = "course-btn active";
+        Session["whatdata"] = "Past";
     }
     // 用來重置按鈕的 CssClass
     private void ResetButtonClasses()
@@ -53,7 +58,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         btnFuture.CssClass = "course-btn";
         btnPast.CssClass = "course-btn";
     }
-    private void BindTdData() 
+    private void BindTdData()
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
@@ -139,16 +144,16 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         if (e.CommandName == "AP")
         {
-            Schedule_id =Convert.ToInt32(e.CommandArgument);
+            Schedule_id = Convert.ToInt32(e.CommandArgument);
             ShowAP(Schedule_id);
-            Panel1.Visible= true;
+            Panel1.Visible = true;
             ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
         }
     }
 
     private void ShowAP(int schedule_id)
     {
-        using (SqlConnection connection = new SqlConnection(connectionString)) 
+        using (SqlConnection connection = new SqlConnection(connectionString))
         {
             string sql = "Select * From [使用者預約-評論用] Where 課表編號=@ScheduleID AND (預約狀態=1 OR  預約狀態=2)";
             connection.Open();
@@ -168,39 +173,12 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
                 AP_Detail.DataSource = null;
                 AP_Detail.DataBind();
             }
-            
+
             connection.Close();
         }
     }
 
-    protected void AP_Detail_RowCommand(object sender, GridViewCommandEventArgs e)
-    {
-        if (e.CommandName == "Cancel") 
-        {
-            int rowIndex = Convert.ToInt32(e.CommandArgument);
-            GridViewRow row = AP_Detail.Rows[rowIndex];
-            string ap_id = row.Cells[0].Text.Trim();
-            string s_id=row.Cells[1].Text.Trim();
-            CancelAP(ap_id);/*預約狀態更改*/
-            CancelApPeople(s_id);/*預約人數更改*/
-            BindTdData();
-            BindFTData();
-            BindPSData();
-            ShowAP(Schedule_id);
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
-        }
-        else if(e.CommandName == "Finish")
-        {
-            int rowIndex = Convert.ToInt32(e.CommandArgument);
-            GridViewRow row = AP_Detail.Rows[rowIndex];
-            string ap_id = row.Cells[0].Text.Trim();
-            string c_id = row.Cells[2].Text.Trim();
-            FinishAP(ap_id);
-            FinishCoachTime(c_id);
-            ShowAP(Schedule_id);
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
-        }
-    }
+    
     private void CancelAP(string ap_id)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -220,9 +198,9 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             string sql = "Select 預約人數 From 健身教練課表 Where 課表編號=@ScheduleID";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@ScheduleID",s_id );
-            SqlDataReader reader= command.ExecuteReader();
-            if (reader.Read()) 
+            command.Parameters.AddWithValue("@ScheduleID", s_id);
+            SqlDataReader reader = command.ExecuteReader();
+            if (reader.Read())
             {
                 Ap_People = reader["預約人數"].ToString().Trim();
             }
@@ -237,24 +215,14 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             string sql = "UPDATE 健身教練課表 SET 預約人數 = @AP_People WHERE 課表編號 = @ScheduleID";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@AP_People",int.Parse(Ap_People)-1);
+            command.Parameters.AddWithValue("@AP_People", int.Parse(Ap_People) - 1);
             command.Parameters.AddWithValue("@ScheduleID", s_id);
             command.ExecuteReader();
             connection.Close();
         }
     }
-    protected void AP_Detail_RowCreated(object sender, GridViewRowEventArgs e)
-    {
-        e.Row.Cells[0].Visible = false;
-        e.Row.Cells[1].Visible = false;
-        e.Row.Cells[2].Visible = false;
-        e.Row.Cells[3].Visible = false;
-    }
 
-    protected void AP_Detail_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-    {
-        //取消預約用，勿刪
-    }
+
     private void FinishAP(string ap_id)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -283,7 +251,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             connection.Close();
         }
     }
-    private void FinishCoachTime(string c_id) 
+    private void FinishCoachTime(string c_id)
     {
         SearchCoachTime(c_id);
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -297,20 +265,102 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             connection.Close();
         }
     }
-    protected void AP_Detail_RowDataBound(object sender, GridViewRowEventArgs e)
-    {
-        if (e.Row.RowType == DataControlRowType.DataRow)
-        {
-            // 假设根据某个字段的值判断是否隐藏按钮
-            int status = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "預約狀態"));
 
-            // 当状态为 1 时，隐藏 "取消預約" 按钮
-            if (status == 2)
+
+    protected string GetImageUrl(object imageData, int quality)
+    {
+        if (imageData != null && imageData != DBNull.Value)
+        {
+            byte[] bytes = (byte[])imageData;
+
+            using (MemoryStream originalStream = new MemoryStream(bytes))
+            using (MemoryStream compressedStream = new MemoryStream())
             {
-                // 隐藏 ButtonField，指定对应列的索引（假设它是第3列，索引为2）
-                e.Row.Cells[9].Visible = false;
-                e.Row.Cells[10].Visible = false;
+                // Decode the original image
+                System.Drawing.Image originalImage = System.Drawing.Image.FromStream(originalStream);
+
+                // Create an EncoderParameters object to set the image quality
+                System.Drawing.Imaging.EncoderParameters encoderParameters = new EncoderParameters(1);
+                encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality);
+
+                // Get the JPG codec info
+                ImageCodecInfo jpgCodec = ImageCodecInfo.GetImageEncoders()
+                    .First(codec => codec.MimeType == "image/jpeg");
+
+                // Save the compressed image to the compressedStream
+                originalImage.Save(compressedStream, jpgCodec, encoderParameters);
+
+                // Convert the compressed image to a base64 string
+                byte[] compressedBytes = compressedStream.ToArray();
+                string base64String = Convert.ToBase64String(compressedBytes);
+
+                // Generate the data URI for the compressed image
+                return "data:image/jpeg;base64," + base64String;
             }
+        }
+        else
+        {
+            return "~/page/img/user.png"; // 替代圖片的路徑
+        }
+    }
+
+    protected void AP_Detail_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        Label status = e.Item.FindControl("status") as Label;
+        int st = Convert.ToInt32(status.Text);
+        if (st == 2)
+        {
+            Button cbtn = e.Item.FindControl("btnCancel") as Button;
+            Button fbtn = e.Item.FindControl("btnFinish") as Button;
+            cbtn.Visible=false;
+            fbtn.Visible = false;
+        }
+    }
+
+    protected void AP_Detail_ItemCreated(object sender, RepeaterItemEventArgs e)
+    {
+        Label schedule_id = e.Item.FindControl("schedule_id") as Label;
+        Label coach_id = e.Item.FindControl("coach_id") as Label;
+        Label status = e.Item.FindControl("status") as Label;
+        schedule_id.Visible = false;
+        coach_id.Visible = false;
+        status.Visible = false;
+    }
+
+    protected void AP_Detail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Cancel")
+        {
+
+            string ap_id = e.CommandArgument.ToString();
+            Label schedule_id = e.Item.FindControl("schedule_id") as Label;
+            string s_id=schedule_id.Text;
+            CancelAP(ap_id);/*預約狀態更改*/
+            CancelApPeople(s_id);/*預約人數更改*/
+            switch (Session["whatdata"].ToString()) {
+                case "Today":
+                    BindTdData();
+                    break;
+                case "Future":
+                    BindFTData();
+                    break;
+                case "Past":
+                    BindPSData();
+                    break;
+            }
+            
+            ShowAP(Schedule_id);
+            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
+        }
+        else if (e.CommandName == "Finish")
+        {
+            string ap_id = e.CommandArgument.ToString();
+            Label coach_id = e.Item.FindControl("coach_id") as Label;
+            string c_id = coach_id.Text;
+            FinishAP(ap_id);
+            FinishCoachTime(c_id);
+            ShowAP(Schedule_id);
+            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
         }
     }
 }

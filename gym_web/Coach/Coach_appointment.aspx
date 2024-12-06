@@ -159,6 +159,50 @@
             max-width: 50%; /* 設定模態視窗寬度為 80% 視窗寬度 */
             margin: 200px auto;   /* 保持水平置中 */
         }
+        .card {
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-img {
+                height: 200px; /* 填充整個容器高度 */
+                width: 200px; /* 自適應寬度，保持比例 */
+                object-fit: cover; /* 填滿容器並裁剪多餘部分 */
+                display: block; /* 確保圖片作為塊級元素顯示 */
+            }
+
+            .card-body {
+                padding: 15px;
+            }
+
+            .card-title {
+                font-size: 1.25rem;
+                font-weight: bold;
+            }
+
+            .card-text {
+                font-size: 0.9rem;
+                color: #555;
+            }
+
+            .btn {
+                border-radius: 20px;
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .btn-danger {
+                background-color: #e31c25;
+                border: none;
+            }
+
+            .btn-success {
+                background-color: #28a745;
+                border: none;
+            }
+
     </style>
 
     <!-- Page Header Start -->
@@ -243,26 +287,40 @@
                 </div>
                 <div class="modal-body">
                     <asp:Label ID="lblNoData" runat="server" Text="" Visible="false"></asp:Label>
-                    <asp:GridView ID="AP_Detail" runat="server" AutoGenerateColumns="False" OnRowCommand="AP_Detail_RowCommand" OnRowCreated="AP_Detail_RowCreated" OnRowCancelingEdit="AP_Detail_RowCancelingEdit" OnRowDataBound="AP_Detail_RowDataBound">
-                        <Columns>
-                            <asp:BoundField DataField="預約編號" HeaderText="預約編號" />
-                            <%--改預約狀態用--%>
-                            <asp:BoundField DataField="課表編號" HeaderText="課表編號" />
-                            <%--改預約人數用--%>
-                            <asp:BoundField DataField="健身教練編號" HeaderText="健身教練編號" />
-                            <%--改教練次數用--%>
-                            <asp:BoundField DataField="預約狀態" HeaderText="預約狀態" />
-                            <%--判斷需不需按鈕用--%>
-                            <asp:BoundField DataField="使用者姓名" HeaderText="客戶名稱" />
-                            <asp:BoundField DataField="使用者性別" HeaderText="性別" />
-                            <asp:BoundField DataField="使用者電話" HeaderText="電話" />
-                            <asp:BoundField DataField="使用者郵件" HeaderText="信箱" />
-                            <asp:BoundField DataField="備註" HeaderText="備註" />
+                    <asp:Repeater ID="AP_Detail" runat="server" OnItemCommand="AP_Detail_ItemCommand" OnItemDataBound="AP_Detail_ItemDataBound" OnItemCreated="AP_Detail_ItemCreated">
+                        <ItemTemplate>
+                            <div class="card mb-3">
+                                <div class="row no-gutters">
+                                    <!-- 圖片部分 -->
+                                    <div class="image-container" style="flex: 0 0 30%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <asp:Image ID="Image2" runat="server"  CssClass="card-img" ImageUrl='<%# GetImageUrl(Eval("使用者圖片"),20) %>' />
+                                    </div>
+                                    <!-- 內容部分 -->
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%# Eval("使用者姓名") %></h5>
+                                            <asp:Label ID="schedule_id" runat="server" Text=<%# Eval("課表編號") %> ></asp:Label>
+                                            <asp:Label ID="coach_id" runat="server" Text=<%# Eval("健身教練編號") %> ></asp:Label>
+                                            <asp:Label ID="status" runat="server" Text=<%# Eval("預約狀態") %> ></asp:Label>
+                                            <p class="card-text">
+                                                性別：<%# Eval("使用者性別") %><br />
+                                                電話：<%# Eval("使用者電話") %><br />
+                                                信箱：<%# Eval("使用者郵件") %><br />
+                                                備註：<%# Eval("備註") %><br />
+                                            </p>
+                                            <div class="d-flex justify-content-between">
+                                                <!-- 取消預約按鈕 -->
+                                                <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("預約編號") %>' Text="取消預約" CssClass="btn btn-danger" />
+                                                <!-- 完成預約按鈕 -->
+                                                <asp:Button ID="btnFinish" runat="server" CommandName="Finish" CommandArgument='<%# Eval("預約編號") %>' Text="完成預約" CssClass="btn btn-success" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
 
-                            <asp:ButtonField ButtonType="Button" CommandName="Cancel" Text="取消預約" />
-                            <asp:ButtonField ButtonType="Button" CommandName="Finish" Text="完成預約" />
-                        </Columns>
-                    </asp:GridView>
 
                     <div class="modal-footer">
                     </div>

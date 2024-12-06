@@ -304,7 +304,6 @@
                 <asp:Label ID="home_city" runat="server" Text='<%#  Eval("縣市")  %>' Visible="false" Font-Size="Large"></asp:Label>
                 <asp:Label ID="home_area" runat="server" Text='<%#  Eval("行政區")  %>' Visible="false" Font-Size="Large"></asp:Label>
                 <asp:TextBox ID="ap_location" runat="server" Enabled="false"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvlocation" runat="server" ControlToValidate="ap_location" ErrorMessage="到府地址不得為空" ForeColor="Red" Display="Dynamic" Enabled="false"  />
                 <br />
                 <br />
         

@@ -240,7 +240,6 @@ public partial class page_class_detail : System.Web.UI.Page
                 Schedule_id = Convert.ToString(e.CommandArgument);
                 User_id = Convert.ToString(Session["User_id"]);
                 ap_location.Enabled = false;
-                rfvlocation.Enabled = false;
                 ShowDetail();
                 GetId();
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "ShowModal", "$('#" + AP_Panel.ClientID + "').modal('show');", true);
@@ -274,7 +273,6 @@ public partial class page_class_detail : System.Web.UI.Page
                 if (checkPlace == 2)
                 {
                     ap_location.Enabled = true;
-                    rfvlocation.Enabled = true;
                     ADD_Panel.Visible = false;
                     home_city.Visible = true;
                     home_area.Visible = true;
@@ -308,35 +306,51 @@ public partial class page_class_detail : System.Web.UI.Page
     {
         if (CheckAP())
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (checkPlace == 2 && string.IsNullOrEmpty(ap_location.Text))
             {
-                string sql = "Insert Into 使用者預約 (使用者編號,健身教練編號,課程編號,課表編號,預約狀態,備註,客戶到府地址)" +
-                    "values(@u_id,@c_id,@course_id,@schedule_id,@status,@text,@location)";
-                connection.Open();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@u_id", User_id);
-                command.Parameters.AddWithValue("@c_id", Coach_id);
-                command.Parameters.AddWithValue("@course_id", Course_id);
-                command.Parameters.AddWithValue("@schedule_id", Schedule_id);
-                command.Parameters.AddWithValue("@status", 1);
-                command.Parameters.AddWithValue("@text", ap_text.Text);
-                command.Parameters.AddWithValue("@location", ap_location.Text);
-                command.ExecuteReader();
-                connection.Close();
-                UpdatePeople();
                 string script = @"<script>
                 Swal.fire({
-                icon: ""success"",
-                title: ""預約成功！"",
+                icon: ""error"",
+                title: ""預約失敗！"",
+                text:""到府地址不得為空!"",
                 showConfirmButton: false,
                 timer: 1500
                 });
-
-                setTimeout(function () {
-                window.location.href = '../User/User_appointment_record.aspx';
-                }, 1500);
                 </script>";
                 Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+            }
+            else
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    string sql = "Insert Into 使用者預約 (使用者編號,健身教練編號,課程編號,課表編號,預約狀態,備註,客戶到府地址)" +
+                        "values(@u_id,@c_id,@course_id,@schedule_id,@status,@text,@location)";
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@u_id", User_id);
+                    command.Parameters.AddWithValue("@c_id", Coach_id);
+                    command.Parameters.AddWithValue("@course_id", Course_id);
+                    command.Parameters.AddWithValue("@schedule_id", Schedule_id);
+                    command.Parameters.AddWithValue("@status", 1);
+                    command.Parameters.AddWithValue("@text", ap_text.Text);
+                    command.Parameters.AddWithValue("@location", ap_location.Text);
+                    command.ExecuteReader();
+                    connection.Close();
+                    UpdatePeople();
+                    string script = @"<script>
+                    Swal.fire({
+                    icon: ""success"",
+                    title: ""預約成功！"",
+                    showConfirmButton: false,
+                    timer: 1500
+                    });
+
+                    setTimeout(function () {
+                    window.location.href = '../User/User_appointment_record.aspx';
+                    }, 1500);
+                    </script>";
+                    Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+                }
             }
         }
     }
