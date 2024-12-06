@@ -455,41 +455,48 @@ public partial class page_class_detail : System.Web.UI.Page
 
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        ImageButton LikeBtn = (ImageButton)sender;
-
-        // 獲取課程編號
-        var classId = GetClassIdFromLikeBtn(LikeBtn);
-
-        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
-
-        if (LikeBtn.ImageUrl == "img/dislike2.png")
+        if (Session["User_id"] != null)
         {
-            LikeBtn.ImageUrl = "img/like1.png";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            ImageButton LikeBtn = (ImageButton)sender;
+
+            // 獲取課程編號
+            var classId = GetClassIdFromLikeBtn(LikeBtn);
+
+
+
+            if (LikeBtn.ImageUrl == "img/dislike2.png")
             {
-                connection.Open();
-                string sql = "insert into 課程被收藏 (使用者編號,課程編號) values(@likeuser_id,@likeclass_id)";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@likeuser_id", User_id);
-                command.Parameters.AddWithValue("@likeclass_id", classId);
-                command.ExecuteNonQuery();
-                connection.Close();
+                LikeBtn.ImageUrl = "img/like1.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "insert into 課程被收藏 (使用者編號,課程編號) values(@likeuser_id,@likeclass_id)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@likeuser_id", User_id);
+                    command.Parameters.AddWithValue("@likeclass_id", classId);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            else
+            {
+                LikeBtn.ImageUrl = "img/dislike2.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "delete from 課程被收藏 where 課程編號=@dislikeclass_id and 使用者編號=@dislikeuser_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@dislikeclass_id", classId);
+                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
             }
         }
-        else
-        {
-            LikeBtn.ImageUrl = "img/dislike2.png";
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                string sql = "delete from 課程被收藏 where 課程編號=@dislikeclass_id and 使用者編號=@dislikeuser_id";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@dislikeclass_id", classId);
-                command.Parameters.AddWithValue("@dislikeuser_id", User_id);
-                command.ExecuteNonQuery();
-                connection.Close();
-            }
+        else {
+            CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
         }
+        
     }
 
     protected void rp_class_ItemDataBound(object sender, RepeaterItemEventArgs e)

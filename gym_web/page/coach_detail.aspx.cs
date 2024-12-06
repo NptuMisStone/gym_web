@@ -767,41 +767,62 @@ public partial class page_coach_detail : System.Web.UI.Page
 
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        ImageButton LikeBtn = (ImageButton)sender;
-
-        // 獲取教練編號
-        var coachId = GetCoachIdFromLikeBtn(LikeBtn);
-
-        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
-
-        if (LikeBtn.ImageUrl == "img/dislike2.png")
+        if (Session["User_id"] != null)
         {
-            LikeBtn.ImageUrl = "img/like1.png";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            ImageButton LikeBtn = (ImageButton)sender;
+
+            // 獲取教練編號
+            var coachId = GetCoachIdFromLikeBtn(LikeBtn);
+
+
+            if (LikeBtn.ImageUrl == "img/dislike2.png")
             {
-                connection.Open();
-                string sql = "insert into 教練被收藏 (使用者編號,健身教練編號) values(@likeuser_id,@likecoach_id)";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@likeuser_id", User_id);
-                command.Parameters.AddWithValue("@likecoach_id", coach_num);
-                command.ExecuteNonQuery();
-                connection.Close();
+                LikeBtn.ImageUrl = "img/like1.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "insert into 教練被收藏 (使用者編號,健身教練編號) values(@likeuser_id,@likecoach_id)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@likeuser_id", User_id);
+                    command.Parameters.AddWithValue("@likecoach_id", coach_num);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+                LoadCoachDetails();
+                BindClass();
+                update_ProgressBar();
+                bind_commend_score();
+                bind_rp_comment();
+            }
+            else
+            {
+                LikeBtn.ImageUrl = "img/dislike2.png";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = "delete from 教練被收藏 where 健身教練編號=@dislikecoach_id and 使用者編號=@dislikeuser_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@dislikecoach_id", coach_num);
+                    command.Parameters.AddWithValue("@dislikeuser_id", User_id);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+                LoadCoachDetails();
+                BindClass();
+                update_ProgressBar();
+                bind_commend_score();
+                bind_rp_comment();
             }
         }
-        else
-        {
-            LikeBtn.ImageUrl = "img/dislike2.png";
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                string sql = "delete from 教練被收藏 where 健身教練編號=@dislikecoach_id and 使用者編號=@dislikeuser_id";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@dislikecoach_id", coach_num);
-                command.Parameters.AddWithValue("@dislikeuser_id", User_id);
-                command.ExecuteNonQuery();
-                connection.Close();
-            }
+        else {
+            CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+            LoadCoachDetails();
+            BindClass();
+            update_ProgressBar();
+            bind_commend_score();
+            bind_rp_comment();
         }
+        
     }
     private string GetCoachIdFromLikeBtn(ImageButton LikeBtn)
     {

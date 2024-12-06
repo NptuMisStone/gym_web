@@ -230,9 +230,11 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             Image1.ImageUrl = ResolveUrl("~/Coach/img/upload.png");
         }
     }
-
+    private int city_id;
+    private int area_id;
     protected void btnUpdateCourse_Click(object sender, EventArgs e)
     {
+        
         if (Page.IsValid)
         {
             string query = @"UPDATE [健身教練課程]
@@ -268,8 +270,32 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             string LocationName = tbClassLocation.Text.Trim();
             string LocationAddress = tbClassAddress.Text.Trim();
             byte[] courseImage = Session["uploadedImage"] != null ? (byte[])Session["uploadedImage"] : null;
-            int city_id = Convert.ToInt32(ddl_city.SelectedValue);
-            int area_id = Convert.ToInt32(ddl_area.SelectedValue);
+            
+            if (locationType == 1)
+            {
+                // 從資料庫查詢服務地點資訊
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    string query1 = "SELECT[縣市id], [行政區id]FROM [健身教練審核合併] WHERE [健身教練編號] = @CoachID";
+                    SqlCommand command = new SqlCommand(query1, connection);
+                    command.Parameters.AddWithValue("@CoachID", Coach_id);
+
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        city_id = Convert.ToInt32(reader["縣市id"]);
+                        area_id = Convert.ToInt32(reader["行政區id"]);
+                    }
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            else {
+                city_id = Convert.ToInt32(ddl_city.SelectedValue);
+                area_id = Convert.ToInt32(ddl_area.SelectedValue);
+            }
+            
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {

@@ -111,38 +111,44 @@ public partial class page_coach : System.Web.UI.Page
     }
     protected void LikeBtn_Click(object sender, ImageClickEventArgs e)
     {
-        CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
-
-        ImageButton btn = (ImageButton)sender;
-        int coachNum = Convert.ToInt32(btn.CommandArgument);
-        int userId = Convert.ToInt32(Session["User_id"]);
-
-        using (SqlConnection connection = new SqlConnection(conectionString))
+        
+        if (Session["User_id"] != null)
         {
-            connection.Open();
+            ImageButton btn = (ImageButton)sender;
+            int coachNum = Convert.ToInt32(btn.CommandArgument);
+            int userId = Convert.ToInt32(Session["User_id"]);
 
-            if (btn.ImageUrl == "img/dislike3.png")
+            using (SqlConnection connection = new SqlConnection(conectionString))
             {
-                // 喜歡教練，插入收藏記錄
-                string sql = "INSERT INTO 教練被收藏 (使用者編號, 健身教練編號) VALUES (@likeuser_id, @likecoach_id)";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@likeuser_id", userId);
-                command.Parameters.AddWithValue("@likecoach_id", coachNum);
-                command.ExecuteNonQuery();
+                connection.Open();
 
-                btn.ImageUrl = "img/like1.png";
-            }
-            else
-            {
-                // 取消喜歡，刪除收藏記錄
-                string sql = "DELETE FROM 教練被收藏 WHERE 健身教練編號 = @dislikecoach_id AND 使用者編號 = @dislikeuser_id";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@dislikecoach_id", coachNum);
-                command.Parameters.AddWithValue("@dislikeuser_id", userId);
-                command.ExecuteNonQuery();
+                if (btn.ImageUrl == "img/dislike3.png")
+                {
+                    // 喜歡教練，插入收藏記錄
+                    string sql = "INSERT INTO 教練被收藏 (使用者編號, 健身教練編號) VALUES (@likeuser_id, @likecoach_id)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@likeuser_id", userId);
+                    command.Parameters.AddWithValue("@likecoach_id", coachNum);
+                    command.ExecuteNonQuery();
 
-                btn.ImageUrl = "img/dislike3.png";
+                    btn.ImageUrl = "img/like1.png";
+                }
+                else
+                {
+                    // 取消喜歡，刪除收藏記錄
+                    string sql = "DELETE FROM 教練被收藏 WHERE 健身教練編號 = @dislikecoach_id AND 使用者編號 = @dislikeuser_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@dislikecoach_id", coachNum);
+                    command.Parameters.AddWithValue("@dislikeuser_id", userId);
+                    command.ExecuteNonQuery();
+
+                    btn.ImageUrl = "img/dislike3.png";
+                }
             }
         }
+        else {
+            CheckLogin.CheckUserOrCoachLogin(this.Page, "User");
+        }
+        
     }
 }
