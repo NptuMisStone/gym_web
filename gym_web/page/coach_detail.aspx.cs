@@ -211,10 +211,45 @@ public partial class page_coach_detail : System.Web.UI.Page
         }
         else
         {
-            return "img/coach_default.jpg"; // 替代圖片的路徑
+            return "~/page/img/coach_main_ic_default.jpg"; // 替代圖片的路徑
         }
     }
+    protected string GetImageUrl2(object imageData, int quality)//課程
+    {
+        if (imageData != null && imageData != DBNull.Value)
+        {
+            byte[] bytes = (byte[])imageData;
 
+            using (MemoryStream originalStream = new MemoryStream(bytes))
+            using (MemoryStream compressedStream = new MemoryStream())
+            {
+                // Decode the original image
+                System.Drawing.Image originalImage = System.Drawing.Image.FromStream(originalStream);
+
+                // Create an EncoderParameters object to set the image quality
+                System.Drawing.Imaging.EncoderParameters encoderParameters = new EncoderParameters(1);
+                encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality);
+
+                // Get the JPG codec info
+                ImageCodecInfo jpgCodec = ImageCodecInfo.GetImageEncoders()
+                    .First(codec => codec.MimeType == "image/jpeg");
+
+                // Save the compressed image to the compressedStream
+                originalImage.Save(compressedStream, jpgCodec, encoderParameters);
+
+                // Convert the compressed image to a base64 string
+                byte[] compressedBytes = compressedStream.ToArray();
+                string base64String = Convert.ToBase64String(compressedBytes);
+
+                // Generate the data URI for the compressed image
+                return "data:image/jpeg;base64," + base64String;
+            }
+        }
+        else
+        {
+            return "~/page/img/coach_class_main_ic_default.png"; // 替代圖片的路徑
+        }
+    }
     protected string GetPeopleType(int num)
     {
         if (num > 1)

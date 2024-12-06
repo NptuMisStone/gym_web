@@ -316,7 +316,7 @@ public partial class Coach_Coach_home1 : System.Web.UI.Page
                 }
                 else
                 {
-                    coach_img.ImageUrl = "~/page/img/coach_default.jpg";
+                    coach_img.ImageUrl = "~/page/img/coach_main_ic_default.jpg";
                 }
             }
             connection.Close();

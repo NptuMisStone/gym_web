@@ -192,7 +192,7 @@
                                 Style="display: block; text-align: left; text-decoration: none; cursor: pointer;">
                                 <div class="row align-items-center" style="padding: 20px;">
                                     <div class="col-sm-6" style="padding: 10px 15px;">
-                                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
+                                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl2(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
                                         <%# Convert.ToInt32(Eval("上課人數")) == 1 ? 
                                                 "<i style='font-size:20px; font-weight: bold;'>一對一</i>" : 
                                                 "<i style='font-size:20px; font-weight: bold;'>團體</i>" %>

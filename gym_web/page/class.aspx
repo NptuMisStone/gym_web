@@ -43,6 +43,42 @@
         .btn-hide {
             display:none;
         }
+        .cancel-btn,
+    .submit-btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 48%; /* 确保按钮不会超出父容器的宽度 */
+    }
+
+    /* 提交按钮 */
+    .submit-btn {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+
+    /* 取消按钮 */
+    .cancel-btn {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #c82333;
+    }
+    .filter-item input, .filter-item select, .filter-item textarea {
+        width: 100%;
+        padding: 5px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+    }
     </style>
     <script>
         // 顯示弹窗
@@ -136,11 +172,13 @@
     <!-- 弹窗内容 -->
     <asp:Panel ID="sidePanel" runat="server" CssClass="side-panel" style="display:none;">
         <div class="panel-content">
-            <asp:Button ID="Button2" runat="server" Text="×" OnClientClick="hidePopup();return false; " CssClass="close-button"/>
+            
             <h2>篩選</h2>
+            <div class="filter-item">
             <asp:Label ID="Label1" runat="server" Text="課程類型"></asp:Label>
             <br />
             <asp:DropDownList ID="ClassTypeDDL" runat="server"></asp:DropDownList>
+                </div>
             <br />
             <asp:Label ID="Label2" runat="server" Text="教練性別"></asp:Label>
             <asp:RadioButtonList ID="CoachGenderRB" runat="server" RepeatDirection="Horizontal">
@@ -149,11 +187,13 @@
                 <asp:ListItem Value="2">女</asp:ListItem>
                 <asp:ListItem Value="3">其他</asp:ListItem>
             </asp:RadioButtonList>
+            <div class="filter-item">
             <asp:Label ID="Label3" runat="server" Text="課程費用"></asp:Label>
             <br />
             <asp:TextBox ID="MinMoney" runat="server" placeholder="最小值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)" ></asp:TextBox>
             <span>~</span>
             <asp:TextBox ID="MaxMoney" runat="server" placeholder="最大值" Width="75px" TextMode="Number" min="0" max="9999" oninput="validateInput(this)" ></asp:TextBox>
+            </div>
             <br />
             <asp:Label ID="Label4" runat="server" Text="課程人數"></asp:Label>
             <asp:RadioButtonList ID="ClassPeopleRBL" runat="server" RepeatDirection="Horizontal">
@@ -190,7 +230,8 @@
                     <asp:Button ID="Button1" runat="server" Text="" CssClass="btn-hide" OnClick="Button1_Click" />
                 </ContentTemplate>
             </asp:UpdatePanel>
-            <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="return validateAndHidePopup(); " OnClick="SearchFilterBtn_Click" ValidationGroup="FilterValidation" />
+            <asp:Button ID="Button2" runat="server" Text="取消" OnClientClick="hidePopup();return false; " CssClass="cancel-btn"/>
+            <asp:Button ID="SearchFilterBtn" runat="server" Text="查詢" OnClientClick="return validateAndHidePopup(); " OnClick="SearchFilterBtn_Click" ValidationGroup="FilterValidation" CssClass="submit-btn" />
         </div>
     </asp:Panel>
 

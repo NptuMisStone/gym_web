@@ -84,7 +84,7 @@ public partial class page_coach : System.Web.UI.Page
         }
         else
         {
-            return "img/coach_default.jpg"; // 替代圖片的路徑
+            return "~/page/img/coach_main_ic_default.jpg"; // 替代圖片的路徑
         }
     }
     protected string GetLikeImageUrl(object coachId)

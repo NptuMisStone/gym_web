@@ -101,7 +101,7 @@ public partial class page_class : System.Web.UI.Page
         }
         else
         {
-            return "img/class_default.png"; // 替代圖片的路徑
+            return "~/page/img/coach_class_main_ic_default.png"; // 替代圖片的路徑
         }
     }
 
@@ -441,4 +441,5 @@ public partial class page_class : System.Web.UI.Page
         }
         FinishSearch();
     }
+
 }

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="Home.aspx.cs" Inherits="Home" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/page/MasterPage2.master" AutoEventWireup="true" CodeFile="Home.aspx.cs" Inherits="Home" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
@@ -184,7 +184,8 @@
                     </div>
                     <div class="form-row">
                         <div class="col">
-                            <asp:Button ID="Button1" runat="server" Text="計算" CssClass="btn btn-lg btn-block btn-dark border-light" />
+                            <asp:Button ID="Button1" runat="server" Text="計算" CssClass="btn btn-lg btn-block btn-dark border-light" OnClick="Button1_Click" />
+                            <br /><br /><br /><br />
                         </div>
                     </div>
                     <asp:Panel ID="Panel1" runat="server" CssClass="centered-panel">
