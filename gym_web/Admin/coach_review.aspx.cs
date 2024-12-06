@@ -181,7 +181,7 @@ public partial class system_administrator_Registration_Approval : System.Web.UI.
         // 獲取DetailsView中選定的行的RegistrationID
         int registrationID = Convert.ToInt32(dvDesignerApproval.SelectedValue);
 
-        // 將審核狀態更改為1
+        // 將審核狀態更改為2
         UpdateReviewStatus(registrationID, 2);
         // 重新綁定DetailsView以更新數據
         dvDesignerApproval.DataBind();
