@@ -32,6 +32,11 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             
         }
         showTempimg();
+        if (Request["__EVENTTARGET"] == "btnConfirmDelete" && !string.IsNullOrEmpty(Request["__EVENTARGUMENT"]))
+        {
+            string classId = Request["__EVENTARGUMENT"];
+            confirmdelete(classId);
+        }
     }
     private void LoadClassDetails()
     {
@@ -634,11 +639,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             "__doPostBack('btnConfirmDelete', '" + classId + "'); " +
             "} });", true);
     }
-
-    protected void btnConfirmDelete_Click(object sender, EventArgs e)
-    {
-        int classId = Convert.ToInt32(Request.Form["__EVENTARGUMENT"]);
-
+    private void confirmdelete(string classId) {
         string queryDelete = "DELETE FROM 健身教練課程 WHERE 課程編號 = @classId";
 
         using (SqlConnection conn = new SqlConnection(connectionString))
@@ -658,7 +659,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
                         "icon: 'success', " +
                         "timer: 2000, " +
                         "showConfirmButton: false " +
-                        "}).then(() => { window.location = 'ClassMain.aspx'; });", true);
+                        "}).then(() => { window.location = 'Coach_class.aspx'; });", true);
                 }
                 else
                 {
@@ -673,5 +674,6 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             }
         }
     }
+    
 
 }

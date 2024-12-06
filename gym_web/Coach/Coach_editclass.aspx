@@ -180,8 +180,7 @@
                             OnClick="btnDeleteCourse_Click"
                             OnClientClick="confirmDelete(); return false;"
                             CssClass="btn btn-danger" />
-                        <asp:Button ID="btnConfirmDelete" runat="server" OnClick="btnConfirmDelete_Click" Style="display:none;" /><%--刪除課程用--%>
-
+                        
 
                     </div>
                 </div>
