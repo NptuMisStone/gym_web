@@ -224,13 +224,12 @@
     <div style="text-align: left; width: 100%; max-width: 800px;">
         <h3>課程時段</h3>
         <div class="repeater-container">
-            <asp:ScriptManager ID="ScriptManager1" runat="server" />
-            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
-                <ContentTemplate>
+            
                     <asp:Calendar ID="Course_date_choose" runat="server" 
                                   OnSelectionChanged="Course_date_choose_SelectionChanged" 
                                   OnDayRender="Course_date_choose_DayRender" 
-                                  CssClass="aspNetCalendar">
+                                  CssClass="aspNetCalendar"
+                        OnClientClick="ShowProgressBar();">
                     </asp:Calendar>
                     <br />
                     <asp:Repeater ID="TimeRepeater" runat="server" OnItemCommand="TimeRepeater_ItemCommand">
@@ -254,11 +253,7 @@
                         </ItemTemplate>
                     </asp:Repeater>
                     <asp:Label ID="noshow" runat="server" Text="無時段" Font-Size="100px" Visible="false"></asp:Label>
-                </ContentTemplate>
-                <Triggers>
-                    <asp:PostBackTrigger ControlID="TimeRepeater" />
-                </Triggers>
-            </asp:UpdatePanel>
+                
         </div>
     </div>
 </div>
@@ -314,11 +309,51 @@
                 <br />
         
             <div class="modal-footer">
-                <asp:Button ID="ap_btn" runat="server" Text="確認預約" OnClick="ap_btn_Click" CssClass="btn btn-outline-primary mt-2 px-3" />
+                <asp:Button ID="ap_btn" runat="server" Text="確認預約" OnClick="ap_btn_Click" CssClass="btn btn-outline-primary mt-2 px-3" OnClientClick="ShowProgressBar()" />
             </div>
         </div>
     </div>
 </div>
 </asp:Panel>
+    <!-- LOADING進度條 START-->
+<div id="divProgress" style="text-align: center; display: none; position: fixed; top: 50%; left: 50%;">
+    <asp:Image ID="imgLoading" runat="server" ImageUrl="~/page/img/loading.gif" />
+    <br />
+    <font color="#1B3563" size="2px">資料處理中</font>
+</div>
+<div id="divMaskFrame" style="background-color: #F2F4F7; display: none; left: 0px; position: absolute; top: 0px;">
+</div>
+<script>
+    // 顯示讀取遮罩
+    function ShowProgressBar() {
+        displayProgress();
+        displayMaskFrame();
+    }
+
+    // 隱藏讀取遮罩
+    function HideProgressBar() {
+        var progress = $('#divProgress');
+        var maskFrame = $("#divMaskFrame");
+        progress.hide();
+        maskFrame.hide();
+    }
+    // 顯示讀取畫面
+    function displayProgress() {
+        var w = $(document).width();
+        var h = $(window).height();
+        var progress = $('#divProgress');
+        progress.css({ "z-index": 999999, "top": (h / 2) - (progress.height() / 2), "left": (w / 2) - (progress.width() / 2) });
+        progress.show();
+    }
+    // 顯示遮罩畫面
+    function displayMaskFrame() {
+        var w = $(window).width();
+        var h = $(document).height();
+        var maskFrame = $("#divMaskFrame");
+        maskFrame.css({ "z-index": 999998, "opacity": 0.7, "width": w, "height": h });
+        maskFrame.show();
+    }
+</script>
+<!-- LOADING進度條 END-->
 </asp:Content>
 

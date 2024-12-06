@@ -150,7 +150,7 @@ public partial class page_class_detail : System.Web.UI.Page
             SqlDataReader reader = command.ExecuteReader();
             TimeRepeater.DataSource = reader;
             TimeRepeater.DataBind();
-            if(TimeRepeater.Items.Count > 0) { noshow.Visible = false; }
+            if (TimeRepeater.Items.Count > 0) { noshow.Visible = false; }
             else { noshow.Visible = true; }
             connection.Close();
         }
@@ -203,7 +203,9 @@ public partial class page_class_detail : System.Web.UI.Page
         {
             e.Cell.ForeColor = System.Drawing.Color.Black; // 文字顏色
             e.Cell.BackColor = System.Drawing.Color.Green; // 背景顏色
+            e.Cell.Attributes.Add("onclick", "ShowProgressBar(); ");//執行進度條
         }
+        
     }
     private List<DateTime> GetDate()
     {
