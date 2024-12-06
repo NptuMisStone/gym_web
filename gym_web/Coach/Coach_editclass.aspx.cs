@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Drawing.Imaging;
 using System.IO;
@@ -346,19 +347,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
 
     protected void btnDeleteCourse_Click(object sender, EventArgs e)
     {
-        string qry = @"DELETE FROM 健身教練課程 WHERE 課程編號 =@Class_id ";
-        using (SqlConnection conn = new SqlConnection(connectionString))
-        {
-            using (SqlCommand command = new SqlCommand(qry, conn))
-            {
-                command.Parameters.AddWithValue("@Class_id", Class_id);
-                conn.Open();
-                command.ExecuteReader();
-                conn.Close();
-
-                ShowAlert("success", "刪除成功", "課程已刪除", 1500, true, "Coach_class.aspx");
-            }
-        }
+        DeleteCourse(Class_id);
     }
     protected void ddl_city_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -599,4 +588,90 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
         // 使用 controlId 傳遞 ClientID 而不是靜態 ID
         ClientScript.RegisterStartupScript(this.GetType(), "scrollToControl", $"scrollToControl('{controlId}');", true);
     }
+    protected void DeleteCourse(string classId)
+    {
+        // 檢查是否有未結束的預約
+        string queryCheck = @"
+        SELECT COUNT(*) AS count 
+        FROM [使用者預約-有預約的] 
+        WHERE 課程編號 = @classId 
+          AND (日期 > GETDATE() 
+               OR (日期 = GETDATE() AND 結束時間 > CONVERT(VARCHAR, GETDATE(), 108)))";
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            conn.Open();
+            using (SqlCommand cmd = new SqlCommand(queryCheck, conn))
+            {
+                cmd.Parameters.AddWithValue("@classId", classId);
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+                if (count > 0)
+                {
+                    // 如果有未結束的預約，提示 SweetAlert
+                    ScriptManager.RegisterStartupScript(this, GetType(), "alert",
+                        "Swal.fire({ " +
+                        "title: '無法刪除課程', " +
+                        "text: '該課程仍有未結束的預約，請先於班表移除排班後再嘗試刪除。', " +
+                        "icon: 'warning', " +
+                        "confirmButtonText: '確定' });", true);
+                    return;
+                }
+            }
+        }
+
+        // 顯示確認 SweetAlert
+        ScriptManager.RegisterStartupScript(this, GetType(), "confirmDelete",
+            "Swal.fire({ " +
+            "title: '刪除課程', " +
+            "text: '是否確定刪除課程？刪除後課程將無法復原！', " +
+            "icon: 'warning', " +
+            "showCancelButton: true, " +
+            "confirmButtonText: '確定', " +
+            "cancelButtonText: '取消' " +
+            "}).then((result) => { " +
+            "if (result.isConfirmed) { " +
+            "__doPostBack('btnConfirmDelete', '" + classId + "'); " +
+            "} });", true);
+    }
+
+    protected void btnConfirmDelete_Click(object sender, EventArgs e)
+    {
+        int classId = Convert.ToInt32(Request.Form["__EVENTARGUMENT"]);
+
+        string queryDelete = "DELETE FROM 健身教練課程 WHERE 課程編號 = @classId";
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            conn.Open();
+            using (SqlCommand cmd = new SqlCommand(queryDelete, conn))
+            {
+                cmd.Parameters.AddWithValue("@classId", classId);
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    // 成功刪除
+                    ScriptManager.RegisterStartupScript(this, GetType(), "success",
+                        "Swal.fire({ " +
+                        "title: '課程已成功刪除', " +
+                        "icon: 'success', " +
+                        "timer: 2000, " +
+                        "showConfirmButton: false " +
+                        "}).then(() => { window.location = 'ClassMain.aspx'; });", true);
+                }
+                else
+                {
+                    // 刪除失敗
+                    ScriptManager.RegisterStartupScript(this, GetType(), "error",
+                        "Swal.fire({ " +
+                        "title: '刪除失敗', " +
+                        "text: '課程不存在。', " +
+                        "icon: 'error', " +
+                        "confirmButtonText: '確定' });", true);
+                }
+            }
+        }
+    }
+
 }
