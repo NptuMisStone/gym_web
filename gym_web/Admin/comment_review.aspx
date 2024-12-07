@@ -93,8 +93,8 @@
 
                     <asp:TemplateField>
                         <ItemTemplate>
-                            <asp:Button ID="btnDelete" runat="server" CommandName="Delete" Text="刪除評論" CssClass="button" />
-                            <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" Text="撤銷檢舉" CssClass="button" />
+                            <asp:Button ID="btnDelete" runat="server" CommandName="Delete" Text="刪除評論" CssClass="button" OnClick="btnDelete_Click"/>
+                            <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" Text="撤銷檢舉" CssClass="button" OnClick="btnCancel_Click" />
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>

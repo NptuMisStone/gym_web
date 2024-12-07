@@ -90,7 +90,7 @@
                                     </div>
                                 </asp:LinkButton>
                                 <!-- 愛心圖示 -->
-                                <div style="position: absolute; top: 4%; right: 4%;">
+                                <div style="position: absolute; top: 5%; left: 5%;">
                                     <asp:ImageButton 
                                         ID="ClassLikeBtn"
                                         runat="server"

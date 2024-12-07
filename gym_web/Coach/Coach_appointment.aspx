@@ -228,9 +228,10 @@
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="tab1" aria-labelledby="tab1-tab">
-                <asp:Repeater ID="RP" runat="server" OnItemCommand="RP_ItemCommand">
+                <asp:Repeater ID="RP" runat="server" OnItemCommand="RP_ItemCommand" >
                     <ItemTemplate>
                         <!-- 根據地點類型設置不同樣式 -->
+                        <asp:Label ID="whatPlacetype" runat="server" Text='<%# Eval("地點類型") %>' Visible="false"></asp:Label>
                         <div class='<%# Convert.ToInt32(Eval("地點類型")) == 2 ? "course-card-blue" : "course-card-red" %> mb-3'>
                             <div class="row">
                                 <!-- 日期底色填滿 -->
@@ -302,12 +303,18 @@
                                             <asp:Label ID="schedule_id" runat="server" Text=<%# Eval("課表編號") %> ></asp:Label>
                                             <asp:Label ID="coach_id" runat="server" Text=<%# Eval("健身教練編號") %> ></asp:Label>
                                             <asp:Label ID="status" runat="server" Text=<%# Eval("預約狀態") %> ></asp:Label>
-                                            <p class="card-text">
-                                                性別：<%# Eval("使用者性別") %><br />
+                                            <span class="card-text">
+                                                性別：<%# GetGenderText(Eval("使用者性別")) %><br />
                                                 電話：<%# Eval("使用者電話") %><br />
                                                 信箱：<%# Eval("使用者郵件") %><br />
                                                 備註：<%# Eval("備註") %><br />
-                                            </p>
+                                            </span>
+                                            <asp:Label ID="ap_detail_placeName_label" runat="server" Text="地點名稱：" Font-Size="Small"></asp:Label>
+                                            <asp:Label ID="ap_detail_placeName" runat="server" Font-Size="Small" Text=<%# Eval("地點名稱") %> />
+                                            <asp:Label ID="ap_detail_Userplace_label" runat="server" Font-Size="Small" Text="客戶到府地址：" ></asp:Label>
+                                            <asp:Label ID="ap_detail_area" runat="server" Font-Size="Small" Text=<%# Eval("縣市") %> />
+                                            <asp:Label ID="ap_detail_city" runat="server" Font-Size="Small" Text=<%# Eval("行政區") %> />
+                                            <asp:Label ID="ap_detail_Userplace" runat="server" Font-Size="Small" Text=<%# Eval("客戶到府地址") %> />
                                             <div class="d-flex justify-content-between">
                                                 <!-- 取消預約按鈕 -->
                                                 <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("預約編號") %>' Text="取消預約" CssClass="btn btn-danger" />

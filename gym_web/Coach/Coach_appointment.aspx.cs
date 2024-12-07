@@ -147,6 +147,8 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         if (e.CommandName == "AP")
         {
+            Label whatPlacetype = (Label)e.Item.FindControl("whatPlacetype");
+            Session["whatPlacetype"] = whatPlacetype.Text;
             Schedule_id = Convert.ToInt32(e.CommandArgument);
             ShowAP(Schedule_id);
             Panel1.Visible = true;
@@ -310,24 +312,94 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     protected void AP_Detail_ItemDataBound(object sender, RepeaterItemEventArgs e)
     {
         Label status = e.Item.FindControl("status") as Label;
+        Button cbtn = e.Item.FindControl("btnCancel") as Button;
+        Button fbtn = e.Item.FindControl("btnFinish") as Button;
+        Label showplacenm= e.Item.FindControl("ap_detail_placeName_label") as Label;
+        Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
+        Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
+        Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
+        Label ap_detail_area = e.Item.FindControl("ap_detail_area") as Label;
+        Label ap_detail_city = e.Item.FindControl("ap_detail_city") as Label;
+
         int st = Convert.ToInt32(status.Text);
         if (st == 2)
         {
-            Button cbtn = e.Item.FindControl("btnCancel") as Button;
-            Button fbtn = e.Item.FindControl("btnFinish") as Button;
             cbtn.Visible=false;
             fbtn.Visible = false;
+        }
+        string whatdata = Convert.ToString(Session["whatdata"]);
+        if (whatdata == "Future")
+        {
+            fbtn.Visible = false;
+        }
+        else
+        {
+            cbtn.Visible = false;
+        }
+        string whatPlacetype = Convert.ToString(Session["whatPlacetype"]);
+        if (whatPlacetype == "2")
+        {
+            ap_detail_placeName.Visible = false;
+            showplacenm.Visible = false;
+            ap_detail_Userplace.Visible = true;
+            showuserplace.Visible = true;
+            ap_detail_area.Visible = true;
+            ap_detail_city.Visible = true;
+        }
+        else
+        {
+            ap_detail_placeName.Visible = true;
+            showplacenm.Visible = true;
+            ap_detail_Userplace.Visible = false;
+            showuserplace.Visible = false;
+            ap_detail_area.Visible = false;
+            ap_detail_city.Visible = false;
         }
     }
 
     protected void AP_Detail_ItemCreated(object sender, RepeaterItemEventArgs e)
     {
+        Button cbtn = e.Item.FindControl("btnCancel") as Button;
+        Button fbtn = e.Item.FindControl("btnFinish") as Button;
         Label schedule_id = e.Item.FindControl("schedule_id") as Label;
         Label coach_id = e.Item.FindControl("coach_id") as Label;
         Label status = e.Item.FindControl("status") as Label;
+        Label showplacenm = e.Item.FindControl("ap_detail_placeName_label") as Label;
+        Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
+        Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
+        Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
+        Label ap_detail_area = e.Item.FindControl("ap_detail_area") as Label;
+        Label ap_detail_city = e.Item.FindControl("ap_detail_city") as Label;
         schedule_id.Visible = false;
         coach_id.Visible = false;
         status.Visible = false;
+        string whatdata = Convert.ToString(Session["whatdata"]);
+        if (whatdata== "Future")
+        {
+            fbtn.Visible = false;
+        }
+        else {
+            cbtn.Visible = false;
+        }
+        string whatPlacetype = Convert.ToString(Session["whatPlacetype"]);
+        if (whatPlacetype == "2")
+        {
+            ap_detail_placeName.Visible = false;
+            showplacenm.Visible = false;
+            ap_detail_Userplace.Visible = true;
+            showuserplace.Visible = true;
+            ap_detail_area.Visible = true;
+            ap_detail_city.Visible = true;
+        }
+        else
+        {
+            ap_detail_placeName.Visible = true;
+            showplacenm.Visible = true;
+            ap_detail_Userplace.Visible = false;
+            showuserplace.Visible = false;
+            ap_detail_area.Visible = false;
+            ap_detail_city.Visible = false;
+        }
     }
 
     protected void AP_Detail_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -336,24 +408,43 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         {
             string ap_id = e.CommandArgument.ToString();
             Label schedule_id = e.Item.FindControl("schedule_id") as Label;
-            string s_id=schedule_id.Text;
-            NotifyUsersAboutCancellation(ap_id);//寄信
-            CancelAP(ap_id);/*預約狀態更改*/
-            CancelApPeople(s_id);/*預約人數更改*/
-            switch (Session["whatdata"].ToString()) {
-                case "Today":
-                    BindTdData();
-                    break;
-                case "Future":
-                    BindFTData();
-                    break;
-                case "Past":
-                    BindPSData();
-                    break;
+            string s_id = schedule_id.Text;
+            if (IsCancelable(s_id))
+            {
+                NotifyUsersAboutCancellation(ap_id);//寄信
+                CancelAP(ap_id);/*預約狀態更改*/
+                CancelApPeople(s_id);/*預約人數更改*/
+                switch (Session["whatdata"].ToString())
+                {
+                    case "Today":
+                        BindTdData();
+                        break;
+                    case "Future":
+                        BindFTData();
+                        break;
+                    case "Past":
+                        BindPSData();
+                        break;
+                }
+
+                ShowAP(Schedule_id);
+                ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
+
             }
-            
-            ShowAP(Schedule_id);
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
+            else {
+                string script = @"<script>
+                            Swal.fire({
+                            icon: 'error',
+                            title: '取消失敗',
+                            text: '需於課程開始 24 小時前取消',
+                            showConfirmButton: false,
+                            timer: 1500
+                            });
+                          </script>";
+
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
+            }
+
         }
         else if (e.CommandName == "Finish")
         {
@@ -436,5 +527,62 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         }
         Debug.WriteLine("已寄出取消通知");
 
+    }
+    protected string GetGenderText(object genderValue)
+    {
+        if (genderValue != null)
+        {
+            switch (genderValue.ToString())
+            {
+                case "1":
+                    return "男性";
+                case "2":
+                    return "女性";
+                case "3":
+                    return "不願透露";
+                default:
+                    return "未知";
+            }
+        }
+        return "未知";
+    }
+    public bool IsCancelable(string scheduleId)
+    {
+        string query = "SELECT 開始時間, 日期 FROM 健身教練課表 WHERE 課表編號 = @ScheduleId";
+        try
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ScheduleId", scheduleId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string date = reader["日期"].ToString();
+                            string startTime = reader["開始時間"].ToString();
+
+                            // 解析課程開始時間
+                            DateTime classStart = DateTime.ParseExact(date + " " + startTime, "yyyy/MM/dd HH:mm", null);
+
+                            // 獲取當前時間
+                            DateTime now = DateTime.Now;
+
+                            // 判斷是否大於等於 24 小時
+                            TimeSpan duration = classStart - now;
+                            return duration.TotalHours >= 24;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error checking cancelability: " + e.Message);
+        }
+
+        return false; // 如果查詢失敗或其他錯誤，預設不可取消
     }
 }

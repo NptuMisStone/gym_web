@@ -81,20 +81,7 @@ public partial class Admin_comment_review : System.Web.UI.Page
 
     protected void gv_report_RowCommand(object sender, GridViewCommandEventArgs e)
     {
-        if (e.CommandName == "Delete") 
-        {
-            int rowIndex = Convert.ToInt32(e.CommandArgument);
-            GridViewRow row = gv_report.Rows[rowIndex];
-            int comment_id = int.Parse(row.Cells[0].Text.Trim());
-            DeleteReport(comment_id);
-        }
-        else if (e.CommandName == "Cancel") 
-        {
-            int rowIndex = Convert.ToInt32(e.CommandArgument);
-            GridViewRow row = gv_report.Rows[rowIndex];
-            int comment_id = int.Parse(row.Cells[0].Text.Trim());
-            CancelReport(comment_id);
-        }
+        
     }
     private void DeleteReport( int comment_id) 
     {
@@ -164,5 +151,31 @@ public partial class Admin_comment_review : System.Web.UI.Page
     protected void gv_report_RowDeleting(object sender, GridViewDeleteEventArgs e)
     {
         //千萬別刪(刪除用)
+    }
+
+    protected void btnDelete_Click(object sender, EventArgs e)
+    {
+        // 找到按下的按鈕所在的行
+        Button btnDelete = (Button)sender;
+        GridViewRow row = (GridViewRow)btnDelete.NamingContainer;
+
+        // 獲取評論編號
+        int comment_id = int.Parse(row.Cells[0].Text.Trim());
+
+        // 執行刪除操作
+        DeleteReport(comment_id);
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        // 找到按下的按鈕所在的行
+        Button btnCancel = (Button)sender;
+        GridViewRow row = (GridViewRow)btnCancel.NamingContainer;
+
+        // 獲取評論編號
+        int comment_id = int.Parse(row.Cells[0].Text.Trim());
+
+        // 執行撤銷操作
+        CancelReport(comment_id);
     }
 }

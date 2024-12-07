@@ -539,7 +539,11 @@ public partial class page_coach_detail : System.Web.UI.Page
                 }});
                 </script>";
                 Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
-
+                LoadCoachDetails();
+                BindClass();
+                update_ProgressBar();
+                bind_commend_score();
+                bind_rp_comment();
             }
 
         }
