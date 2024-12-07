@@ -10,6 +10,9 @@ using System.Web.UI.WebControls;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 
 public partial class Coach_Coach_appointment : System.Web.UI.Page
 {
@@ -255,7 +258,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         SearchCoachTime(c_id);
         using (SqlConnection connection = new SqlConnection(connectionString))
-        {
+        {   
             string sql = "UPDATE 健身教練資料 SET 健身教練次數 = @c_time WHERE 健身教練編號 = @CoachID";
             connection.Open();
             SqlCommand command = new SqlCommand(sql, connection);
@@ -331,10 +334,10 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         if (e.CommandName == "Cancel")
         {
-
             string ap_id = e.CommandArgument.ToString();
             Label schedule_id = e.Item.FindControl("schedule_id") as Label;
             string s_id=schedule_id.Text;
+            NotifyUsersAboutCancellation(ap_id);//寄信
             CancelAP(ap_id);/*預約狀態更改*/
             CancelApPeople(s_id);/*預約人數更改*/
             switch (Session["whatdata"].ToString()) {
@@ -362,5 +365,76 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             ShowAP(Schedule_id);
             ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#" + Panel1.ClientID + "').modal('show');", true);
         }
+    }
+    protected void NotifyUsersAboutCancellation(string APId)
+    {
+        string query = "SELECT 使用者郵件,課程名稱,日期,開始時間,結束時間,健身教練姓名 " +
+                       "FROM [使用者預約-有預約的] WHERE 預約編號 = @APId ";
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@APId", APId); // 設定課表編號參數
+                conn.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string userEmail_mail = reader["使用者郵件"].ToString();
+                        string courseName_mail = reader["課程名稱"].ToString();
+                        DateTime courseDate = (DateTime)reader["日期"];
+                        string courseDate_mail = courseDate.ToString("yyyy-MM-dd");
+                        string startTime_mail = reader["開始時間"].ToString();
+                        string endTime_mail = reader["結束時間"].ToString();
+                        string coachName_mail = reader["健身教練姓名"].ToString();
+
+                        // 發送通知給使用者
+                        SendCancellationNotification(userEmail_mail, courseDate_mail, startTime_mail, endTime_mail, courseName_mail, coachName_mail);
+                    }
+                }
+            }
+        }
+    }
+
+    private void SendCancellationNotification(string userEmail, string courseDate, string startTime, string endTime, string courseName, string coachName)
+    {
+        string GoogleID = "NptuMisStone@gmail.com"; // Google 發信帳號
+        string TempPwd = "lgtb rhoq irjc flyi"; // 應用程式密碼
+
+        string SmtpServer = "smtp.gmail.com";
+        int SmtpPort = 587;
+        MailMessage mms = new MailMessage();
+        mms.From = new MailAddress(GoogleID);
+        mms.Subject = "【屏大Fit-健身預約系統】課程取消通知";
+        mms.Body = "<p>您好，</p>" +
+            "<p>我們遺憾地通知您，您所預約的課程已被教練取消。</p>" +
+            "<p>課程詳細資訊如下：</p>" +
+            $"<p>課程名稱：{courseName}</p>" +
+            $"<p>課程日期：{courseDate}</p>" +
+            $"<p>課程時間：{startTime} ~ {endTime}</p>" +
+            $"<p>教練名稱：{coachName}</p>" +
+            "<p>若有任何問題，請聯繫教練或客服人員。</p>" +
+            "<p>屏大Fit 團隊</p>";
+        mms.IsBodyHtml = true; // 確保內容使用 HTML 格式
+        mms.SubjectEncoding = System.Text.Encoding.UTF8;
+        mms.To.Add(new MailAddress(userEmail));
+        using (SmtpClient client = new SmtpClient(SmtpServer, SmtpPort))
+        {
+            client.EnableSsl = true;
+            client.Credentials = new NetworkCredential(GoogleID, TempPwd); // 寄信帳密 
+            try
+            {
+                client.Send(mms);// 寄出信件
+                Debug.WriteLine("郵件已成功發送！");
+            }
+            catch (SmtpException ex)
+            {
+                Debug.WriteLine($"郵件發送失敗：{ex.Message}");
+            }
+        }
+        Debug.WriteLine("已寄出取消通知");
+
     }
 }
