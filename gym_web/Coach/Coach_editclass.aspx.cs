@@ -628,8 +628,8 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
         // 顯示確認 SweetAlert
         ScriptManager.RegisterStartupScript(this, GetType(), "confirmDelete",
             "Swal.fire({ " +
-            "title: '刪除課程', " +
-            "text: '是否確定刪除課程？刪除後課程將無法復原！', " +
+            "title: '二次刪除課程確認', " +
+            "text: '您真的確定要刪除課程？刪除後課程將無法復原！', " +
             "icon: 'warning', " +
             "showCancelButton: true, " +
             "confirmButtonText: '確定', " +

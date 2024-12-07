@@ -14,6 +14,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Collections;
 using System.Web.UI.WebControls.WebParts;
+using System.Net;
+using System.Data.Common;
 public partial class Coach_Coach_schedule : System.Web.UI.Page
 {
     string connectionString = ConfigurationManager.ConnectionStrings["ManagerConnectionString"].ConnectionString;
@@ -41,6 +43,15 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             BindCourseData();
         }
         BindCourseListview();
+        // 檢查是否是來自 __doPostBack 的回傳
+        if (Request["__EVENTTARGET"] == "ConfirmDeleteScheduleHandler")
+        {
+            string scheduleId = Request["__EVENTARGUMENT"];
+            if (!string.IsNullOrEmpty(scheduleId))
+            {
+                DeleteSchedule();
+            }
+        }
     }
     private void BindCourseData()
     {// 使用 Session 中存儲的日期
@@ -233,26 +244,11 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
     }
     protected void btnDeleteSchedule_Click(object sender, EventArgs e)
     {
-        // 檢查 Schedule_id 是否為 null
-        if (Schedule_id != null)
+        // 檢查 Schedule_id 是否有效
+        if (!string.IsNullOrEmpty(Schedule_id))
         {
-            // Schedule_id 不為 null，執行刪除操作
-            string qry = @"DELETE FROM 健身教練課表 WHERE 課表編號 = @Schedule_id";
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                using (SqlCommand command = new SqlCommand(qry, conn))
-                {
-                    command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
-                    conn.Open();
-                    command.ExecuteNonQuery();
-                    conn.Close();
-                    BindCourseData();
-                    BindCourseListview();
-
-                    ShowAlert("success", "刪除成功", "班表已刪除", 1500);
-                }
-            }
-            RegisterScrollScript(btnCurrentWeek.ClientID);
+            // 彈出確認刪除的提示框
+            ConfirmDeleteSchedule();
         }
         else
         {
@@ -260,7 +256,91 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
             ShowAlert("error", "刪除失敗", "課表編號無效", 1500);
         }
     }
+    protected void ConfirmDeleteSchedule()
+    {
+        if (!string.IsNullOrEmpty(Schedule_id))
+        {
+            // 檢查是否有預約人數
+            int reservedCount = GetReservedCount();
 
+            if (reservedCount > 0)
+            {
+                // 如果有預約人數，提示用戶是否確認刪除
+                string script = $@"
+                Swal.fire({{
+                    title: '警告',
+                    text: '該課程已有使用者預約，若要刪除課程將會發送通知給使用者，是否仍要刪除此班表？',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: '仍要刪除',
+                    cancelButtonText: '取消'
+                }}).then((result) => {{
+                    if (result.isConfirmed) {{
+                        __doPostBack('ConfirmDeleteScheduleHandler', '{Schedule_id}');
+                    }}
+                }});";
+                ScriptManager.RegisterStartupScript(this, GetType(), "ConfirmDeleteSchedule", script, true);
+            }
+            else
+            {
+                // 無預約人數直接刪除課表
+                DeleteSchedule();
+            }
+        }
+        else
+        {
+            ShowAlert("error", "刪除失敗", "課表編號無效", 1500);
+        }
+    }
+    private int GetReservedCount()
+    {
+        int reservedCount = 0;
+        string query = "SELECT 預約人數 FROM 健身教練課表 WHERE 課表編號 = @ScheduleId";
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@ScheduleId", Schedule_id);
+                conn.Open();
+                reservedCount = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
+
+        return reservedCount;
+    }
+    private void DeleteSchedule()
+    {
+        string deleteReservationsQuery = "DELETE FROM 使用者預約 WHERE 課表編號 = @Schedule_id";
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand command = new SqlCommand(deleteReservationsQuery, conn))
+            {
+                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                conn.Open();
+                command.ExecuteNonQuery();
+                conn.Close();
+            }
+        }
+        string qry = @"DELETE FROM 健身教練課表 WHERE 課表編號 = @Schedule_id";
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand command = new SqlCommand(qry, conn))
+            {
+                command.Parameters.AddWithValue("@Schedule_id", Schedule_id);
+                conn.Open();
+                command.ExecuteNonQuery();
+                conn.Close();
+            }
+        }
+        NotifyUsersAboutCancellation(Schedule_id);
+        BindCourseData();
+        BindCourseListview();
+        ShowAlert("success", "刪除成功", "班表已刪除", 1500);
+        RegisterScrollScript(btnCurrentWeek.ClientID);
+    }
     private void BindCourseListview()
     {
         try
@@ -809,5 +889,66 @@ Swal.fire({{
     {
         // 使用 controlId 傳遞 ClientID 而不是靜態 ID
         ClientScript.RegisterStartupScript(this.GetType(), "scrollToControl", $"scrollToControl('{controlId}');", true);
+    }
+    protected void NotifyUsersAboutCancellation( string scheduleid)
+    {
+        string query = "SELECT 使用者郵件,課程名稱,日期,開始時間,結束時間,健身教練姓名 " +
+                       "FROM [使用者預約-有預約的] WHERE 課表編號 = @ScheduleId";
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@ScheduleId", scheduleid); // 設定課表編號參數
+                conn.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string userEmail_mail = reader["使用者郵件"].ToString();
+                        string courseName_mail = reader["課程名稱"].ToString();
+                        string courseDate_mail = reader["日期"].ToString();
+                        string startTime_mail = reader["開始時間"].ToString();
+                        string endTime_mail = reader["結束時間"].ToString();
+                        string coachName_mail = reader["健身教練姓名"].ToString();
+
+                        // 發送通知給使用者
+                        SendCancellationNotification(userEmail_mail, courseDate_mail, startTime_mail, endTime_mail, courseName_mail, coachName_mail);
+                    }
+                }
+            }
+        }
+    }
+
+    private void SendCancellationNotification(string userEmail, string courseDate, string startTime, string endTime, string courseName, string coachName)
+    {
+        string GoogleID = "NptuMisStone@gmail.com"; // Google 發信帳號
+        string TempPwd = "lgtb rhoq irjc flyi"; // 應用程式密碼
+
+        string SmtpServer = "smtp.gmail.com";
+        int SmtpPort = 587;
+        MailMessage mms = new MailMessage();
+        mms.From = new MailAddress(GoogleID);
+        mms.Subject = "【屏大Fit-健身預約系統】取消開課通知";
+        mms.Body = "<p>您好，</p>" +
+                   "<p>我們遺憾地通知您，您所預約的課程已被教練取消開課。" +
+                   "<p>課程詳細資訊如下：</p>" +
+                   $"<p>課程名稱：{courseName}" +
+                   $"<p>課程日期：{courseDate}</p>" +
+                   $"<p>課程時間：{startTime} ~ {endTime}</p>" +
+                   $"<p>教練名稱：{coachName}</p>" +
+                   "<p>若有任何問題，請聯繫教練或客服人員。</p>" +
+                   "<p>屏大Fit 團隊</p>";
+        mms.IsBodyHtml = true; // 確保內容使用 HTML 格式
+        mms.SubjectEncoding = System.Text.Encoding.UTF8;
+        mms.To.Add(new MailAddress(userEmail));
+        using (SmtpClient client = new SmtpClient(SmtpServer, SmtpPort))
+        {
+            client.EnableSsl = true;
+            client.Credentials = new NetworkCredential(GoogleID, TempPwd); // 寄信帳密 
+            client.Send(mms); // 寄出信件
+        }
+        Debug.WriteLine("已寄出取消開課通知");
     }
 }
