@@ -313,6 +313,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
     }
     private void DeleteSchedule()
     {
+        NotifyUsersAboutCancellation(Schedule_id);
         string deleteReservationsQuery = "DELETE FROM 使用者預約 WHERE 課表編號 = @Schedule_id";
         using (SqlConnection conn = new SqlConnection(connectionString))
         {
@@ -335,7 +336,6 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
                 conn.Close();
             }
         }
-        NotifyUsersAboutCancellation(Schedule_id);
         BindCourseData();
         BindCourseListview();
         ShowAlert("success", "刪除成功", "班表已刪除", 1500);
@@ -908,7 +908,8 @@ Swal.fire({{
                     {
                         string userEmail_mail = reader["使用者郵件"].ToString();
                         string courseName_mail = reader["課程名稱"].ToString();
-                        string courseDate_mail = reader["日期"].ToString();
+                        DateTime courseDate = (DateTime)reader["日期"];
+                        string courseDate_mail = courseDate.ToString("yyyy-MM-dd");
                         string startTime_mail = reader["開始時間"].ToString();
                         string endTime_mail = reader["結束時間"].ToString();
                         string coachName_mail = reader["健身教練姓名"].ToString();
@@ -932,14 +933,14 @@ Swal.fire({{
         mms.From = new MailAddress(GoogleID);
         mms.Subject = "【屏大Fit-健身預約系統】取消開課通知";
         mms.Body = "<p>您好，</p>" +
-                   "<p>我們遺憾地通知您，您所預約的課程已被教練取消開課。" +
-                   "<p>課程詳細資訊如下：</p>" +
-                   $"<p>課程名稱：{courseName}" +
-                   $"<p>課程日期：{courseDate}</p>" +
-                   $"<p>課程時間：{startTime} ~ {endTime}</p>" +
-                   $"<p>教練名稱：{coachName}</p>" +
-                   "<p>若有任何問題，請聯繫教練或客服人員。</p>" +
-                   "<p>屏大Fit 團隊</p>";
+            "<p>我們遺憾地通知您，您所預約的課程已被教練取消開課。</p>" +
+            "<p>課程詳細資訊如下：</p>" +
+            $"<p>課程名稱：{courseName}</p>" +
+            $"<p>課程日期：{courseDate}</p>" +
+            $"<p>課程時間：{startTime} ~ {endTime}</p>" +
+            $"<p>教練名稱：{coachName}</p>" +
+            "<p>若有任何問題，請聯繫教練或客服人員。</p>" +
+            "<p>屏大Fit 團隊</p>";
         mms.IsBodyHtml = true; // 確保內容使用 HTML 格式
         mms.SubjectEncoding = System.Text.Encoding.UTF8;
         mms.To.Add(new MailAddress(userEmail));
@@ -947,8 +948,17 @@ Swal.fire({{
         {
             client.EnableSsl = true;
             client.Credentials = new NetworkCredential(GoogleID, TempPwd); // 寄信帳密 
-            client.Send(mms); // 寄出信件
+            try
+            {
+                client.Send(mms);// 寄出信件
+                Debug.WriteLine("郵件已成功發送！");
+            }
+            catch (SmtpException ex)
+            {
+                Debug.WriteLine($"郵件發送失敗：{ex.Message}");
+            }
         }
         Debug.WriteLine("已寄出取消開課通知");
+
     }
 }
