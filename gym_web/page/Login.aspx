@@ -122,7 +122,7 @@
                 <asp:HyperLink ID="HyperLink2" runat="server" NavigateUrl="~/page/forgetpwd.aspx">忘記密碼?</asp:HyperLink><br />
                 <asp:Label ID="Label1" runat="server" Text="沒有帳號嗎?" ForeColor="White"></asp:Label>
                 <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/page/Register.aspx">立即註冊加入會員</asp:HyperLink><br />
-                <asp:HyperLink ID="HyperLink3" runat="server" NavigateUrl="~/page/coach_apply.aspx">加入NPTU GYM健身教練</asp:HyperLink><br /><br />
+                <asp:HyperLink ID="HyperLink3" runat="server" NavigateUrl="~/page/coach_apply.aspx">加入屏大-Fit健身教練</asp:HyperLink><br /><br />
                 <asp:HyperLink ID="HyperLink4" runat="server" NavigateUrl="~/page/Home.aspx">返回首頁</asp:HyperLink>
             </div>
         </div>

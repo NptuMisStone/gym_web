@@ -32,7 +32,7 @@
             <div class="col-sm-4 text-center mb-3">
                 <i class="far fa-2x fa-envelope mb-3 text-primary"></i>
                 <h4 class="font-weight-bold">Email</h4>
-                <p>NptuGym@gmail.com</p>
+                <p>NptuMisStone@gmail.com</p>
             </div>
         </div>
         <div class="row">

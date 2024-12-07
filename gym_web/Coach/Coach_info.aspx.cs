@@ -398,18 +398,30 @@ public partial class Coach_Coach_info1 : System.Web.UI.Page
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string query = "DELETE FROM 健身教練審核 WHERE 健身教練編號 = @Coach_id";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                string[] queries = {
+    "DELETE FROM 評論檢舉 WHERE 評論編號 IN (SELECT 評論編號 FROM 完成預約評論表 WHERE 預約編號 IN (SELECT 預約編號 FROM 使用者預約 WHERE 健身教練編號 = @Coach_id))",
+    "DELETE FROM 完成預約評論表 WHERE 預約編號 IN (SELECT 預約編號 FROM 使用者預約 WHERE 健身教練編號 = @Coach_id)",
+    "DELETE FROM 使用者預約 WHERE 健身教練編號 = @Coach_id",
+    "DELETE FROM 健身教練審核 WHERE 健身教練編號 = @Coach_id",
+    "DELETE FROM 教練被收藏 WHERE 健身教練編號 = @Coach_id",
+    "DELETE FROM 健身教練課表 WHERE 健身教練編號 = @Coach_id",
+    "DELETE FROM 健身教練課程 WHERE 健身教練編號 = @Coach_id",
+    "DELETE FROM 健身教練資料 WHERE 健身教練編號 = @Coach_id"
+};
+
+                using (SqlCommand command = new SqlCommand())
                 {
+                    command.Connection = connection;
                     command.Parameters.AddWithValue("@Coach_id", Coach_id);
-                    command.ExecuteNonQuery();
+
+                    foreach (string query in queries)
+                    {
+                        command.CommandText = query;
+                        command.ExecuteNonQuery();
+                    }
                 }
-                string query2 = "DELETE FROM 健身教練資料 WHERE 健身教練編號 = @Coach_id";
-                using (SqlCommand command = new SqlCommand(query2, connection))
-                {
-                    command.Parameters.AddWithValue("@Coach_id", Coach_id);
-                    command.ExecuteNonQuery();
-                }
+
+
             }
             Session["Coach_id"] = null;
 

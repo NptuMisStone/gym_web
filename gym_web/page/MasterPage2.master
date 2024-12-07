@@ -110,7 +110,7 @@
                 <div id="Join" runat="server" class="col-lg-4 col-md-12 mb-4">
                     <h4 class="text-primary mb-4">加入我們</h4>
                     <a href="/page/coach_apply.aspx" style="text-decoration: none;">
-                        <h5 class="text-white">加入NPTU GYM健身教練</h5>
+                        <h5 class="text-white">加入屏大-Fit健身教練</h5>
                     </a>
                 </div>
 

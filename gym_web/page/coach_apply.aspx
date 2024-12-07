@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>加入NPTU GYM健身教練</title>
+    <title>加入屏大-Fit健身教練</title>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.all.min.js"></script>
@@ -152,7 +152,7 @@
     <form id="form1" runat="server">
         <asp:ScriptManager runat="server" ID="ScriptManager" />
         <div class="main">
-            <label aria-hidden="true">加入NPTU GYM健身教練</label>
+            <label aria-hidden="true">加入屏大-Fit健身教練</label>
 
             <asp:TextBox ID="tb_coach_name" placeholder="請輸入姓名" runat="server" required="required"></asp:TextBox>
             <asp:RequiredFieldValidator ID="rfvName" runat="server"

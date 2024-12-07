@@ -639,8 +639,12 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             "__doPostBack('btnConfirmDelete', '" + classId + "'); " +
             "} });", true);
     }
-    private void confirmdelete(string classId) {
-        string queryDelete = "DELETE FROM 健身教練課程 WHERE 課程編號 = @classId";
+    private void confirmdelete(string classId)
+    {
+        string queryDelete = @"
+        DELETE FROM 課程被收藏 WHERE 課程編號 = @classId;
+        DELETE FROM 健身教練課程 WHERE 課程編號 = @classId;
+    ";
 
         using (SqlConnection conn = new SqlConnection(connectionString))
         {
@@ -674,6 +678,7 @@ public partial class Coach_Coach_editclass : System.Web.UI.Page
             }
         }
     }
-    
+
+
 
 }

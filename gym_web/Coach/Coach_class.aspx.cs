@@ -62,40 +62,37 @@ public partial class Coach_Coach_class : System.Web.UI.Page
         Response.Redirect("Coach_addclass.aspx");
     }
 
-    
+
     protected string GetImageUrl(object imageData, int quality)
     {
-        if (imageData != null && imageData != DBNull.Value)
+        try
         {
-            byte[] bytes = (byte[])imageData;
-
-            using (MemoryStream originalStream = new MemoryStream(bytes))
-            using (MemoryStream compressedStream = new MemoryStream())
+            if (imageData is byte[] bytes && bytes.Length > 0)
             {
-                // Decode the original image
-                System.Drawing.Image originalImage = System.Drawing.Image.FromStream(originalStream);
+                using (MemoryStream originalStream = new MemoryStream(bytes))
+                using (MemoryStream compressedStream = new MemoryStream())
+                {
+                    System.Drawing.Image originalImage = System.Drawing.Image.FromStream(originalStream);
+                    EncoderParameters encoderParameters = new EncoderParameters(1);
+                    encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
 
-                // Create an EncoderParameters object to set the image quality
-                EncoderParameters encoderParameters = new EncoderParameters(1);
-                encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+                    ImageCodecInfo jpgCodec = ImageCodecInfo.GetImageEncoders().First(codec => codec.MimeType == "image/jpeg");
+                    originalImage.Save(compressedStream, jpgCodec, encoderParameters);
 
-                // Get the JPG codec info
-                ImageCodecInfo jpgCodec = ImageCodecInfo.GetImageEncoders().First(codec => codec.MimeType == "image/jpeg");
-
-                // Save the compressed image to the compressedStream
-                originalImage.Save(compressedStream, jpgCodec, encoderParameters);
-
-                // Convert the compressed image to a base64 string
-                byte[] compressedBytes = compressedStream.ToArray();
-                string base64String = Convert.ToBase64String(compressedBytes);
-
-                // Generate the data URI for the compressed image
-                return "data:image/jpeg;base64," + base64String;
+                    byte[] compressedBytes = compressedStream.ToArray();
+                    return "data:image/jpeg;base64," + Convert.ToBase64String(compressedBytes);
+                }
+            }
+            else
+            {
+                return "img/class_default.png";
             }
         }
-        else
+        catch (Exception ex)
         {
-            return "img/class_default.png"; // 替代圖片的路徑
+            // 記錄例外資訊以便調試
+            Console.WriteLine($"Error in GetImageUrl: {ex.Message}");
+            return "img/class_default.png";
         }
     }
 }
