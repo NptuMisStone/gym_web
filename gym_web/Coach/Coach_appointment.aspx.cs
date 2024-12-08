@@ -325,6 +325,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
         Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
         Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
+        HyperLink ap_detail_Userplace_map = e.Item.FindControl("ap_detail_Userplace_map") as HyperLink;
 
         int st = Convert.ToInt32(status.Text);
         if (st == 2)
@@ -348,6 +349,8 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = false;
             ap_detail_Userplace.Visible = true;
             showuserplace.Visible = true;
+            ap_detail_Userplace_map.Visible = true;
+            ap_detail_Userplace_map.NavigateUrl = "https://www.google.com.tw/maps/place/" + ap_detail_Userplace.Text;
         }
         else
         {
@@ -355,6 +358,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = true;
             ap_detail_Userplace.Visible = false;
             showuserplace.Visible = false;
+            ap_detail_Userplace_map.Visible=false;
         }
     }
 
@@ -369,6 +373,7 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
         Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
         Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
+        HyperLink ap_detail_Userplace_map = e.Item.FindControl("ap_detail_Userplace_map") as HyperLink;
         schedule_id.Visible = false;
         coach_id.Visible = false;
         status.Visible = false;
@@ -387,6 +392,8 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = false;
             ap_detail_Userplace.Visible = true;
             showuserplace.Visible = true;
+            ap_detail_Userplace_map.Visible=true;
+            ap_detail_Userplace_map.NavigateUrl = "https://www.google.com.tw/maps/place/" + ap_detail_Userplace.Text;
         }
         else
         {
@@ -394,7 +401,9 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = true;
             ap_detail_Userplace.Visible = false;
             showuserplace.Visible = false;
+            ap_detail_Userplace_map.Visible=false;
         }
+        
     }
 
     protected void AP_Detail_ItemCommand(object source, RepeaterCommandEventArgs e)

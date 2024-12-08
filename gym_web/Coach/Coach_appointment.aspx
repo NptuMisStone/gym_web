@@ -323,6 +323,8 @@
                                                 runat="server"
                                                 Font-Size="Small"
                                                 Text='<%# string.Format("{0}{1}{2}", Eval("縣市"), Eval("行政區"), Eval("客戶到府地址")) %>' />
+                                            <asp:HyperLink runat="server" ID="ap_detail_Userplace_map" Target="_blank"><img src="img/maps.png" / height="25px" width="25px"></asp:HyperLink><br>
+
                                             <div class="d-flex justify-content-between">
                                                 <!-- 取消預約按鈕 -->
                                                 <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("預約編號") %>' Text="取消預約" CssClass="btn btn-danger" />
