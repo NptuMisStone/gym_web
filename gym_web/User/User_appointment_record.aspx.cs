@@ -251,4 +251,30 @@ public partial class User_User_appointment_record : System.Web.UI.Page
             Response.Redirect("User_comment.aspx");
         }
     }
+
+    protected void dl_inProgress_ItemDataBound(object sender, DataListItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+            var record = (AppointmentRecord)e.Item.DataItem;
+            var btnCancel = (Button)e.Item.FindControl("btn_cancel_appointment");
+
+            if (btnCancel != null)
+            {
+                // 檢查是否在開始時間之前
+                DateTime now = DateTime.Now;
+                DateTime appointmentTime = record.日期.Add(TimeSpan.Parse(record.開始時間));
+
+                if (now >= appointmentTime)
+                {
+                    btnCancel.Visible = false; // 隱藏按鈕
+                }
+                else
+                {
+                    btnCancel.Visible = true; // 顯示按鈕
+                }
+            }
+        }
+    }
+
 }

@@ -160,30 +160,37 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "Select * From [使用者預約-評論用] Where 課表編號=@ScheduleID AND (預約狀態=1 OR  預約狀態=2)";
+            string sql = "SELECT * FROM [使用者預約-評論用] WHERE 課表編號 = @ScheduleID AND (預約狀態 = 1 OR 預約狀態 = 2)";
             connection.Open();
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@ScheduleID", schedule_id);
-            SqlDataReader dataReader = command.ExecuteReader();
-            if (dataReader.HasRows)
-            {
-                AP_Detail.DataSource = dataReader;
-                AP_Detail.DataBind();
-                lblNoData.Visible = false;
-            }
-            else
-            {
-                lblNoData.Text = "無資料";
-                lblNoData.Visible = true;
-                AP_Detail.DataSource = null;
-                AP_Detail.DataBind();
-            }
 
-            connection.Close();
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add("@ScheduleID", SqlDbType.Int).Value = schedule_id;
+
+                using (SqlDataReader dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.HasRows)
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(dataReader);
+                        AP_Detail.DataSource = dt;
+                        AP_Detail.DataBind();
+                        lblNoData.Visible = false;
+                    }
+                    else
+                    {
+                        lblNoData.Text = "無資料";
+                        lblNoData.Visible = true;
+                        AP_Detail.DataSource = null;
+                        AP_Detail.DataBind();
+                    }
+                }
+            }
         }
     }
 
-    
+
+
     private void CancelAP(string ap_id)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
@@ -318,8 +325,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
         Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
         Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
-        Label ap_detail_area = e.Item.FindControl("ap_detail_area") as Label;
-        Label ap_detail_city = e.Item.FindControl("ap_detail_city") as Label;
 
         int st = Convert.ToInt32(status.Text);
         if (st == 2)
@@ -343,8 +348,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = false;
             ap_detail_Userplace.Visible = true;
             showuserplace.Visible = true;
-            ap_detail_area.Visible = true;
-            ap_detail_city.Visible = true;
         }
         else
         {
@@ -352,8 +355,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = true;
             ap_detail_Userplace.Visible = false;
             showuserplace.Visible = false;
-            ap_detail_area.Visible = false;
-            ap_detail_city.Visible = false;
         }
     }
 
@@ -368,8 +369,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
         Label ap_detail_placeName = e.Item.FindControl("ap_detail_placeName") as Label;
         Label showuserplace = e.Item.FindControl("ap_detail_Userplace_label") as Label;
         Label ap_detail_Userplace = e.Item.FindControl("ap_detail_Userplace") as Label;
-        Label ap_detail_area = e.Item.FindControl("ap_detail_area") as Label;
-        Label ap_detail_city = e.Item.FindControl("ap_detail_city") as Label;
         schedule_id.Visible = false;
         coach_id.Visible = false;
         status.Visible = false;
@@ -388,8 +387,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = false;
             ap_detail_Userplace.Visible = true;
             showuserplace.Visible = true;
-            ap_detail_area.Visible = true;
-            ap_detail_city.Visible = true;
         }
         else
         {
@@ -397,8 +394,6 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
             showplacenm.Visible = true;
             ap_detail_Userplace.Visible = false;
             showuserplace.Visible = false;
-            ap_detail_area.Visible = false;
-            ap_detail_city.Visible = false;
         }
     }
 

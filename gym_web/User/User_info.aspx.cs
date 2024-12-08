@@ -133,7 +133,7 @@ public partial class User_User_info : System.Web.UI.Page
         tb_email.Text = lb_email.Text;
         if (lb_gender.Text == "男生") { tb_gender.SelectedValue = "1"; }
         else if(lb_gender.Text == "女生") { tb_gender.SelectedValue = "2"; }
-        else if (lb_gender.Text == "無性別") { tb_gender.SelectedValue = "3"; }
+        else if (lb_gender.Text == "不願透露") { tb_gender.SelectedValue = "3"; }
         
 
         DisplayUserImage();

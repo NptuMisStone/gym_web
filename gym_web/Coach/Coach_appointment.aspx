@@ -255,7 +255,13 @@
 
                                     <!-- 地點 -->
                                     <img src="img/maps.png" alt="Maps Icon" style="width: 16px;" draggable="false"/>
-                                    <asp:Label ID="TD_Place" runat="server" Text='<%# Eval("地點名稱") %>'></asp:Label><br />
+                                    <asp:Label
+                                        ID="TD_Place"
+                                        runat="server"
+                                        Text='<%# Convert.ToInt32(Eval("地點類型")) == 2 
+        ? string.Format("{0}{1}(到府)", Eval("縣市"), Eval("行政區")) 
+        : Eval("地點名稱") %>' />
+                                    <br />
                                 </div>
                                 <!-- 預約人數 -->
                                 <div class="col-md-2 course-people">
@@ -312,14 +318,16 @@
                                             <asp:Label ID="ap_detail_placeName_label" runat="server" Text="地點名稱：" Font-Size="Small"></asp:Label>
                                             <asp:Label ID="ap_detail_placeName" runat="server" Font-Size="Small" Text=<%# Eval("地點名稱") %> />
                                             <asp:Label ID="ap_detail_Userplace_label" runat="server" Font-Size="Small" Text="客戶到府地址：" ></asp:Label>
-                                            <asp:Label ID="ap_detail_area" runat="server" Font-Size="Small" Text=<%# Eval("縣市") %> />
-                                            <asp:Label ID="ap_detail_city" runat="server" Font-Size="Small" Text=<%# Eval("行政區") %> />
-                                            <asp:Label ID="ap_detail_Userplace" runat="server" Font-Size="Small" Text=<%# Eval("客戶到府地址") %> />
+                                            <asp:Label
+                                                ID="ap_detail_Userplace"
+                                                runat="server"
+                                                Font-Size="Small"
+                                                Text='<%# string.Format("{0}{1}{2}", Eval("縣市"), Eval("行政區"), Eval("客戶到府地址")) %>' />
                                             <div class="d-flex justify-content-between">
                                                 <!-- 取消預約按鈕 -->
                                                 <asp:Button ID="btnCancel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("預約編號") %>' Text="取消預約" CssClass="btn btn-danger" />
                                                 <!-- 完成預約按鈕 -->
-                                                <asp:Button ID="btnFinish" runat="server" CommandName="Finish" CommandArgument='<%# Eval("預約編號") %>' Text="完成預約" CssClass="btn btn-success" />
+                                                <asp:Button ID="btnFinish" runat="server" CommandName="Finish" CommandArgument='<%# Eval("預約編號") %>' Text="確認到課" CssClass="btn btn-success" />
                                             </div>
                                         </div>
                                     </div>

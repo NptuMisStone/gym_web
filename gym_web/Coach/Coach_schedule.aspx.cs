@@ -532,7 +532,7 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         DateTime today = DateTime.Today;
 
         // 禁用今天之前的日期
-        if (e.Day.Date < today)
+        if (e.Day.Date <= today)
         {
             e.Cell.ForeColor = System.Drawing.Color.Gray; // 文字顏色
             e.Cell.BackColor = System.Drawing.Color.LightGray; // 背景顏色

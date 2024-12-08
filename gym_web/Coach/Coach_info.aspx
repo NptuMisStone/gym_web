@@ -113,10 +113,10 @@
                             <div class="d-flex align-items-center">
                                 <span class="form-label">性別：</span>
                                 <asp:Label ID="lb_gender" runat="server" Text="Label" Font-Size="X-Large" Style="display: inline-block;"></asp:Label>
-                                <asp:DropDownList ID="tb_gender" runat="server" Visible="False"  SelectionMode="Single" Font-Size="X-Large"  Style="display: inline-block;">
+                                <asp:DropDownList ID="tb_gender" runat="server"  CssClass="form-control" Visible="False"  Style="width: 80%; font-size: 1.5rem; display: inline-block;">
                                     <asp:ListItem Text="男生" Value="1"></asp:ListItem>
                                     <asp:ListItem Text="女生" Value="2"></asp:ListItem>
-                                    <asp:ListItem Text="無性別" Value="3"></asp:ListItem>
+                                    <asp:ListItem Text="不願透露" Value="3"></asp:ListItem>
                                 </asp:DropDownList>
                             </div>
                             <div class="mb-3 text-right">
