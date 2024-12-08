@@ -47,7 +47,7 @@
 <!-- Team Start -->
 <div class="container pt-5 team">
     <div class="d-flex flex-column text-center mb-5">
-        <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
+        <h4 class="text-primary font-weight-bold">NPTU FIT</h4>
         <h4 class="display-4 font-weight-bold">常見問題Q&A</h4>
     </div>
     <details>

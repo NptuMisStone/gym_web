@@ -14,7 +14,6 @@
     <!-- Team Start -->
     <div class="container pt-5 team">
         <div class="d-flex flex-column text-center mb-5">
-            <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
             <h4 class="display-4 font-weight-bold">我的收藏教練</h4>
         </div>
 
@@ -51,7 +50,6 @@
             </ItemTemplate>
         </asp:ListView>
         <div class="d-flex flex-column text-center mb-5">
-            <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
             <h4 class="display-4 font-weight-bold">我的收藏課程</h4>
         </div>
         <div class="container feature pt-5 w-100">

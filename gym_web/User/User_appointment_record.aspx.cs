@@ -25,7 +25,9 @@ public partial class User_User_appointment_record : System.Web.UI.Page
         {
             Update_Pass();
             User_id = Convert.ToString(Session["User_id"]);
-            show_record();
+
+            show_progress_record();
+            SetActiveButton(btnPending);
         }
     }
     private void Update_Pass()//逾時
@@ -57,11 +59,14 @@ public partial class User_User_appointment_record : System.Web.UI.Page
             connection.Close();
         }
     }
-    public void show_record()
+    // 設置按鈕的激活狀態
+
+    
+    public void show_progress_record()
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id ORDER BY [日期], [開始時間]";
+            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id AND 預約狀態=1 ORDER BY [日期], [開始時間]  ";
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@User_id", User_id);
             connection.Open();
@@ -69,10 +74,46 @@ public partial class User_User_appointment_record : System.Web.UI.Page
 
             // 分别绑定
             var inProgress = new List<AppointmentRecord>();
+
+            while (reader.Read())
+            {
+                var record = new AppointmentRecord
+                {
+                    預約編號 = Convert.ToInt32(reader["預約編號"]),
+                    健身教練姓名 = reader["健身教練姓名"].ToString(),
+                    課程名稱 = reader["課程名稱"].ToString(),
+                    日期 = Convert.ToDateTime(reader["日期"]),
+                    開始時間 = reader["開始時間"].ToString(),
+                    預約狀態 = Convert.ToInt32(reader["預約狀態"]),
+                    課程費用 = Convert.ToInt32(reader["課程費用"]),
+                    備註 = reader["備註"].ToString()
+                };
+                inProgress.Add(record);
+            }
+            // 分别绑定 DataList
+            dl_cancelled.DataSource=null;
+            dl_completed.DataSource =null;
+            dl_overtime.DataSource =null ;
+            dl_cancelled.DataBind();
+            dl_completed.DataBind();
+            dl_overtime.DataBind();
+            dl_inProgress.DataSource = inProgress;
+            dl_inProgress.DataBind();
+            connection.Close();
+        }
+    }
+    public void show_finish_record()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id AND 預約狀態=2 ORDER BY [日期], [開始時間] ";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@User_id", User_id);
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+
+            // 分别绑定
             var completed = new List<AppointmentRecord>();
-            var cancelled = new List<AppointmentRecord>();
-            var overtime = new List<AppointmentRecord>();
-            var coachCancelled = new List<AppointmentRecord>();
 
             while (reader.Read())
             {
@@ -88,42 +129,97 @@ public partial class User_User_appointment_record : System.Web.UI.Page
                     備註 = reader["備註"].ToString()
                 };
 
-                int status = Convert.ToInt32(reader["預約狀態"]);
-                switch (status)
-                {
-                    case 1:
-                        inProgress.Add(record);
-                        break;
-                    case 2:
-                        completed.Add(record);
-                        break;
-                    case 3:
-                        cancelled.Add(record);
-                        break;
-                    case 4:
-                        overtime.Add(record);
-                        break;
-                    case 5:
-                        coachCancelled.Add(record);
-                        break;
-                }
+                completed.Add(record);
             }
-            // 分别绑定 DataList
-            dl_inProgress.DataSource = inProgress;
+            dl_cancelled.DataSource = null;
+            dl_inProgress.DataSource = null;
+            dl_overtime.DataSource = null;
+            dl_cancelled.DataBind();
             dl_inProgress.DataBind();
-
+            dl_overtime.DataBind();
             dl_completed.DataSource = completed;
             dl_completed.DataBind();
 
+            connection.Close();
+        }
+    }
+    public void show_cancel_record()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id AND 預約狀態=3 OR 預約狀態=5 ORDER BY [日期], [開始時間] ";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@User_id", User_id);
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+
+            var cancelled = new List<AppointmentRecord>();
+
+            while (reader.Read())
+            {
+                var record = new AppointmentRecord
+                {
+                    預約編號 = Convert.ToInt32(reader["預約編號"]),
+                    健身教練姓名 = reader["健身教練姓名"].ToString(),
+                    課程名稱 = reader["課程名稱"].ToString(),
+                    日期 = Convert.ToDateTime(reader["日期"]),
+                    開始時間 = reader["開始時間"].ToString(),
+                    預約狀態 = Convert.ToInt32(reader["預約狀態"]),
+                    課程費用 = Convert.ToInt32(reader["課程費用"]),
+                    備註 = reader["備註"].ToString()
+                };
+
+                cancelled.Add(record);
+            }
+            // 分别绑定 DataList
+            dl_inProgress.DataSource = null;
+            dl_completed.DataSource = null;
+            dl_overtime.DataSource = null;
+            dl_inProgress.DataBind();
+            dl_completed.DataBind();
+            dl_overtime.DataBind();
             dl_cancelled.DataSource = cancelled;
             dl_cancelled.DataBind();
+            connection.Close();
+        }
+    }
+    public void show_past_record()
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            string sql = "SELECT * FROM [使用者預約-有預約的] WHERE [使用者編號] = @User_id AND 預約狀態=4 ORDER BY [日期], [開始時間] ";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@User_id", User_id);
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
 
+            var overtime = new List<AppointmentRecord>();
+
+            while (reader.Read())
+            {
+                var record = new AppointmentRecord
+                {
+                    預約編號 = Convert.ToInt32(reader["預約編號"]),
+                    健身教練姓名 = reader["健身教練姓名"].ToString(),
+                    課程名稱 = reader["課程名稱"].ToString(),
+                    日期 = Convert.ToDateTime(reader["日期"]),
+                    開始時間 = reader["開始時間"].ToString(),
+                    預約狀態 = Convert.ToInt32(reader["預約狀態"]),
+                    課程費用 = Convert.ToInt32(reader["課程費用"]),
+                    備註 = reader["備註"].ToString()
+                };
+                overtime.Add(record);
+                       
+            }
+            // 分别绑定 DataList
+            dl_cancelled.DataSource = null;
+            dl_completed.DataSource = null;
+            dl_inProgress.DataSource = null;
+            dl_cancelled.DataBind();
+            dl_completed.DataBind();
+            dl_inProgress.DataBind();
             dl_overtime.DataSource = overtime;
             dl_overtime.DataBind();
-
-            dl_coachCancelled.DataSource = coachCancelled;
-            dl_coachCancelled.DataBind();
-
             connection.Close();
         }
     }
@@ -238,7 +334,7 @@ public partial class User_User_appointment_record : System.Web.UI.Page
                 Page.ClientScript.RegisterStartupScript(this.GetType(), "SweetAlertScript", script, false);
             }
             sqlcn.Close();
-            show_record();
+            show_progress_record();
         }
     }
 
@@ -277,4 +373,39 @@ public partial class User_User_appointment_record : System.Web.UI.Page
         }
     }
 
+
+    protected void btnPending_Click(object sender, EventArgs e)
+    {
+        show_progress_record();
+        SetActiveButton(btnPending);
+    }
+
+    protected void btnCompleted_Click(object sender, EventArgs e)
+    {
+        SetActiveButton(btnCompleted);
+        show_finish_record();
+    }
+
+    protected void btnCancelled_Click(object sender, EventArgs e)
+    {
+        SetActiveButton(btnCancelled);
+        show_cancel_record();
+    }
+
+    protected void btnOverdue_Click(object sender, EventArgs e)
+    {
+        SetActiveButton(btnOverdue);
+        show_past_record();
+    }
+    private void SetActiveButton(Button activeButton)
+    {
+        // 重置所有按鈕樣式
+        btnPending.CssClass = "btn123 btn123-pending";
+        btnCompleted.CssClass = "btn123 btn123-completed";
+        btnCancelled.CssClass = "btn123 btn123-cancelled";
+        btnOverdue.CssClass = "btn123 btn123-overdue";
+
+        // 為激活的按鈕添加 active 樣式
+        activeButton.CssClass += " btn123-active";
+    }
 }

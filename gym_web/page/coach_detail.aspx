@@ -169,51 +169,169 @@
     </div>
 
     <!-- 教練尚未安排課程訊息 -->
-    <div class="d-flex align-items-center justify-content-center py-3 w-100">
-        <asp:Label ID="lb_noClasses" runat="server" Text="教練尚未安排課程" ForeColor="Red" Font-Bold="True" Visible="False" Font-Size="36px"></asp:Label>
-    </div>
-    <!-- 課程列表 -->
-    <div class="container feature pt-1 w-100">
-        <div class="row">
-            <asp:ListView ID="lv_classes" runat="server" OnItemCommand="lv_classes_ItemCommand">
-                <LayoutTemplate>
-                    <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
-                </LayoutTemplate>
-                <ItemTemplate>
-                    <!-- 使用col-md-6控制每個課程寬度為6格 (半行寬) -->
-                    <div class="col-md-6 mb-4" style="display: flex; justify-content: center;">
-                        <!-- 調整 linkbtn 的 style 確保不會影響內部元素 -->
-                        <div style="width: 100%; transition: background-color 0.3s ease; border: 2px solid black; border-radius: 8px; overflow: hidden;"
-                            onmouseover="this.style.backgroundColor='#f0f0f0'"
-                            onmouseout="this.style.backgroundColor=''">
-                            <!-- 將背景色過渡效果與懸停效果直接加在 style 和事件屬性中 -->
-                            <asp:LinkButton ID="lb_class" runat="server" CommandName="ViewDetails" CommandArgument='<%# Eval("課程編號") %>'
-                                CssClass="unstyled-link"
-                                Style="display: block; text-align: left; text-decoration: none; cursor: pointer;">
-                                <div class="row align-items-center" style="padding: 20px;">
-                                    <div class="col-sm-6" style="padding: 10px 15px;">
-                                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl2(Eval("課程圖片"),60) %>' CssClass="img-fluid mb-3 mb-sm-0" Style="object-fit: cover; height: 130px; width: 100%;" />
-                                        <%# Convert.ToInt32(Eval("上課人數")) == 1 ? 
-                                                "<i style='font-size:20px; font-weight: bold;'>一對一</i>" : 
-                                                "<i style='font-size:20px; font-weight: bold;'>團體</i>" %>
-                                    </div>
-                                    <div class="col-sm-6" style="padding: 10px 15px;">
-                                        <h4 class="font-weight-bold"><%# Eval("課程名稱") %></h4>
-                                        <h4 class="font-weight-bold mb-4" style="color: #e31c25"><%# "$ " + Convert.ToDouble(Eval("課程費用")).ToString("F0") + " /堂"%></h4>
-                                        <p><%# Eval("課程內容介紹") %></p>
-                                        <p><%# "人數：" + Eval("上課人數") + "人"%></p>
-                                        <p><%# "時間：" + Eval("課程時間長度") + "分鐘"%></p>
-                                        <p><%# "地點：" + Eval("顯示地點名稱")%></p>
-                                        <p><%# "所需設備：" + Eval("所需設備")%></p>
-                                    </div>
-                                </div>
-                            </asp:LinkButton>
-                        </div>
+<div class="d-flex align-items-center justify-content-center py-3 w-100">
+    <asp:Label ID="lb_noClasses" runat="server" Text="教練尚未安排課程" ForeColor="Red" Font-Bold="True" Visible="False" Font-Size="36px"></asp:Label>
+</div>
+<!-- 課程列表 -->
+<div class="container feature pt-1 w-100">
+    <div class="row">
+        <asp:ListView ID="lv_classes" runat="server" OnItemCommand="lv_classes_ItemCommand">
+            <LayoutTemplate>
+                <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+            </LayoutTemplate>
+            <ItemTemplate>
+                <div class="col-md-6 mb-3 d-flex justify-content-center">
+                    <!-- 卡片 -->
+                    <div class="card-class">
+                        <!-- 點擊進入課程詳細頁面 -->
+                        <asp:LinkButton ID="lb_class" runat="server" CommandName="ViewDetails" CommandArgument='<%# Eval("課程編號") %>' class="card-content no-underline">
+                            <!-- 圖片與類型標籤 -->
+                            <div class="card-image-container">
+                                <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl2(Eval("課程圖片"),60) %>' class="card-image" />
+                                <span class="class-type-label <%# Convert.ToInt32(Eval("地點類型")) == 2 ? "label-blue" : "label-red" %>">
+                                    <%# Convert.ToInt32(Eval("地點類型")) == 2 ? "到府課程" : "團體課程" %>
+                                </span>
+                            </div>
+                            <!-- 課程資訊 -->
+                            <div class="card-info">
+                                <h4 class="class-title"><%# Eval("課程名稱") %></h4>
+                                <h4 class="class-price">$ <%# Convert.ToDouble(Eval("課程費用")).ToString("F0") %> /堂</h4>
+                                <p class="class-description"><%# Eval("課程內容介紹") %></p>
+                            </div>
+                        </asp:LinkButton>
                     </div>
-                </ItemTemplate>
-            </asp:ListView>
-        </div>
+                </div>
+            </ItemTemplate>
+        </asp:ListView>
     </div>
+</div>
+    <style>
+        /* 卡片樣式 */
+.card-class {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 460px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: transform 0.2s;
+}
+
+.card-class:hover {
+    transform: translateY(-5px);
+}
+
+/* 圖片區域 */
+.card-image-container {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 動態標籤 */
+.class-type-label {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+/* 到府課程 (藍底) */
+.label-blue {
+    background-color: #007bff; /* 藍色 */
+}
+
+/* 團體課程 (紅底) */
+.label-red {
+    background-color: #dc3545; /* 紅色 */
+}
+
+/* 課程資訊 */
+.card-info {
+    padding: 15px;
+    height: 160px; /* 設置固定高度 */
+    overflow: hidden; /* 隱藏超出高度的內容 */
+    display: flex; /* 使用 Flexbox 保持內部元素整齊 */
+    flex-direction: column; /* 確保內容垂直排列 */
+    justify-content: space-between; /* 在可用空間中分配內容 */
+}
+
+.class-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.class-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e31c25;
+    margin-bottom: 10px;
+}
+
+/* 按鈕區域 */
+.card-buttons {
+    display: flex;
+    justify-content: center; /* 只顯示愛心按鈕置中 */
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+}
+
+/* 按鈕 */
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+    transform: scale(1.1);
+}
+
+/* 卡片間距縮小 */
+.col-md-6 {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 20px;
+}
+
+/* 移除選取課程的下劃線 */
+.no-underline {
+    text-decoration: none; /* 移除下劃線 */
+    color: inherit; /* 繼承文字顏色 */
+}
+
+.no-underline:hover {
+    text-decoration: none; /* 確保懸停時也沒有下劃線 */
+}
+/* 限制文字顯示為最多三行，並在超過時顯示省略號 */
+.class-description {
+    display: -webkit-box; /* 必須搭配，啟用彈性盒模型 */
+    -webkit-line-clamp: 2; /* 限制行數 */
+    -webkit-box-orient: vertical; /* 設置為垂直方向 */
+    overflow: hidden; /* 隱藏超出範圍的內容 */
+    text-overflow: ellipsis; /* 顯示省略號 */
+    line-height: 1.5; /* 設置行高，與文字間距保持一致 */
+    max-height: calc(1.5em * 2); /* 計算總高度，1.5em 是行高 */
+}
+    </style>
 
 
 

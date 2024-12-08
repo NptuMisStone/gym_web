@@ -108,7 +108,7 @@
             <div class="container py-5">
                 <div class="row align-items-center">
                     <div class="col-lg-6">
-                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetImageUrl(Eval("課程圖片"),80) %>' class="img-fluid mb-4 mb-lg-0" Style="object-fit: cover; height: 500%; width: 500%;" />
+                        <asp:Image ID="Image1" runat="server" ImageUrl='<%# GetclassImageUrl(Eval("課程圖片"),80) %>' class="img-fluid mb-4 mb-lg-0" Style="object-fit: cover; height: 500%; width: 500%;" />
                     </div>
                     <div class="col-lg-6">
                         <h2 class="display-4 font-weight-bold mb-4"><%# Eval("課程名稱") %></h2>
@@ -186,7 +186,7 @@
                 <!-- 教練圖片及資訊 -->
                 <div class="d-flex align-items-center">
                     <asp:LinkButton ID="lb_image" runat="server" CommandName="select_coach" CommandArgument='<%# Eval("健身教練編號") %>'>
-                        <asp:Image ID="Image2" runat="server" Style="object-fit: cover" Height="150px" Width="150px" class="rounded-circle shadow-sm" ImageUrl='<%# GetImageUrl(Eval("健身教練圖片"),60) %>' />
+                        <asp:Image ID="Image2" runat="server" Style="object-fit: cover" Height="150px" Width="150px" class="rounded-circle shadow-sm" ImageUrl='<%# GetcoachImageUrl(Eval("健身教練圖片"),60) %>' />
                     </asp:LinkButton>
                     <div class="pl-4">
                         <h4 class="text-dark font-weight-bold mb-2"><%# Eval("健身教練姓名") %> 教練</h4>
@@ -252,7 +252,7 @@
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
-                    <asp:Label ID="noshow" runat="server" Text="無時段" Font-Size="100px" Visible="false"></asp:Label>
+                    <asp:Label ID="noshow" runat="server" Text="本日無安排時段" Font-Size="40px" Visible="false"></asp:Label>
                 
         </div>
     </div>
@@ -271,49 +271,59 @@
     <asp:Panel ID="AP_Panel" runat="server" CssClass="modal fade" tabindex="-1" role="dialog" aria-labelledby="ap_ModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ap_ModalLabel">請確認您的預約項目</h5>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold text-white" id="ap_ModalLabel">請確認您的預約項目</h5>
             </div>
             <div class="modal-body">
-                <span>名稱：</span>
-                <asp:Label ID="ap_course_name" runat="server"  Text='<%#  Eval("課程名稱")  %>' Font-Size="Large"></asp:Label><br>
-                <span>時長：</span>
-                <asp:Label ID="ap_course_time" runat="server"  Text='<%#  Eval("課程時間長度")  %>' Font-Size="Large"></asp:Label>
-                <span>分鐘</span>
-                <br/>
-                <asp:Panel ID="ADD_Panel" runat="server">
-                    <span>地點：</span>
-                    <asp:Label ID="ap_add_name" runat="server"  Text='<%#  Eval("地點名稱")  %>' Font-Size="Large"></asp:Label><br>
-                    <span>地址：</span>
-                    <asp:Label ID="ap_add_city" runat="server" Text='<%#  Eval("縣市")  %>' Font-Size="Large"></asp:Label>
-                    <asp:Label ID="ap_add_area" runat="server" Text='<%#  Eval("行政區")  %>' Font-Size="Large"></asp:Label>
-                    <asp:Label ID="ap_course_add" runat="server"  Text='<%#  Eval("地點地址")  %>' Font-Size="Large"></asp:Label><br>
+                <div class="mb-3">
+                    <span class="font-weight-bold">名稱：</span>
+                    <asp:Label ID="ap_course_name" runat="server" Text='<%# Eval("課程名稱") %>' CssClass="text-large text-primary"></asp:Label>
+                </div>
+                <div class="mb-3">
+                    <span class="font-weight-bold">時長：</span>
+                    <asp:Label ID="ap_course_time" runat="server" Text='<%# Eval("課程時間長度") %>' CssClass="text-large text-primary"></asp:Label>
+                    <span>分鐘</span>
+                </div>
+                <asp:Panel ID="ADD_Panel" runat="server" CssClass="mb-3">
+                    <div class="mb-2">
+                        <span class="font-weight-bold">地點：</span>
+                        <asp:Label ID="ap_add_name" runat="server" Text='<%# Eval("地點名稱") %>' CssClass="text-large text-secondary"></asp:Label>
+                    </div>
+                    <div class="mb-2">
+                        <span class="font-weight-bold">地址：</span>
+                        <asp:Label ID="ap_add_city" runat="server" Text='<%# Eval("縣市") %>' CssClass="text-large"></asp:Label>
+                        <asp:Label ID="ap_add_area" runat="server" Text='<%# Eval("行政區") %>' CssClass="text-large"></asp:Label>
+                        <asp:Label ID="ap_course_add" runat="server" Text='<%# Eval("地點地址") %>' CssClass="text-large"></asp:Label>
+                    </div>
                 </asp:Panel>
-                <asp:Label ID="Label1" runat="server"  Text="預約時段：" Font-Size="Large"></asp:Label>
-                <asp:Label ID="ap_course_date" runat="server"  Text='<%#  Eval("日期")  %>' Font-Size="Large"></asp:Label>
-                <span>(</span>
-                <asp:Label ID="ap_course_stTime" runat="server"  Text='<%#  Eval("開始時間")  %>' Font-Size="Large"></asp:Label>
-                <span>~</span>
-                <asp:Label ID="ap_course_edTime" runat="server"  Text='<%#  Eval("結束時間")  %>' Font-Size="Large"></asp:Label>
-                <span>)</span>
-                <br />
-                <asp:Label ID="Label3" runat="server"  Text="給教練的留言：" Font-Size="Large"></asp:Label><br>
-                <asp:TextBox ID="ap_text" runat="server"></asp:TextBox>
-                <br />
-                <asp:Label ID="Label4" runat="server"  Text="到府服務地址：" Font-Size="Large"></asp:Label><br>
-                <asp:Label ID="home_city" runat="server" Text='<%#  Eval("縣市")  %>' Visible="false" Font-Size="Large"></asp:Label>
-                <asp:Label ID="home_area" runat="server" Text='<%#  Eval("行政區")  %>' Visible="false" Font-Size="Large"></asp:Label>
-                <asp:TextBox ID="ap_location" runat="server" Enabled="false"></asp:TextBox>
-                <br />
-                <br />
-        
+                <div class="mb-3">
+                    <asp:Label ID="Label1" runat="server" Text="預約時段：" CssClass="font-weight-bold text-dark"></asp:Label>
+                    <asp:Label ID="ap_course_date" runat="server" Text='<%# Eval("日期") %>' CssClass="text-large"></asp:Label>
+                    <span>(</span>
+                    <asp:Label ID="ap_course_stTime" runat="server" Text='<%# Eval("開始時間") %>' CssClass="text-large"></asp:Label>
+                    <span>~</span>
+                    <asp:Label ID="ap_course_edTime" runat="server" Text='<%# Eval("結束時間") %>' CssClass="text-large"></asp:Label>
+                    <span>)</span>
+                </div>
+                <div class="mb-3">
+                    <asp:Label ID="Label3" runat="server" Text="給教練的留言：" CssClass="font-weight-bold text-dark"></asp:Label><br>
+                    <asp:TextBox ID="ap_text" runat="server" CssClass="form-control"></asp:TextBox>
+                </div>
+                <div class="mb-3">
+                    <asp:Label ID="Label4" runat="server" Text="到府服務地址：" CssClass="font-weight-bold text-dark"></asp:Label><br>
+                    <asp:Label ID="home_city" runat="server" Text='<%# Eval("縣市") %>' Visible="false" CssClass="text-large"></asp:Label>
+                    <asp:Label ID="home_area" runat="server" Text='<%# Eval("行政區") %>' Visible="false" CssClass="text-large"></asp:Label>
+                    <asp:TextBox ID="ap_location" runat="server" Enabled="false" CssClass="form-control"></asp:TextBox>
+                </div>
+            </div>
             <div class="modal-footer">
-                <asp:Button ID="ap_btn" runat="server" Text="確認預約" OnClick="ap_btn_Click" CssClass="btn btn-outline-primary mt-2 px-3" OnClientClick="ShowProgressBar()" />
+                <asp:Button ID="ap_btn" runat="server" Text="確認預約" OnClick="ap_btn_Click" CssClass="btn btn-outline-primary form-control" OnClientClick="ShowProgressBar()" />
             </div>
         </div>
     </div>
-</div>
 </asp:Panel>
+
+
     <!-- LOADING進度條 START-->
 <div id="divProgress" style="text-align: center; display: none; position: fixed; top: 50%; left: 50%;">
     <asp:Image ID="imgLoading" runat="server" ImageUrl="~/page/img/loading.gif" />

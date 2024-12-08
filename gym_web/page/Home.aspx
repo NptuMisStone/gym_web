@@ -94,7 +94,8 @@
                                 <a href='<%# ((Tuple<string, string>)Container.DataItem).Item2 %>' target="_blank">
                                     <img src='<%# ((Tuple<string, string>)Container.DataItem).Item1 %>' class="d-block w-100" alt="Slide <%# Container.ItemIndex + 1 %>" style="height: 720px; object-fit: cover;">
                                 </a>
-                            &nbsp;</div>
+                                &nbsp;
+                            </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
@@ -109,7 +110,7 @@
             </div>
             <div class="container pt-5 team">
                 <div class="d-flex flex-column text-center mb-5">
-                    <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
+                    <h4 class="text-primary font-weight-bold">NPTU FIT</h4>
                     <h4 class="display-4 font-weight-bold">熱門健身教練</h4>
                 </div>
                 <div class="floating-obj">
@@ -150,57 +151,61 @@
         </div>
 
         <div class="container-fluid position-relative bmi my-5">
-    <div class="container">
-        <div class="row justify-content-center align-items-center">
-            <!-- 左邊文字區塊 -->
-            <div class="col-md-5 text-center">
-                <h4 class="text-primary">Body Mass Index</h4>
-                <h4 class="display-4 text-white font-weight-bold mb-4">什麼是BMI?</h4>
-                <p class="m-0 text-white">以身體質量指數（Body Mass Index, BMI）來衡量肥胖程度，體重過重或是肥胖（BMI≧24）為糖尿病、心血管疾病、惡性腫瘤等慢性疾病的主要風險因素；而過瘦的健康問題，則會有營養不良、骨質疏鬆、猝死等健康問題。</p>
-            </div>
-            <!-- 右邊表單區塊 -->
-            <div class="col-md-5 bg-secondary py-5">
-                <div class="py-5 px-3 text-center">
-                    <h1 class="mb-4 text-white">計算你的 BMI</h1>
-                    <div class="form-row">
-                        <div class="col form-group">
-                            <asp:TextBox ID="Weight" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="公斤 (KG)"></asp:TextBox>
-                        </div>
-                        <div class="col form-group">
-                            <asp:TextBox ID="Height" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="身高 (CM)"></asp:TextBox>
+            <div class="container">
+                <div class="row justify-content-center align-items-center">
+                    <!-- 左邊文字區塊 -->
+                    <div class="col-md-5 text-center">
+                        <h4 class="text-primary">Body Mass Index</h4>
+                        <h4 class="display-4 text-white font-weight-bold mb-4">什麼是BMI?</h4>
+                        <p class="m-0 text-white">以身體質量指數（Body Mass Index, BMI）來衡量肥胖程度，體重過重或是肥胖（BMI≧24）為糖尿病、心血管疾病、惡性腫瘤等慢性疾病的主要風險因素；而過瘦的健康問題，則會有營養不良、骨質疏鬆、猝死等健康問題。</p>
+                    </div>
+                    <!-- 右邊表單區塊 -->
+                    <div class="col-md-5 bg-secondary py-5">
+                        <div class="py-5 px-3 text-center">
+                            <h1 class="mb-4 text-white">計算你的 BMI</h1>
+                            <div class="form-row">
+                                <div class="col form-group">
+                                    <asp:TextBox ID="Weight" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="公斤 (KG)"></asp:TextBox>
+                                </div>
+                                <div class="col form-group">
+                                    <asp:TextBox ID="Height" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="身高 (CM)"></asp:TextBox>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col form-group">
+                                    <asp:TextBox ID="Age" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="年齡(歲)"></asp:TextBox>
+                                </div>
+                                <div class="col form-group">
+                                    <asp:DropDownList ID="Gender" runat="server" CssClass="custom-select custom-select-lg bg-dark text-muted">
+                                        <asp:ListItem Selected="True">性別</asp:ListItem>
+                                        <asp:ListItem>男性</asp:ListItem>
+                                        <asp:ListItem>女性</asp:ListItem>
+                                    </asp:DropDownList>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <asp:Button ID="Button1" runat="server" Text="計算" CssClass="btn btn-lg btn-block btn-dark border-light" OnClick="Button1_Click" />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                </div>
+                            </div>
+                            <asp:Panel ID="Panel1" runat="server" CssClass="centered-panel">
+                                <asp:Label ID="Label1" runat="server" Text="Label"
+                                    Style="font-size: 20px; color: white; font-weight: bold;"></asp:Label>
+                            </asp:Panel>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="col form-group">
-                            <asp:TextBox ID="Age" runat="server" CssClass="form-control form-control-lg bg-dark text-white" placeholder="年齡(歲)"></asp:TextBox>
-                        </div>
-                        <div class="col form-group">
-                            <asp:DropDownList ID="Gender" runat="server" CssClass="custom-select custom-select-lg bg-dark text-muted">
-                                <asp:ListItem Selected="True">性別</asp:ListItem>
-                                <asp:ListItem>男性</asp:ListItem>
-                                <asp:ListItem>女性</asp:ListItem>
-                            </asp:DropDownList>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="col">
-                            <asp:Button ID="Button1" runat="server" Text="計算" CssClass="btn btn-lg btn-block btn-dark border-light" OnClick="Button1_Click" />
-                            <br /><br /><br /><br />
-                        </div>
-                    </div>
-                    <asp:Panel ID="Panel1" runat="server" CssClass="centered-panel">
-                        <asp:Label ID="Label1" runat="server" Text="Label"></asp:Label>
-                    </asp:Panel>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
 
         <div class="container pt-5 team">
             <div class="d-flex flex-column text-center mb-5">
-                <h4 class="text-primary font-weight-bold">NPTU GYM</h4>
+                <h4 class="text-primary font-weight-bold">NPTU FIT</h4>
                 <h4 class="display-4 font-weight-bold">讓你運動更有保障</h4>
             </div>
             <br />
@@ -264,7 +269,7 @@
         <div class="container py-5">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <img class="img-fluid mb-4 mb-lg-0" src="img/NPTU_GYM.png" alt="Image" >
+                    <img class="img-fluid mb-4 mb-lg-0" src="img/NPTU_GYM.png" alt="Image">
                 </div>
                 <div class="col-lg-6">
                     <h2 class="display-4 font-weight-bold mb-4">我們團隊</h2>

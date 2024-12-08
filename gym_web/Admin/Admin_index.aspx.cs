@@ -29,7 +29,7 @@ public partial class Admin_Default : System.Web.UI.Page
             string futureAdsQuery = "SELECT COUNT(*) FROM [廣告] WHERE [上架日] > GETDATE()";
             string expiredAdsQuery = "SELECT COUNT(*) FROM [廣告] WHERE [下架日] < GETDATE()";
 
-            string pendingCoachesQuery = "SELECT COUNT(*) FROM [健身教練審核] WHERE [審核狀態] IS NULL"; // 修正為 IS NULL
+            string pendingCoachesQuery = "SELECT COUNT(*) FROM [健身教練審核] WHERE [審核狀態] = 0";
             string activeCoachesQuery = "SELECT COUNT(*) FROM [健身教練審核] WHERE [審核狀態] = 1";
             string expiredCoachesQuery = "SELECT COUNT(*) FROM [健身教練審核] WHERE [審核狀態] = 3";
 
