@@ -247,8 +247,14 @@ public partial class Coach_Coach_schedule : System.Web.UI.Page
         // 檢查 Schedule_id 是否有效
         if (!string.IsNullOrEmpty(Schedule_id))
         {
-            // 彈出確認刪除的提示框
-            ConfirmDeleteSchedule();
+            if (IsDeleteable(Schedule_id))
+            {
+                // 彈出確認刪除的提示框
+                ConfirmDeleteSchedule();
+            }
+            else {
+                ShowAlert("error", "刪除失敗", "需於課程開始 24 小時前刪除", 1500);
+            }
         }
         else
         {
@@ -890,7 +896,7 @@ Swal.fire({{
     protected void NotifyUsersAboutCancellation( string scheduleid)
     {
         string query = "SELECT 使用者郵件,課程名稱,日期,開始時間,結束時間,健身教練姓名 " +
-                       "FROM [使用者預約-有預約的] WHERE 課表編號 = @ScheduleId";
+                       "FROM [使用者預約-有預約的] WHERE 課表編號 = @ScheduleId AND 預約狀態=2";
 
         using (SqlConnection conn = new SqlConnection(connectionString))
         {
@@ -957,5 +963,54 @@ Swal.fire({{
         }
         Debug.WriteLine("已寄出取消開課通知");
 
+    }
+    public bool IsDeleteable(string scheduleId)
+    {
+        string query = "SELECT 開始時間, 日期 FROM 健身教練課表 WHERE 課表編號 = @ScheduleId";
+        try
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ScheduleId", scheduleId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // 確保正確解析日期和時間
+                            DateTime classStart;
+                            if (reader["日期"] != DBNull.Value && reader["開始時間"] != DBNull.Value)
+                            {
+                                DateTime classDate = Convert.ToDateTime(reader["日期"]);
+                                TimeSpan classStartTime = TimeSpan.Parse(reader["開始時間"].ToString());
+                                classStart = classDate.Add(classStartTime);
+                            }
+                            else
+                            {
+                                // 如果日期或時間為空，返回不可刪除
+                                return false;
+                            }
+
+                            DateTime now = DateTime.Now;
+
+                            // 計算時間差
+                            TimeSpan duration = classStart - now;
+
+                            // 返回是否超過 24 小時
+                            return duration.TotalHours >= 24;
+                            
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error checking cancelability: " + e.Message);
+        }
+
+        return false; // 如果查詢失敗或其他錯誤，預設不可取消
     }
 }

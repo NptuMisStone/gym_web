@@ -556,17 +556,26 @@ public partial class Coach_Coach_appointment : System.Web.UI.Page
                     {
                         if (reader.Read())
                         {
-                            string date = reader["日期"].ToString();
-                            string startTime = reader["開始時間"].ToString();
+                            // 確保正確解析日期和時間
+                            DateTime classStart;
+                            if (reader["日期"] != DBNull.Value && reader["開始時間"] != DBNull.Value)
+                            {
+                                DateTime classDate = Convert.ToDateTime(reader["日期"]);
+                                TimeSpan classStartTime = TimeSpan.Parse(reader["開始時間"].ToString());
+                                classStart = classDate.Add(classStartTime);
+                            }
+                            else
+                            {
+                                // 如果日期或時間為空，返回不可刪除
+                                return false;
+                            }
 
-                            // 解析課程開始時間
-                            DateTime classStart = DateTime.ParseExact(date + " " + startTime, "yyyy/MM/dd HH:mm", null);
-
-                            // 獲取當前時間
                             DateTime now = DateTime.Now;
 
-                            // 判斷是否大於等於 24 小時
+                            // 計算時間差
                             TimeSpan duration = classStart - now;
+
+                            // 返回是否超過 24 小時
                             return duration.TotalHours >= 24;
                         }
                     }
